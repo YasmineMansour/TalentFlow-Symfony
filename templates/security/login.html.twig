@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion - TalentFlow{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block body %}
+<div class="tf-login-wrapper" style="margin: -2rem; min-height: 100vh; padding: 2rem;">
+    <div class="tf-login-card">
+        <div class="brand-lg">
+            <h1><i class="fas fa-briefcase"></i> TalentFlow</h1>
+            <p>Plateforme de Gestion du Recrutement</p>
+        </div>
+
+        {% if error %}
+            <div class="tf-flash tf-flash-error">
+                <i class="fas fa-exclamation-circle"></i> {{ error.messageKey|trans(error.messageData, 'security') }}
+            </div>
+        {% endif %}
+
+        <form method="post" class="tf-form">
+            <div class="mb-3">
+                <label for="inputEmail" class="form-label">
+                    <i class="fas fa-envelope"></i> Email
+                </label>
+                <input type="email" value="{{ last_username }}" name="_username" id="inputEmail" 
+                       class="form-control" placeholder="votre@email.com" required autofocus>
+            </div>
+
+            <div class="mb-3">
+                <label for="inputPassword" class="form-label">
+                    <i class="fas fa-lock"></i> Mot de passe
+                </label>
+                <input type="password" name="_password" id="inputPassword" 
+                       class="form-control" placeholder="••••••••" required>
+            </div>
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+            <button class="btn-gold w-100 mt-3" type="submit" style="justify-content: center; padding: 0.7rem;">
+                <i class="fas fa-sign-in-alt"></i> Se connecter
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

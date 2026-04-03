@@ -1,0 +1,208 @@
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}Dashboard Recruteur - TalentFlow{% endblock %}
+{% block page_title %}Tableau de bord — Recruteur RH{% endblock %}
+
+{% block body %}
+{# ==================== WIDGETS ==================== #}
+<div class="row g-3 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="tf-widget">
+            <div class="tf-widget-icon gold">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <div class="tf-widget-info">
+                <h3>{{ offresActives }}</h3>
+                <p>Offres actives</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="tf-widget">
+            <div class="tf-widget-icon blue">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <div class="tf-widget-info">
+                <h3>{{ candidaturesRecues }}</h3>
+                <p>Candidatures reçues</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="tf-widget">
+            <div class="tf-widget-icon green">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="tf-widget-info">
+                <h3>{{ totalCandidats }}</h3>
+                <p>Candidats inscrits</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="tf-widget">
+            <div class="tf-widget-icon purple">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="tf-widget-info">
+                <h3>{{ entretiensAujourdhui }}</h3>
+                <p>Entretiens aujourd'hui</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    {# ==================== ACTIONS RAPIDES ==================== #}
+    <div class="col-lg-4">
+        <div class="tf-card" style="height: 100%;">
+            <div class="tf-card-header">
+                <h3><i class="fas fa-bolt"></i> Actions rapides</h3>
+            </div>
+            <div class="row g-2">
+                <div class="col-6">
+                    <a href="#" class="tf-quick-action">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Publier une offre</span>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="#" class="tf-quick-action">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Voir candidatures</span>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="#" class="tf-quick-action">
+                        <i class="fas fa-calendar-plus"></i>
+                        <span>Planifier entretien</span>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="#" class="tf-quick-action">
+                        <i class="fas fa-search"></i>
+                        <span>Rechercher CV</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ==================== ALERTES ==================== #}
+    <div class="col-lg-8">
+        <div class="tf-card" style="height: 100%;">
+            <div class="tf-card-header">
+                <h3><i class="fas fa-bell"></i> Alertes & Notifications</h3>
+            </div>
+
+            {% if entretiensAujourdhui > 0 %}
+            <div class="tf-flash tf-flash-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                Vous avez <strong>{{ entretiensAujourdhui }} entretien{{ entretiensAujourdhui > 1 ? 's' : '' }}</strong> prévu{{ entretiensAujourdhui > 1 ? 's' : '' }} aujourd'hui.
+            </div>
+            {% endif %}
+
+            <div class="tf-activity-item">
+                <div class="tf-activity-dot green"></div>
+                <div>
+                    <div class="tf-activity-text">{{ totalCandidats }} candidat{{ totalCandidats > 1 ? 's' : '' }} inscrit{{ totalCandidats > 1 ? 's' : '' }} sur la plateforme</div>
+                    <div class="tf-activity-time">Base de talents disponible</div>
+                </div>
+            </div>
+            <div class="tf-activity-item">
+                <div class="tf-activity-dot gold"></div>
+                <div>
+                    <div class="tf-activity-text">{{ offresActives }} offre{{ offresActives > 1 ? 's' : '' }} d'emploi active{{ offresActives > 1 ? 's' : '' }}</div>
+                    <div class="tf-activity-time">Publiez de nouvelles offres pour attirer plus de candidats</div>
+                </div>
+            </div>
+            <div class="tf-activity-item">
+                <div class="tf-activity-dot blue"></div>
+                <div>
+                    <div class="tf-activity-text">Pipeline de recrutement</div>
+                    <div class="tf-activity-time">Suivez l'avancement de vos processus de recrutement</div>
+                </div>
+            </div>
+
+            {% if offresActives == 0 and candidaturesRecues == 0 %}
+            <div style="text-align: center; padding: 2rem; color: var(--tf-gray);">
+                <i class="fas fa-inbox" style="font-size: 2.5rem; color: var(--tf-border); margin-bottom: 0.8rem; display: block;"></i>
+                <p>Les modules Offres et Candidatures seront bientôt disponibles.</p>
+                <small>Vous pourrez gérer le recrutement de bout en bout.</small>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{# ==================== GRAPHIQUE PLACEHOLDER ==================== #}
+<div class="row g-3">
+    <div class="col-12">
+        <div class="tf-card">
+            <div class="tf-card-header">
+                <h3><i class="fas fa-chart-bar"></i> Pipeline de recrutement</h3>
+                <span style="color: var(--tf-gray); font-size: 0.8rem;">Vue d'ensemble</span>
+            </div>
+            <canvas id="pipelineChart" height="120"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    const ctx = document.getElementById('pipelineChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Nouvelles', 'En cours', 'Entretien', 'Offre envoyée', 'Embauchées'],
+            datasets: [{
+                label: 'Candidatures',
+                data: [0, 0, 0, 0, 0],
+                backgroundColor: [
+                    'rgba(93, 173, 226, 0.7)',
+                    'rgba(212, 168, 67, 0.7)',
+                    'rgba(155, 89, 182, 0.7)',
+                    'rgba(46, 204, 113, 0.7)',
+                    'rgba(39, 174, 96, 0.9)',
+                ],
+                borderColor: [
+                    '#5dade2',
+                    '#d4a843',
+                    '#9b59b6',
+                    '#2ecc71',
+                    '#27ae60',
+                ],
+                borderWidth: 1,
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1e2a3a',
+                    titleColor: '#d4a843',
+                    bodyColor: '#f5f5f5',
+                    borderColor: '#2a3a4e',
+                    borderWidth: 1,
+                    cornerRadius: 8,
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: '#a0a0b0', stepSize: 1 },
+                    grid: { color: 'rgba(42, 58, 78, 0.5)' }
+                },
+                x: {
+                    ticks: { color: '#a0a0b0' },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,129 @@
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}Liste des Utilisateurs - TalentFlow{% endblock %}
+{% block page_title %}Gestion des Utilisateurs{% endblock %}
+
+{% block body %}
+<div class="tf-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="tf-title mb-0">
+            <i class="fas fa-users"></i> Gestion des Utilisateurs
+        </h2>
+        <a href="{{ path('app_user_new') }}" class="btn-gold">
+            <i class="fas fa-user-plus"></i> Nouvel Utilisateur
+        </a>
+    </div>
+
+    {# Search and filter bar #}
+    <form method="get" action="{{ path('app_user_index') }}" class="tf-search">
+        <input type="text" name="search" value="{{ search }}" placeholder="🔍 Rechercher par nom, prénom ou email..." autocomplete="off">
+        <select name="role" onchange="this.form.submit()">
+            <option value="">-- Tous les rôles --</option>
+            <option value="ROLE_ADMIN" {{ role == 'ROLE_ADMIN' ? 'selected' }}>Administrateur</option>
+            <option value="ROLE_RH" {{ role == 'ROLE_RH' ? 'selected' }}>Recruteur RH</option>
+            <option value="ROLE_CANDIDAT" {{ role == 'ROLE_CANDIDAT' ? 'selected' }}>Candidat</option>
+        </select>
+        <button type="submit" class="btn-gold">
+            <i class="fas fa-search"></i> Rechercher
+        </button>
+        {% if search or role %}
+            <a href="{{ path('app_user_index') }}" class="btn-outline-gold">
+                <i class="fas fa-times"></i> Effacer
+            </a>
+        {% endif %}
+    </form>
+
+    {# Results count #}
+    <p style="color: var(--tf-gray); margin-bottom: 1rem;">
+        <i class="fas fa-info-circle"></i> {{ users|length }} utilisateur{{ users|length > 1 ? 's' : '' }} trouvé{{ users|length > 1 ? 's' : '' }}
+        {% if search %} pour "<strong style="color: var(--tf-gold);">{{ search }}</strong>"{% endif %}
+    </p>
+
+    {% if users|length > 0 %}
+        <div class="table-responsive">
+            <table class="tf-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Utilisateur</th>
+                        <th>Email</th>
+                        <th>Téléphone</th>
+                        <th>Rôle</th>
+                        <th>Créé le</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                        <tr>
+                            <td style="color: var(--tf-gray);">{{ user.id }}</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="tf-avatar">
+                                        {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+                                    </span>
+                                    <div>
+                                        <strong>{{ user.fullName }}</strong>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <i class="fas fa-envelope" style="color: var(--tf-gold); font-size: 0.8rem;"></i>
+                                {{ user.email }}
+                            </td>
+                            <td>
+                                {% if user.telephone %}
+                                    <i class="fas fa-phone" style="color: var(--tf-gold); font-size: 0.8rem;"></i>
+                                    {{ user.telephone }}
+                                {% else %}
+                                    <span style="color: var(--tf-gray);">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'ROLE_ADMIN' in user.roles %}
+                                    <span class="badge-role badge-admin"><i class="fas fa-crown"></i> Admin</span>
+                                {% elseif 'ROLE_RH' in user.roles %}
+                                    <span class="badge-role badge-rh"><i class="fas fa-user-tie"></i> RH</span>
+                                {% elseif 'ROLE_CANDIDAT' in user.roles %}
+                                    <span class="badge-role badge-candidat"><i class="fas fa-user"></i> Candidat</span>
+                                {% else %}
+                                    <span class="badge-role" style="background: var(--tf-gray); color: var(--tf-midnight);">Utilisateur</span>
+                                {% endif %}
+                            </td>
+                            <td style="color: var(--tf-gray);">
+                                {{ user.createdAt ? user.createdAt|date('d/m/Y') : '—' }}
+                            </td>
+                            <td>
+                                <div class="tf-actions">
+                                    <a href="{{ path('app_user_show', {'id': user.id}) }}" class="btn-outline-gold" title="Voir">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn-gold" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form method="post" action="{{ path('app_user_delete', {'id': user.id}) }}" 
+                                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer {{ user.fullName }} ?');"
+                                          style="display: inline;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+                                        <button type="submit" class="btn-danger-tf" title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 3rem; color: var(--tf-gray);">
+            <i class="fas fa-users-slash" style="font-size: 3rem; color: var(--tf-border); margin-bottom: 1rem; display: block;"></i>
+            <p>Aucun utilisateur trouvé.</p>
+            <a href="{{ path('app_user_new') }}" class="btn-gold mt-2">
+                <i class="fas fa-user-plus"></i> Créer le premier utilisateur
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

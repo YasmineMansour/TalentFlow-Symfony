@@ -1,0 +1,85 @@
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}{{ user.fullName }} - TalentFlow{% endblock %}
+{% block page_title %}Fiche Utilisateur{% endblock %}
+
+{% block body %}
+<div class="tf-card" style="max-width: 700px; margin: 0 auto;">
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <h2 class="tf-title mb-0">
+            <i class="fas fa-user-circle"></i> Fiche Utilisateur
+        </h2>
+        <div class="d-flex gap-2">
+            <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn-gold">
+                <i class="fas fa-edit"></i> Modifier
+            </a>
+        </div>
+    </div>
+
+    {# User header #}
+    <div class="d-flex align-items-center gap-3 mb-4" style="padding: 1.5rem; background: var(--tf-navy); border-radius: 12px; border-left: 4px solid var(--tf-gold);">
+        <span class="tf-avatar" style="width: 65px; height: 65px; font-size: 1.4rem;">
+            {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+        </span>
+        <div>
+            <h3 style="margin: 0; color: var(--tf-white);">{{ user.fullName }}</h3>
+            <span style="color: var(--tf-gray);">{{ user.email }}</span><br>
+            {% if 'ROLE_ADMIN' in user.roles %}
+                <span class="badge-role badge-admin mt-1"><i class="fas fa-crown"></i> Administrateur</span>
+            {% elseif 'ROLE_RH' in user.roles %}
+                <span class="badge-role badge-rh mt-1"><i class="fas fa-user-tie"></i> Recruteur RH</span>
+            {% elseif 'ROLE_CANDIDAT' in user.roles %}
+                <span class="badge-role badge-candidat mt-1"><i class="fas fa-user"></i> Candidat</span>
+            {% else %}
+                <span class="badge-role mt-1" style="background: var(--tf-gray); color: var(--tf-midnight);">Utilisateur</span>
+            {% endif %}
+        </div>
+    </div>
+
+    {# User details #}
+    <dl class="tf-detail row">
+        <dt class="col-sm-4"><i class="fas fa-id-card"></i> ID</dt>
+        <dd class="col-sm-8">{{ user.id }}</dd>
+
+        <dt class="col-sm-4"><i class="fas fa-user"></i> Nom</dt>
+        <dd class="col-sm-8">{{ user.nom }}</dd>
+
+        <dt class="col-sm-4"><i class="fas fa-user"></i> Prénom</dt>
+        <dd class="col-sm-8">{{ user.prenom }}</dd>
+
+        <dt class="col-sm-4"><i class="fas fa-envelope"></i> Email</dt>
+        <dd class="col-sm-8">{{ user.email }}</dd>
+
+        <dt class="col-sm-4"><i class="fas fa-phone"></i> Téléphone</dt>
+        <dd class="col-sm-8">{{ user.telephone ?? '—' }}</dd>
+
+        <dt class="col-sm-4"><i class="fas fa-shield-alt"></i> Rôles</dt>
+        <dd class="col-sm-8">
+            {% for role in user.roles %}
+                <span style="color: var(--tf-gold);">{{ role }}</span>{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        </dd>
+
+        <dt class="col-sm-4"><i class="fas fa-calendar-plus"></i> Créé le</dt>
+        <dd class="col-sm-8">{{ user.createdAt ? user.createdAt|date('d/m/Y à H:i') : '—' }}</dd>
+
+        <dt class="col-sm-4"><i class="fas fa-calendar-check"></i> Modifié le</dt>
+        <dd class="col-sm-8">{{ user.updatedAt ? user.updatedAt|date('d/m/Y à H:i') : 'Jamais modifié' }}</dd>
+    </dl>
+
+    <hr style="border-color: var(--tf-border); margin: 1.5rem 0;">
+
+    <div class="d-flex justify-content-between">
+        <a href="{{ path('app_user_index') }}" class="btn-outline-gold">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+        <form method="post" action="{{ path('app_user_delete', {'id': user.id}) }}" 
+              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer {{ user.fullName }} ?');">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+            <button type="submit" class="btn-danger-tf">
+                <i class="fas fa-trash"></i> Supprimer cet utilisateur
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

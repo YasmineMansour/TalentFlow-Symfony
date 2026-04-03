@@ -1,0 +1,314 @@
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}Dashboard Administrateur - TalentFlow{% endblock %}
+{% block page_title %}Tableau de bord — Administrateur{% endblock %}
+
+{% block body %}
+{# ==================== WIDGETS STATISTIQUES ==================== #}
+<div class="row g-3 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="tf-widget">
+            <div class="tf-widget-icon gold">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="tf-widget-info">
+                <h3>{{ totalUsers }}</h3>
+                <p>Utilisateurs totaux</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="tf-widget">
+            <div class="tf-widget-icon green">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <div class="tf-widget-info">
+                <h3>{{ newThisWeek }}</h3>
+                <p>Nouveaux cette semaine</p>
+                <div class="trend {{ growthRate >= 0 ? 'up' : 'down' }}">
+                    <i class="fas fa-{{ growthRate >= 0 ? 'arrow-up' : 'arrow-down' }}"></i>
+                    {{ growthRate }}% vs semaine dernière
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="tf-widget">
+            <div class="tf-widget-icon blue">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <div class="tf-widget-info">
+                <h3>{{ totalRh }}</h3>
+                <p>Recruteurs RH</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="tf-widget">
+            <div class="tf-widget-icon purple">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <div class="tf-widget-info">
+                <h3>{{ totalCandidats }}</h3>
+                <p>Candidats inscrits</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    {# ==================== GRAPHIQUE INSCRIPTIONS ==================== #}
+    <div class="col-lg-8">
+        <div class="tf-card" style="height: 100%;">
+            <div class="tf-card-header">
+                <h3><i class="fas fa-chart-line"></i> Évolution des inscriptions</h3>
+                <span style="color: var(--tf-gray); font-size: 0.8rem;">6 derniers mois</span>
+            </div>
+            <canvas id="registrationChart" height="220"></canvas>
+        </div>
+    </div>
+
+    {# ==================== RÉPARTITION PAR RÔLE ==================== #}
+    <div class="col-lg-4">
+        <div class="tf-card" style="height: 100%;">
+            <div class="tf-card-header">
+                <h3><i class="fas fa-chart-pie"></i> Répartition des rôles</h3>
+            </div>
+            <div style="display: flex; justify-content: center; padding: 1rem 0;">
+                <canvas id="rolesChart" width="220" height="220"></canvas>
+            </div>
+            <div style="display: flex; justify-content: center; gap: 1.5rem; margin-top: 0.5rem;">
+                <div style="text-align: center;">
+                    <span class="badge-role badge-admin" style="font-size: 0.7rem;">Admin</span>
+                    <div style="color: var(--tf-white); font-weight: 700; margin-top: 0.3rem;">{{ totalAdmins }}</div>
+                </div>
+                <div style="text-align: center;">
+                    <span class="badge-role badge-rh" style="font-size: 0.7rem;">RH</span>
+                    <div style="color: var(--tf-white); font-weight: 700; margin-top: 0.3rem;">{{ totalRh }}</div>
+                </div>
+                <div style="text-align: center;">
+                    <span class="badge-role badge-candidat" style="font-size: 0.7rem;">Candidat</span>
+                    <div style="color: var(--tf-white); font-weight: 700; margin-top: 0.3rem;">{{ totalCandidats }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    {# ==================== DERNIERS UTILISATEURS ==================== #}
+    <div class="col-lg-8">
+        <div class="tf-card">
+            <div class="tf-card-header">
+                <h3><i class="fas fa-clock"></i> Derniers utilisateurs inscrits</h3>
+                <a href="{{ path('app_user_index') }}" class="btn-outline-gold btn-sm-tf">
+                    <i class="fas fa-list"></i> Voir tout
+                </a>
+            </div>
+            {% if recentUsers|length > 0 %}
+            <div class="table-responsive">
+                <table class="tf-table">
+                    <thead>
+                        <tr>
+                            <th>Utilisateur</th>
+                            <th>Email</th>
+                            <th>Rôle</th>
+                            <th>Inscrit le</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in recentUsers %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="tf-avatar" style="width: 32px; height: 32px; font-size: 0.7rem;">
+                                        {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+                                    </span>
+                                    <strong>{{ user.fullName }}</strong>
+                                </div>
+                            </td>
+                            <td style="color: var(--tf-gray);">{{ user.email }}</td>
+                            <td>
+                                {% if 'ROLE_ADMIN' in user.roles %}
+                                    <span class="badge-role badge-admin"><i class="fas fa-crown"></i> Admin</span>
+                                {% elseif 'ROLE_RH' in user.roles %}
+                                    <span class="badge-role badge-rh"><i class="fas fa-user-tie"></i> RH</span>
+                                {% elseif 'ROLE_CANDIDAT' in user.roles %}
+                                    <span class="badge-role badge-candidat"><i class="fas fa-user"></i> Candidat</span>
+                                {% endif %}
+                            </td>
+                            <td style="color: var(--tf-gray);">{{ user.createdAt ? user.createdAt|date('d/m/Y') : '—' }}</td>
+                            <td>
+                                <div class="tf-actions">
+                                    <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn-gold btn-sm-tf" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ path('app_user_show', {'id': user.id}) }}" class="btn-outline-gold btn-sm-tf" title="Voir">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <p style="color: var(--tf-gray); text-align: center; padding: 2rem;">Aucun utilisateur inscrit.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ==================== ACTIONS RAPIDES ==================== #}
+    <div class="col-lg-4">
+        <div class="tf-card" style="height: 100%;">
+            <div class="tf-card-header">
+                <h3><i class="fas fa-bolt"></i> Actions rapides</h3>
+            </div>
+            <div class="row g-2">
+                <div class="col-6">
+                    <a href="{{ path('app_user_new') }}" class="tf-quick-action">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Nouvel Utilisateur</span>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="{{ path('app_user_index') }}" class="tf-quick-action">
+                        <i class="fas fa-users-cog"></i>
+                        <span>Gérer Comptes</span>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="#" class="tf-quick-action">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>Voir Offres</span>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="#" class="tf-quick-action">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Rapports</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="tf-card-header mt-4">
+                <h3><i class="fas fa-shield-alt"></i> Sécurité</h3>
+            </div>
+            <div>
+                <div class="tf-activity-item">
+                    <div class="tf-activity-dot green"></div>
+                    <div>
+                        <div class="tf-activity-text">Système opérationnel</div>
+                        <div class="tf-activity-time">Tous les services fonctionnent normalement</div>
+                    </div>
+                </div>
+                <div class="tf-activity-item">
+                    <div class="tf-activity-dot gold"></div>
+                    <div>
+                        <div class="tf-activity-text">{{ totalAdmins }} compte{{ totalAdmins > 1 ? 's' : '' }} administrateur{{ totalAdmins > 1 ? 's' : '' }}</div>
+                        <div class="tf-activity-time">Accès complet au système</div>
+                    </div>
+                </div>
+                <div class="tf-activity-item">
+                    <div class="tf-activity-dot blue"></div>
+                    <div>
+                        <div class="tf-activity-text">Hashage BCrypt activé</div>
+                        <div class="tf-activity-time">Mots de passe sécurisés</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    // ===== Registration Line Chart =====
+    const regCtx = document.getElementById('registrationChart').getContext('2d');
+    new Chart(regCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for m in monthlyData %}'{{ m.label }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Inscriptions',
+                data: [{% for m in monthlyData %}{{ m.count }}{% if not loop.last %}, {% endif %}{% endfor %}],
+                borderColor: '#d4a843',
+                backgroundColor: 'rgba(212, 168, 67, 0.1)',
+                borderWidth: 2.5,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#d4a843',
+                pointBorderColor: '#1e2a3a',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1e2a3a',
+                    titleColor: '#d4a843',
+                    bodyColor: '#f5f5f5',
+                    borderColor: '#2a3a4e',
+                    borderWidth: 1,
+                    padding: 10,
+                    cornerRadius: 8,
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: '#a0a0b0',
+                        stepSize: 1,
+                    },
+                    grid: { color: 'rgba(42, 58, 78, 0.5)' }
+                },
+                x: {
+                    ticks: { color: '#a0a0b0' },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+
+    // ===== Roles Doughnut Chart =====
+    const rolesCtx = document.getElementById('rolesChart').getContext('2d');
+    new Chart(rolesCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Administrateurs', 'Recruteurs RH', 'Candidats'],
+            datasets: [{
+                data: [{{ totalAdmins }}, {{ totalRh }}, {{ totalCandidats }}],
+                backgroundColor: ['#c0392b', '#0f3460', '#27ae60'],
+                borderColor: '#1e2a3a',
+                borderWidth: 3,
+                hoverBorderColor: '#d4a843',
+            }]
+        },
+        options: {
+            responsive: false,
+            cutout: '65%',
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1e2a3a',
+                    titleColor: '#d4a843',
+                    bodyColor: '#f5f5f5',
+                    borderColor: '#2a3a4e',
+                    borderWidth: 1,
+                    padding: 10,
+                    cornerRadius: 8,
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

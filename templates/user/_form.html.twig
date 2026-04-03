@@ -1,0 +1,56 @@
+{{ form_start(form, {'attr': {'class': 'tf-form', 'novalidate': 'novalidate'}}) }}
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.nom) }}
+            {{ form_widget(form.nom) }}
+            {{ form_errors(form.nom) }}
+            <small class="form-hint"><i class="fas fa-info-circle"></i> Lettres uniquement, min. 2 caractères</small>
+        </div>
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.prenom) }}
+            {{ form_widget(form.prenom) }}
+            {{ form_errors(form.prenom) }}
+            <small class="form-hint"><i class="fas fa-info-circle"></i> Lettres uniquement, min. 2 caractères</small>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.email) }}
+            {{ form_widget(form.email) }}
+            {{ form_errors(form.email) }}
+            <small class="form-hint"><i class="fas fa-info-circle"></i> Adresse email valide et unique</small>
+        </div>
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.telephone) }}
+            {{ form_widget(form.telephone) }}
+            {{ form_errors(form.telephone) }}
+            <small class="form-hint"><i class="fas fa-info-circle"></i> Format : +216XXXXXXXX</small>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.roles) }}
+        {{ form_widget(form.roles) }}
+        {{ form_errors(form.roles) }}
+        <small class="form-hint"><i class="fas fa-info-circle"></i> Maintenez Ctrl pour sélectionner plusieurs rôles</small>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.plainPassword.first) }}
+            {{ form_widget(form.plainPassword.first) }}
+            {{ form_errors(form.plainPassword.first) }}
+            <small class="form-hint"><i class="fas fa-shield-alt"></i> Min. 8 car., 1 majuscule, 1 chiffre, 1 spécial</small>
+        </div>
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.plainPassword.second) }}
+            {{ form_widget(form.plainPassword.second) }}
+            {{ form_errors(form.plainPassword.second) }}
+        </div>
+    </div>
+
+    <button type="submit" class="btn-gold mt-2">
+        <i class="fas {{ button_icon|default('fa-save') }}"></i> {{ button_label|default('Enregistrer') }}
+    </button>
+{{ form_end(form) }}
