@@ -74,7 +74,7 @@
             <i class="fas fa-arrow-left"></i> Retour à la liste
         </a>
         <form method="post" action="{{ path('app_user_delete', {'id': user.id}) }}" 
-              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer {{ user.fullName }} ?');">
+              onsubmit="event.preventDefault(); confirmDelete(this, '{{ user.fullName|e('js') }}');">
             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
             <button type="submit" class="btn-danger-tf">
                 <i class="fas fa-trash"></i> Supprimer cet utilisateur

@@ -12,9 +12,22 @@
             <p>Plateforme de Gestion du Recrutement</p>
         </div>
 
+        {% if lockout_minutes is not null %}
+            <div class="tf-flash tf-flash-error">
+                <i class="fas fa-ban"></i> Compte temporairement bloqué suite à trop de tentatives échouées.
+                <br><small>Réessayez dans <strong>{{ lockout_minutes }}</strong> minute(s).</small>
+            </div>
+        {% endif %}
+
         {% if error %}
             <div class="tf-flash tf-flash-error">
                 <i class="fas fa-exclamation-circle"></i> {{ error.messageKey|trans(error.messageData, 'security') }}
+            </div>
+        {% endif %}
+
+        {% if remaining_attempts is not null and remaining_attempts > 0 %}
+            <div class="tf-flash tf-flash-warning" style="background: rgba(212, 168, 67, 0.15); border-left: 4px solid #d4a843; color: #e8c96d;">
+                <i class="fas fa-exclamation-triangle"></i> Attention : il vous reste <strong>{{ remaining_attempts }}</strong> tentative(s) avant le blocage temporaire.
             </div>
         {% endif %}
 
@@ -24,7 +37,8 @@
                     <i class="fas fa-envelope"></i> Email
                 </label>
                 <input type="email" value="{{ last_username }}" name="_username" id="inputEmail" 
-                       class="form-control" placeholder="votre@email.com" required autofocus>
+                       class="form-control" placeholder="votre@email.com" required autofocus
+                       {% if lockout_minutes is not null %}disabled{% endif %}>
             </div>
 
             <div class="mb-3">
@@ -32,15 +46,23 @@
                     <i class="fas fa-lock"></i> Mot de passe
                 </label>
                 <input type="password" name="_password" id="inputPassword" 
-                       class="form-control" placeholder="••••••••" required>
+                       class="form-control" placeholder="••••••••" required
+                       {% if lockout_minutes is not null %}disabled{% endif %}>
             </div>
 
             <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-            <button class="btn-gold w-100 mt-3" type="submit" style="justify-content: center; padding: 0.7rem;">
+            <button class="btn-gold w-100 mt-3" type="submit" style="justify-content: center; padding: 0.7rem;"
+                    {% if lockout_minutes is not null %}disabled{% endif %}>
                 <i class="fas fa-sign-in-alt"></i> Se connecter
             </button>
         </form>
+
+        <div class="text-center mt-3">
+            <a href="{{ path('app_forgot_password') }}" style="color: #d4a843; text-decoration: none; font-size: 0.9rem;">
+                <i class="fas fa-key"></i> Mot de passe oublié ?
+            </a>
+        </div>
     </div>
 </div>
 {% endblock %}

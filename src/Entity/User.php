@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Scheb\TwoFactorBundle\Model\Email\TwoFactorInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -11,8 +12,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
+#[ORM\HasLifecycleCallbacks]
 #[UniqueEntity(fields: ['email'], message: 'Un compte existe déjà avec cet email.')]
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFactorInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -69,8 +71,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 20, nullable: true)]
     #[Assert\Regex(
-        pattern: '/^(\+216)[2-9][0-9]{7}$/',
-        message: 'Le numéro doit être au format tunisien : +216XXXXXXXX (8 chiffres après +216).'
+        pattern: '/^(\+216|00216)?[2459][0-9]{7}$/',
+        message: 'Le numéro doit être au format tunisien : (+216|00216) suivi de 8 chiffres commençant par 2, 4, 5 ou 9.'
     )]
     private ?string $telephone = null;
 
@@ -79,6 +81,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
+
+    /**
+     * Indique si le compte est bloqué (protection Brute Force).
+     */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $blocked = false;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $lastLoginAt = null;
+
+    /**
+     * Code d'authentification à deux facteurs envoyé par email.
+     */
+    #[ORM\Column(length: 10, nullable: true)]
+    private ?string $authCode = null;
+
+    /**
+     * Indique si la 2FA par email est activée pour cet utilisateur.
+     */
+    #[ORM\Column(options: ['default' => true])]
+    private bool $twoFactorEnabled = true;
 
     public function __construct()
     {
@@ -97,7 +120,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setNom(string $nom): static
     {
-        $this->nom = $nom;
+        // Transformation automatique du nom en MAJUSCULES
+        $this->nom = mb_strtoupper($nom, 'UTF-8');
 
         return $this;
     }
@@ -244,5 +268,89 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return 'Utilisateur';
+    }
+
+    public function isBlocked(): bool
+    {
+        return $this->blocked;
+    }
+
+    public function setBlocked(bool $blocked): static
+    {
+        $this->blocked = $blocked;
+        return $this;
+    }
+
+    public function getLastLoginAt(): ?\DateTimeImmutable
+    {
+        return $this->lastLoginAt;
+    }
+
+    public function setLastLoginAt(?\DateTimeImmutable $lastLoginAt): static
+    {
+        $this->lastLoginAt = $lastLoginAt;
+        return $this;
+    }
+
+    // ─── Two-Factor Authentication (Email) ──────────────────────────
+
+    /**
+     * Vérifie si l'authentification à deux facteurs par email est activée.
+     */
+    public function isEmailAuthEnabled(): bool
+    {
+        return $this->twoFactorEnabled;
+    }
+
+    /**
+     * Retourne l'adresse email sur laquelle envoyer le code 2FA.
+     */
+    public function getEmailAuthRecipient(): string
+    {
+        return $this->email;
+    }
+
+    /**
+     * Retourne le code d'authentification courant.
+     */
+    public function getEmailAuthCode(): string
+    {
+        if (null === $this->authCode) {
+            throw new \LogicException('Le code d\'authentification n\'a pas été défini.');
+        }
+
+        return $this->authCode;
+    }
+
+    /**
+     * Définit le code d'authentification (appelé automatiquement par le bundle).
+     */
+    public function setEmailAuthCode(string $authCode): void
+    {
+        $this->authCode = $authCode;
+    }
+
+    public function isTwoFactorEnabled(): bool
+    {
+        return $this->twoFactorEnabled;
+    }
+
+    public function setTwoFactorEnabled(bool $twoFactorEnabled): static
+    {
+        $this->twoFactorEnabled = $twoFactorEnabled;
+        return $this;
+    }
+
+    /**
+     * Lifecycle callback : transforme automatiquement le nom en majuscules et
+     * met à jour le timestamp avant chaque persistance.
+     */
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function onPrePersist(): void
+    {
+        if ($this->nom) {
+            $this->nom = mb_strtoupper($this->nom, 'UTF-8');
+        }
     }
 }

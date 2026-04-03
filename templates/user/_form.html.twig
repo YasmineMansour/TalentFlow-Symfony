@@ -1,4 +1,4 @@
-{{ form_start(form, {'attr': {'class': 'tf-form', 'novalidate': 'novalidate'}}) }}
+{{ form_start(form, {'attr': {'class': 'tf-form', 'novalidate': 'novalidate', 'data-confirm': form_action|default('create'), 'onsubmit': "if(!this.getAttribute('data-confirmed')){event.preventDefault(); confirmFormSubmit(this, this.dataset.confirm);}"}}) }}
     <div class="row">
         <div class="col-md-6 mb-3">
             {{ form_label(form.nom) }}
@@ -25,23 +25,25 @@
             {{ form_label(form.telephone) }}
             {{ form_widget(form.telephone) }}
             {{ form_errors(form.telephone) }}
-            <small class="form-hint"><i class="fas fa-info-circle"></i> Format : +216XXXXXXXX</small>
+            <small class="form-hint"><i class="fas fa-info-circle"></i> Format : +216XXXXXXXX ou 00216XXXXXXXX</small>
         </div>
     </div>
 
+    {% if form.roles is defined %}
     <div class="mb-3">
         {{ form_label(form.roles) }}
         {{ form_widget(form.roles) }}
         {{ form_errors(form.roles) }}
         <small class="form-hint"><i class="fas fa-info-circle"></i> Maintenez Ctrl pour sélectionner plusieurs rôles</small>
     </div>
+    {% endif %}
 
     <div class="row">
         <div class="col-md-6 mb-3">
             {{ form_label(form.plainPassword.first) }}
             {{ form_widget(form.plainPassword.first) }}
             {{ form_errors(form.plainPassword.first) }}
-            <small class="form-hint"><i class="fas fa-shield-alt"></i> Min. 8 car., 1 majuscule, 1 chiffre, 1 spécial</small>
+            <small class="form-hint"><i class="fas fa-shield-alt"></i> Min. 12 car., 1 majuscule, 1 minuscule, 1 chiffre, 1 spécial</small>
         </div>
         <div class="col-md-6 mb-3">
             {{ form_label(form.plainPassword.second) }}
