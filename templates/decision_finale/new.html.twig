@@ -1,0 +1,15 @@
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}Nouvelle Décision Finale - TalentFlow{% endblock %}
+{% block page_title %}Nouvelle Décision Finale{% endblock %}
+
+{% block body %}
+<div class="tf-card" style="max-width: 860px; margin: 0 auto;">
+    <h2 class="tf-title"><i class="fas fa-plus-circle"></i> Créer une décision finale</h2>
+    {{ include('decision_finale/_form.html.twig', {'button_label': 'Créer la décision', 'button_icon': 'fa-plus'}) }}
+
+    <div class="mt-3">
+        <a href="{{ path('app_decision_finale_index') }}" class="btn-outline-gold"><i class="fas fa-arrow-left"></i> Retour à la liste</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,140 @@
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}Gestion des Entretiens - TalentFlow{% endblock %}
+{% block page_title %}Gestion des Entretiens{% endblock %}
+
+{% block body %}
+<div class="row g-3 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="tf-widget">
+            <div class="tf-widget-icon gold"><i class="fas fa-calendar-check"></i></div>
+            <div class="tf-widget-info">
+                <h3>{{ planifiesCount + realisesCount }}</h3>
+                <p>Total visible</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="tf-widget">
+            <div class="tf-widget-icon blue"><i class="fas fa-hourglass-half"></i></div>
+            <div class="tf-widget-info">
+                <h3>{{ planifiesCount }}</h3>
+                <p>Planifiés</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="tf-widget">
+            <div class="tf-widget-icon green"><i class="fas fa-check-double"></i></div>
+            <div class="tf-widget-info">
+                <h3>{{ realisesCount }}</h3>
+                <p>Réalisés</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="tf-widget">
+            <div class="tf-widget-icon purple"><i class="fas fa-gavel"></i></div>
+            <div class="tf-widget-info">
+                <h3>{{ pendingDecisions }}</h3>
+                <p>Décisions en attente</p>
+                <div class="trend up">{{ todayCount }} aujourd'hui</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="tf-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="tf-title mb-0"><i class="fas fa-calendar-days"></i> Liste des entretiens</h2>
+        <div class="d-flex gap-2">
+            <a href="{{ path('app_decision_finale_index') }}" class="btn-outline-gold"><i class="fas fa-gavel"></i> Décisions finales</a>
+            <a href="{{ path('app_entretien_new') }}" class="btn-gold"><i class="fas fa-plus"></i> Nouvel entretien</a>
+        </div>
+    </div>
+
+    <form method="get" action="{{ path('app_entretien_index') }}" class="tf-search">
+        <input type="text" name="search" value="{{ search }}" placeholder="🔍 Rechercher par ID, type, lieu, lien ou commentaire..." autocomplete="off">
+        <select name="statut">
+            <option value="">-- Tous les statuts --</option>
+            {% for item in ['PLANIFIE', 'REALISE', 'ANNULE'] %}
+                <option value="{{ item }}" {{ statut == item ? 'selected' }}>{{ item }}</option>
+            {% endfor %}
+        </select>
+        <select name="type">
+            <option value="">-- Tous les types --</option>
+            {% for item in ['EN_LIGNE', 'PRESENTIEL', 'TELEPHONIQUE'] %}
+                <option value="{{ item }}" {{ type == item ? 'selected' }}>{{ item }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn-gold"><i class="fas fa-search"></i> Rechercher</button>
+        {% if search or statut or type %}
+            <a href="{{ path('app_entretien_index') }}" class="btn-outline-gold"><i class="fas fa-times"></i> Effacer</a>
+        {% endif %}
+    </form>
+
+    {% if entretiens|length > 0 %}
+        <div class="table-responsive">
+            <table class="tf-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Candidature</th>
+                        <th>Date / Heure</th>
+                        <th>Type</th>
+                        <th>Statut</th>
+                        <th>Notes</th>
+                        <th>Score</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entretien in entretiens %}
+                        <tr>
+                            <td style="color: var(--tf-gray);">{{ entretien.id }}</td>
+                            <td>
+                                <strong>ID candidature: {{ entretien.candidatureId }}</strong>
+                                <div style="color: var(--tf-gray); font-size: 0.75rem;">{{ candidatureEmails[entretien.candidatureId] ?? 'Email indisponible' }}</div>
+                            </td>
+                            <td>
+                                <strong>{{ entretien.dateHeure ? entretien.dateHeure|date('d/m/Y H:i') : '—' }}</strong>
+                                <div style="color: var(--tf-gray); font-size: 0.75rem;">{{ entretien.lieu ?: entretien.lien ?: 'Aucun détail' }}</div>
+                            </td>
+                            <td>{{ entretien.type ?: '—' }}</td>
+                            <td>
+                                {% set color = entretien.statut == 'REALISE' ? '#27ae60' : (entretien.statut == 'ANNULE' ? '#e74c3c' : '#5dade2') %}
+                                <span class="badge-role" style="background: rgba(255,255,255,0.06); color: {{ color }}; border: 1px solid {{ color }};">
+                                    {{ entretien.statut }}
+                                </span>
+                            </td>
+                            <td>Tech: {{ entretien.noteTechnique ?? '—' }}<br>Com: {{ entretien.noteCommunication ?? '—' }}</td>
+                            <td>
+                                {% if entretien.scoreFinal is not null %}
+                                    <strong>{{ entretien.scoreFinal|number_format(2, '.', ' ') }}/20</strong>
+                                    <div style="color: var(--tf-gray); font-size: 0.75rem;">{{ entretien.niveau }}</div>
+                                {% else %}
+                                    <span style="color: var(--tf-gray);">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="tf-actions">
+                                    <a href="{{ path('app_entretien_edit', {'id': entretien.id}) }}" class="btn-gold" title="Modifier"><i class="fas fa-edit"></i></a>
+                                    <form method="post" action="{{ path('app_entretien_delete', {'id': entretien.id}) }}" style="display:inline;" onsubmit="return confirm('Supprimer l\'entretien #{{ entretien.id }} ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_entretien_' ~ entretien.id) }}">
+                                        <button type="submit" class="btn-danger-tf" title="Supprimer"><i class="fas fa-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 3rem; color: var(--tf-gray);">
+            <i class="fas fa-calendar-xmark" style="font-size: 3rem; color: var(--tf-border); margin-bottom: 1rem; display: block;"></i>
+            <p>Aucun entretien trouvé.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{{ form_start(form, {'attr': {'class': 'tf-form', 'novalidate': 'novalidate'}}) }}
+    <div class="mb-3">
+        {{ form_label(form.entretien) }}
+        {{ form_widget(form.entretien) }}
+        {{ form_errors(form.entretien) }}
+        <small class="form-hint"><i class="fas fa-filter"></i> La liste propose les entretiens réalisés disponibles</small>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.decision) }}
+            {{ form_widget(form.decision) }}
+            {{ form_errors(form.decision) }}
+        </div>
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.score) }}
+            {{ form_widget(form.score) }}
+            {{ form_errors(form.score) }}
+        </div>
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.motif) }}
+        {{ form_widget(form.motif) }}
+        {{ form_errors(form.motif) }}
+    </div>
+
+    <button type="submit" class="btn-gold mt-2">
+        <i class="fas {{ button_icon|default('fa-save') }}"></i> {{ button_label|default('Enregistrer') }}
+    </button>
+{{ form_end(form) }}

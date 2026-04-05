@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Repository\DecisionFinaleRepository;
+use App\Repository\EntretienRepository;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -10,7 +12,11 @@ use Symfony\Component\Routing\Annotation\Route;
 class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'app_dashboard')]
-    public function index(UserRepository $userRepository): Response
+    public function index(
+        UserRepository $userRepository,
+        EntretienRepository $entretienRepository,
+        DecisionFinaleRepository $decisionFinaleRepository
+    ): Response
     {
         $user = $this->getUser();
 
@@ -19,7 +25,7 @@ class DashboardController extends AbstractController
         }
 
         if ($this->isGranted('ROLE_RH')) {
-            return $this->renderRhDashboard($userRepository);
+            return $this->renderRhDashboard($userRepository, $entretienRepository, $decisionFinaleRepository);
         }
 
         return $this->renderCandidatDashboard();
@@ -86,7 +92,11 @@ class DashboardController extends AbstractController
         ]);
     }
 
-    private function renderRhDashboard(UserRepository $userRepository): Response
+    private function renderRhDashboard(
+        UserRepository $userRepository,
+        EntretienRepository $entretienRepository,
+        DecisionFinaleRepository $decisionFinaleRepository
+    ): Response
     {
         $candidats = $userRepository->findByRole('ROLE_CANDIDAT');
 
@@ -94,7 +104,8 @@ class DashboardController extends AbstractController
             'totalCandidats' => count($candidats),
             'offresActives' => 0,       // Placeholder - module Offres
             'candidaturesRecues' => 0,   // Placeholder - module Candidatures
-            'entretiensAujourdhui' => 0, // Placeholder - module Entretiens
+            'entretiensAujourdhui' => $entretienRepository->countToday(),
+            'decisionsEnAttente' => $decisionFinaleRepository->countPending(),
         ]);
     }
 

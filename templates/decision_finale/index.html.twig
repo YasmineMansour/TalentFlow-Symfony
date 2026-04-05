@@ -1,0 +1,143 @@
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}Décisions Finales - TalentFlow{% endblock %}
+{% block page_title %}Décisions Finales{% endblock %}
+
+{% block body %}
+<div class="row g-3 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="tf-widget">
+            <div class="tf-widget-icon green"><i class="fas fa-check"></i></div>
+            <div class="tf-widget-info"><h3>{{ acceptedCount }}</h3><p>Acceptées</p></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="tf-widget">
+            <div class="tf-widget-icon red"><i class="fas fa-times"></i></div>
+            <div class="tf-widget-info"><h3>{{ refusedCount }}</h3><p>Refusées</p></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="tf-widget">
+            <div class="tf-widget-icon blue"><i class="fas fa-hourglass-half"></i></div>
+            <div class="tf-widget-info"><h3>{{ pendingCount }}</h3><p>En attente</p></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="tf-widget">
+            <div class="tf-widget-icon gold"><i class="fas fa-arrows-rotate"></i></div>
+            <div class="tf-widget-info"><h3>{{ realisedWithoutDecisionCount }}</h3><p>À générer</p></div>
+        </div>
+    </div>
+</div>
+
+<div class="tf-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="tf-title mb-0"><i class="fas fa-scale-balanced"></i> Liste des décisions finales</h2>
+        <div class="d-flex gap-2">
+            <a href="{{ path('app_entretien_index') }}" class="btn-outline-gold"><i class="fas fa-calendar-check"></i> Entretiens</a>
+            <a href="{{ path('app_decision_finale_new') }}" class="btn-gold"><i class="fas fa-plus"></i> Nouvelle décision</a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-lg-7">
+            <form method="get" action="{{ path('app_decision_finale_index') }}" class="tf-search mb-0">
+                <input type="text" name="search" value="{{ search }}" placeholder="🔍 Rechercher par ID, motif ou décision..." autocomplete="off">
+                <select name="decision">
+                    <option value="">-- Toutes les décisions --</option>
+                    {% for item in ['ACCEPTE', 'REFUSE', 'EN_ATTENTE'] %}
+                        <option value="{{ item }}" {{ decisionFilter == item ? 'selected' }}>{{ item }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn-gold"><i class="fas fa-search"></i> Rechercher</button>
+            </form>
+        </div>
+        <div class="col-lg-5 d-flex flex-wrap gap-2 justify-content-lg-end">
+            <form method="post" action="{{ path('app_decision_finale_sync') }}">
+                <button type="submit" class="btn-outline-gold"><i class="fas fa-arrows-rotate"></i> Générer</button>
+            </form>
+            <form method="post" action="{{ path('app_decision_finale_auto_decide') }}" class="d-flex gap-2 flex-wrap justify-content-lg-end">
+                <div style="min-width: 130px;">
+                    <label for="accept-threshold" style="display:block; color: var(--tf-gray); font-size: 0.72rem; margin-bottom: 0.35rem;">Seuil acceptation</label>
+                    <input id="accept-threshold" type="number" name="accept_threshold" value="14" step="0.5" min="0" max="20" class="form-control" style="max-width: 130px; background: var(--tf-navy); border: 1px solid var(--tf-border); color: var(--tf-white);" placeholder="Ex: 14">
+                </div>
+                <div style="min-width: 130px;">
+                    <label for="reject-threshold" style="display:block; color: var(--tf-gray); font-size: 0.72rem; margin-bottom: 0.35rem;">Seuil refus</label>
+                    <input id="reject-threshold" type="number" name="reject_threshold" value="8" step="0.5" min="0" max="20" class="form-control" style="max-width: 130px; background: var(--tf-navy); border: 1px solid var(--tf-border); color: var(--tf-white);" placeholder="Ex: 8">
+                </div>
+                <button type="submit" class="btn-gold"><i class="fas fa-gears"></i> Auto</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="mb-3" style="color: var(--tf-gray); font-size: 0.82rem;">
+        <i class="fas fa-circle-info"></i>
+        `Auto` accepte les décisions avec un score supérieur ou égal au seuil d'acceptation, refuse celles en dessous du seuil de refus, et laisse les autres en attente.
+    </div>
+
+    {% if decisions|length > 0 %}
+        <div class="table-responsive">
+            <table class="tf-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Entretien</th>
+                        <th>Candidature</th>
+                        <th>Décision</th>
+                        <th>Score</th>
+                        <th>Date</th>
+                        <th>Motif</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in decisions %}
+                        <tr>
+                            <td style="color: var(--tf-gray);">{{ item.id }}</td>
+                            <td>ID entretien: {{ item.entretien.id }}</td>
+                            <td>
+                                <strong>ID candidature: {{ item.entretien.candidatureId }}</strong>
+                                <div style="color: var(--tf-gray); font-size: 0.75rem;">{{ candidatureEmails[item.entretien.candidatureId] ?? 'Email indisponible' }}</div>
+                            </td>
+                            <td>
+                                {% set color = item.decision == 'ACCEPTE' ? '#2ecc71' : (item.decision == 'REFUSE' ? '#e74c3c' : '#f1c40f') %}
+                                <span class="badge-role" style="background: rgba(255,255,255,0.06); color: {{ color }}; border: 1px solid {{ color }};">{{ item.decision }}</span>
+                            </td>
+                            <td>{{ item.score is not null ? item.score|number_format(2, '.', ' ') ~ '/20' : '—' }}</td>
+                            <td>{{ item.dateDecision ? item.dateDecision|date('d/m/Y H:i') : '—' }}</td>
+                            <td>{{ item.motif ?: '—' }}</td>
+                            <td>
+                                <div class="tf-actions">
+                                    {% if item.decision == 'EN_ATTENTE' %}
+                                        <form method="post" action="{{ path('app_decision_finale_update_status', {'id': item.id}) }}" style="display:inline;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('update_status_decision_' ~ item.id) }}">
+                                            <input type="hidden" name="decision" value="ACCEPTE">
+                                            <button type="submit" class="btn-gold" title="Accepter"><i class="fas fa-check"></i></button>
+                                        </form>
+                                        <form method="post" action="{{ path('app_decision_finale_update_status', {'id': item.id}) }}" style="display:inline;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('update_status_decision_' ~ item.id) }}">
+                                            <input type="hidden" name="decision" value="REFUSE">
+                                            <button type="submit" class="btn-danger-tf" title="Refuser"><i class="fas fa-xmark"></i></button>
+                                        </form>
+                                    {% endif %}
+                                    <a href="{{ path('app_decision_finale_edit', {'id': item.id}) }}" class="btn-gold" title="Modifier"><i class="fas fa-edit"></i></a>
+                                    <form method="post" action="{{ path('app_decision_finale_delete', {'id': item.id}) }}" style="display:inline;" onsubmit="return confirm('Supprimer la décision #{{ item.id }} ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_decision_' ~ item.id) }}">
+                                        <button type="submit" class="btn-danger-tf" title="Supprimer"><i class="fas fa-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div style="text-align:center; padding:3rem; color: var(--tf-gray);">
+            <i class="fas fa-scale-balanced" style="font-size:3rem; color: var(--tf-border); margin-bottom: 1rem; display:block;"></i>
+            <p>Aucune décision finale trouvée.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
