@@ -1,0 +1,42 @@
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}Nouveau Post{% endblock %}
+{% block page_title %}Créer un Post{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="tf-card">
+            <div class="tf-card-header">
+                <h3><i class="fas fa-plus-circle"></i> Nouveau Post</h3>
+                <a href="{{ path('post_index') }}" class="btn-outline-gold btn-sm-tf">
+                    <i class="fas fa-arrow-left"></i> Retour
+                </a>
+            </div>
+
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                <div class="tf-form-group">
+                    {{ form_label(form.title, null, {'label_attr': {'class': 'tf-label'}}) }}
+                    {{ form_widget(form.title, {'attr': {'class': 'tf-input', 'placeholder': 'Titre du post'}}) }}
+                    {{ form_errors(form.title) }}
+                </div>
+                <div class="tf-form-group">
+                    {{ form_label(form.content, null, {'label_attr': {'class': 'tf-label'}}) }}
+                    {{ form_widget(form.content, {'attr': {'class': 'tf-input', 'rows': '6', 'placeholder': 'Rédigez votre contenu ici...'}}) }}
+                    {{ form_errors(form.content) }}
+                </div>
+                <div class="tf-form-group">
+                    {{ form_label(form.author, null, {'label_attr': {'class': 'tf-label'}}) }}
+                    {{ form_widget(form.author, {'attr': {'class': 'tf-input'}}) }}
+                    {{ form_errors(form.author) }}
+                </div>
+
+                <div style="display: flex; gap: 0.8rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn-gold"><i class="fas fa-check"></i> Créer le Post</button>
+                    <a href="{{ path('post_index') }}" class="btn-outline-gold">Annuler</a>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

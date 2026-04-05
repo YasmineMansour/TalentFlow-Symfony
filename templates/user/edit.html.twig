@@ -1,0 +1,33 @@
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}Modifier {{ user.fullName }} - TalentFlow{% endblock %}
+{% block page_title %}Modifier un utilisateur{% endblock %}
+
+{% block body %}
+<div class="tf-card" style="max-width: 700px; margin: 0 auto;">
+    <h2 class="tf-title">
+        <i class="fas fa-user-edit"></i> Modifier l'utilisateur
+    </h2>
+
+    <div class="d-flex align-items-center gap-3 mb-4" style="padding: 1rem; background: var(--tf-navy); border-radius: 8px;">
+        <span class="tf-avatar" style="width: 50px; height: 50px; font-size: 1.1rem;">
+            {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+        </span>
+        <div>
+            <strong style="font-size: 1.1rem;">{{ user.fullName }}</strong><br>
+            <span style="color: var(--tf-gray);">{{ user.email }}</span>
+        </div>
+    </div>
+
+    {{ include('user/_form.html.twig', {'button_label': 'Enregistrer les modifications', 'button_icon': 'fa-save'}) }}
+
+    <div class="mt-3 d-flex gap-2">
+        <a href="{{ path('app_user_index') }}" class="btn-outline-gold">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+        <a href="{{ path('app_user_show', {'id': user.id}) }}" class="btn-outline-gold">
+            <i class="fas fa-eye"></i> Voir la fiche
+        </a>
+    </div>
+</div>
+{% endblock %}

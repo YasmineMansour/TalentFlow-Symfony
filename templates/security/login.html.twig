@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion - TalentFlow{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block body %}
+<div class="tf-login-wrapper" style="margin: -2rem; min-height: 100vh; padding: 2rem;">
+    <div class="tf-login-card" style="background: #1e2a3a; border: 1px solid #2a3a4e; border-radius: 16px; padding: 2.5rem; width: 100%; max-width: 420px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+        <div class="brand-lg" style="text-align: center; margin-bottom: 2rem;">
+            <h1 style="color: #d4a843; font-size: 1.8rem; font-weight: 800;"><i class="fas fa-briefcase"></i> TalentFlow</h1>
+            <p style="color: #a0a0b0; font-size: 0.85rem;">Plateforme de Gestion du Recrutement</p>
+        </div>
+
+        {% if error %}
+            <div style="padding: 0.8rem 1.2rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #c0392b; background: rgba(192, 57, 43, 0.12); color: #e74c3c; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-exclamation-circle"></i> {{ error.messageKey|trans(error.messageData, 'security') }}
+            </div>
+        {% endif %}
+
+        <form method="post">
+            <div class="mb-3">
+                <label for="inputEmail" class="form-label" style="color: #d4a843; font-weight: 600;">
+                    <i class="fas fa-envelope"></i> Email
+                </label>
+                <input type="email" value="{{ last_username }}" name="_username" id="inputEmail"
+                       class="form-control" style="background: #16213e; border: 1px solid #2a3a4e; color: #f5f5f5; border-radius: 8px;"
+                       placeholder="votre@email.com" required autofocus>
+            </div>
+
+            <div class="mb-3">
+                <label for="inputPassword" class="form-label" style="color: #d4a843; font-weight: 600;">
+                    <i class="fas fa-lock"></i> Mot de passe
+                </label>
+                <input type="password" name="_password" id="inputPassword"
+                       class="form-control" style="background: #16213e; border: 1px solid #2a3a4e; color: #f5f5f5; border-radius: 8px;"
+                       placeholder="••••••••" required>
+            </div>
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+            <button class="btn w-100 mt-3" type="submit" style="background: linear-gradient(135deg, #d4a843, #b8922f); color: #1a1a2e; border: none; padding: 0.7rem; border-radius: 8px; font-weight: 600; font-size: 1rem;">
+                <i class="fas fa-sign-in-alt"></i> Se connecter
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

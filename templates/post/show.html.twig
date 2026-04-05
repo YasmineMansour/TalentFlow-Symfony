@@ -1,0 +1,125 @@
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}Post : {{ post.title }}{% endblock %}
+{% block page_title %}Détails du Post{% endblock %}
+
+{% block body %}
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="tf-card">
+            <div class="tf-card-header">
+                <h3><i class="fas fa-newspaper"></i> {{ post.title }}</h3>
+                <div class="tf-actions">
+                    <a href="{{ path('post_edit', {id: post.id}) }}" class="btn-gold btn-sm-tf" title="Modifier">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="{{ path('post_index') }}" class="btn-outline-gold btn-sm-tf" title="Retour">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--tf-border);">
+                <span class="tf-avatar" style="width: 42px; height: 42px; font-size: 0.85rem;">
+                    {{ post.authorName|first|upper }}
+                </span>
+                <div>
+                    <div style="color: var(--tf-white); font-weight: 600;">{{ post.authorName }}</div>
+                    <div style="color: var(--tf-gray); font-size: 0.8rem;">
+                        {{ post.authorRole }} &bull; {{ post.createdAt ? post.createdAt|date('d/m/Y à H:i') : '' }}
+                    </div>
+                </div>
+                <div style="margin-left: auto; display: flex; gap: 1rem;">
+                    <span style="color: var(--tf-gold); font-weight: 600;">
+                        <i class="fas fa-thumbs-up"></i> {{ post.upvotes }}
+                    </span>
+                    <span style="color: var(--tf-gray);">
+                        <i class="fas fa-comments"></i> {{ post.commentCount }}
+                    </span>
+                </div>
+            </div>
+
+            <div style="color: var(--tf-light); line-height: 1.7; font-size: 0.95rem;">
+                {{ post.content|nl2br }}
+            </div>
+        </div>
+
+        <div class="tf-card mt-3">
+            <div class="tf-card-header">
+                <h3><i class="fas fa-comments"></i> Commentaires ({{ post.commentCount }})</h3>
+            </div>
+
+            {% for comment in post.comments %}
+            <div style="display: flex; gap: 0.8rem; padding: 1rem 0; {% if not loop.last %}border-bottom: 1px solid var(--tf-border);{% endif %}">
+                <span class="tf-avatar" style="width: 34px; height: 34px; font-size: 0.65rem; flex-shrink: 0;">
+                    {{ comment.authorName|first|upper }}
+                </span>
+                <div style="flex: 1;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+                        <strong style="color: var(--tf-white); font-size: 0.85rem;">{{ comment.authorName }}</strong>
+                        <small style="color: var(--tf-gray);">{{ comment.createdAt|date('d/m/Y H:i') }}</small>
+                    </div>
+                    <p style="color: var(--tf-light); margin: 0; font-size: 0.9rem;">{{ comment.content }}</p>
+                </div>
+            </div>
+            {% else %}
+            <p style="text-align: center; color: var(--tf-gray); padding: 1.5rem;">Aucun commentaire pour ce post.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="tf-card">
+            <div class="tf-card-header">
+                <h3><i class="fas fa-info-circle"></i> Informations</h3>
+            </div>
+            <div class="tf-detail-list">
+                <div class="tf-detail-item">
+                    <span class="tf-detail-label">ID</span>
+                    <span class="tf-detail-value">#{{ post.id }}</span>
+                </div>
+                <div class="tf-detail-item">
+                    <span class="tf-detail-label">Auteur</span>
+                    <span class="tf-detail-value">{{ post.authorName }}</span>
+                </div>
+                <div class="tf-detail-item">
+                    <span class="tf-detail-label">Rôle</span>
+                    <span class="tf-detail-value">{{ post.authorRole }}</span>
+                </div>
+                <div class="tf-detail-item">
+                    <span class="tf-detail-label">Upvotes</span>
+                    <span class="tf-detail-value" style="color: var(--tf-gold);">{{ post.upvotes }}</span>
+                </div>
+                <div class="tf-detail-item">
+                    <span class="tf-detail-label">Commentaires</span>
+                    <span class="tf-detail-value">{{ post.commentCount }}</span>
+                </div>
+                <div class="tf-detail-item">
+                    <span class="tf-detail-label">Créé le</span>
+                    <span class="tf-detail-value">{{ post.createdAt ? post.createdAt|date('d/m/Y H:i') : '—' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="tf-card mt-3">
+            <div class="tf-card-header">
+                <h3><i class="fas fa-bolt"></i> Actions</h3>
+            </div>
+            <div class="row g-2">
+                <div class="col-6">
+                    <a href="{{ path('post_edit', {id: post.id}) }}" class="tf-quick-action">
+                        <i class="fas fa-edit"></i>
+                        <span>Modifier</span>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="{{ path('post_index') }}" class="tf-quick-action">
+                        <i class="fas fa-list"></i>
+                        <span>Tous les posts</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

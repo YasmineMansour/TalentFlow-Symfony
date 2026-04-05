@@ -1,0 +1,94 @@
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}Commentaire #{{ comment.id }}{% endblock %}
+{% block page_title %}Détails du Commentaire{% endblock %}
+
+{% block body %}
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="tf-card">
+            <div class="tf-card-header">
+                <h3><i class="fas fa-comment"></i> Commentaire #{{ comment.id }}</h3>
+                <div class="tf-actions">
+                    <a href="{{ path('comment_edit', {id: comment.id}) }}" class="btn-gold btn-sm-tf" title="Modifier">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="{{ path('comment_index') }}" class="btn-outline-gold btn-sm-tf" title="Retour">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--tf-border);">
+                <span class="tf-avatar" style="width: 42px; height: 42px; font-size: 0.85rem;">
+                    {{ comment.authorName|first|upper }}
+                </span>
+                <div>
+                    <div style="color: var(--tf-white); font-weight: 600;">{{ comment.authorName }}</div>
+                    <div style="color: var(--tf-gray); font-size: 0.8rem;">
+                        {{ comment.createdAt ? comment.createdAt|date('d/m/Y à H:i') : '' }}
+                    </div>
+                </div>
+            </div>
+
+            <div style="color: var(--tf-light); line-height: 1.7; font-size: 0.95rem;">
+                {{ comment.content|nl2br }}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="tf-card">
+            <div class="tf-card-header">
+                <h3><i class="fas fa-info-circle"></i> Informations</h3>
+            </div>
+            <div class="tf-detail-list">
+                <div class="tf-detail-item">
+                    <span class="tf-detail-label">ID</span>
+                    <span class="tf-detail-value">#{{ comment.id }}</span>
+                </div>
+                <div class="tf-detail-item">
+                    <span class="tf-detail-label">Post</span>
+                    <span class="tf-detail-value">
+                        {% if comment.post %}
+                            <a href="{{ path('post_show', {id: comment.post.id}) }}" style="color: var(--tf-gold); text-decoration: none;">
+                                {{ comment.post.title }}
+                            </a>
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="tf-detail-item">
+                    <span class="tf-detail-label">Auteur</span>
+                    <span class="tf-detail-value">{{ comment.authorName }}</span>
+                </div>
+                <div class="tf-detail-item">
+                    <span class="tf-detail-label">Créé le</span>
+                    <span class="tf-detail-value">{{ comment.createdAt ? comment.createdAt|date('d/m/Y H:i') : '—' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="tf-card mt-3">
+            <div class="tf-card-header">
+                <h3><i class="fas fa-bolt"></i> Actions</h3>
+            </div>
+            <div class="row g-2">
+                <div class="col-6">
+                    <a href="{{ path('comment_edit', {id: comment.id}) }}" class="tf-quick-action">
+                        <i class="fas fa-edit"></i>
+                        <span>Modifier</span>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="{{ path('comment_index') }}" class="tf-quick-action">
+                        <i class="fas fa-list"></i>
+                        <span>Tous les commentaires</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

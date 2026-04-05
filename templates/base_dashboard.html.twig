@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}TalentFlow - Dashboard{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>💼</text></svg>">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+        <style>
+            :root {
+                --tf-midnight: #1a1a2e;
+                --tf-navy: #16213e;
+                --tf-dark-blue: #0f3460;
+                --tf-gold: #d4a843;
+                --tf-gold-light: #e8c96d;
+                --tf-gold-dark: #b8922f;
+                --tf-white: #f5f5f5;
+                --tf-gray: #a0a0b0;
+                --tf-card-bg: #1e2a3a;
+                --tf-border: #2a3a4e;
+                --sidebar-width: 260px;
+            }
+
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background-color: var(--tf-midnight);
+                color: var(--tf-white);
+                min-height: 100vh;
+            }
+
+            .tf-sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: var(--sidebar-width);
+                height: 100vh;
+                background: linear-gradient(180deg, var(--tf-navy) 0%, #0d1b2a 100%);
+                border-right: 1px solid var(--tf-border);
+                z-index: 1000;
+                display: flex;
+                flex-direction: column;
+                overflow-y: auto;
+            }
+
+            .tf-sidebar-brand {
+                padding: 1.5rem 1.2rem;
+                border-bottom: 1px solid var(--tf-border);
+                text-align: center;
+            }
+            .tf-sidebar-brand a {
+                font-size: 1.6rem;
+                font-weight: 800;
+                color: var(--tf-gold);
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.6rem;
+            }
+            .tf-sidebar-brand small {
+                display: block;
+                color: var(--tf-gray);
+                font-size: 0.7rem;
+                font-weight: 400;
+                margin-top: 0.3rem;
+                letter-spacing: 2px;
+                text-transform: uppercase;
+            }
+
+            .tf-sidebar-section {
+                padding: 1rem 0.8rem 0.3rem;
+                font-size: 0.65rem;
+                font-weight: 700;
+                color: var(--tf-gray);
+                text-transform: uppercase;
+                letter-spacing: 1.5px;
+            }
+
+            .tf-sidebar-nav {
+                list-style: none;
+                padding: 0 0.6rem;
+                flex: 1;
+            }
+            .tf-sidebar-nav li { margin-bottom: 2px; }
+            .tf-sidebar-nav a {
+                display: flex;
+                align-items: center;
+                gap: 0.8rem;
+                padding: 0.7rem 1rem;
+                color: var(--tf-gray);
+                text-decoration: none;
+                border-radius: 8px;
+                font-weight: 500;
+                font-size: 0.9rem;
+                transition: all 0.2s;
+            }
+            .tf-sidebar-nav a:hover {
+                background: rgba(212, 168, 67, 0.08);
+                color: var(--tf-gold);
+            }
+            .tf-sidebar-nav a.active {
+                background: rgba(212, 168, 67, 0.15);
+                color: var(--tf-gold);
+                font-weight: 600;
+            }
+            .tf-sidebar-nav a i { width: 20px; text-align: center; font-size: 0.95rem; }
+
+            .tf-sidebar-footer {
+                padding: 1rem;
+                border-top: 1px solid var(--tf-border);
+            }
+            .tf-sidebar-footer .user-info {
+                display: flex;
+                align-items: center;
+                gap: 0.7rem;
+                padding: 0.5rem;
+            }
+            .tf-sidebar-footer .tf-avatar-sm {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
+                color: var(--tf-midnight);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 0.8rem;
+                flex-shrink: 0;
+            }
+            .tf-sidebar-footer .user-details { overflow: hidden; }
+            .tf-sidebar-footer .user-name {
+                font-weight: 600;
+                font-size: 0.85rem;
+                color: var(--tf-white);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .tf-sidebar-footer .user-role { font-size: 0.7rem; color: var(--tf-gold); }
+
+            .tf-topbar {
+                position: fixed;
+                top: 0;
+                left: var(--sidebar-width);
+                right: 0;
+                height: 60px;
+                background: var(--tf-card-bg);
+                border-bottom: 1px solid var(--tf-border);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 2rem;
+                z-index: 999;
+            }
+            .tf-topbar-left { display: flex; align-items: center; gap: 1rem; }
+            .tf-topbar-left h1 { font-size: 1.1rem; font-weight: 600; color: var(--tf-white); margin: 0; }
+            .tf-topbar-right { display: flex; align-items: center; gap: 1.2rem; }
+            .tf-topbar-right .top-user { display: flex; align-items: center; gap: 0.6rem; color: var(--tf-white); font-size: 0.9rem; }
+            .tf-topbar-right .tf-avatar-sm {
+                width: 34px; height: 34px; border-radius: 50%;
+                background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
+                color: var(--tf-midnight); display: flex; align-items: center; justify-content: center;
+                font-weight: 700; font-size: 0.75rem;
+            }
+            .tf-topbar-right a {
+                color: var(--tf-gray); text-decoration: none; font-size: 0.85rem;
+                transition: color 0.2s; display: flex; align-items: center; gap: 0.3rem;
+            }
+            .tf-topbar-right a:hover { color: #e74c3c; }
+
+            .tf-main {
+                margin-left: var(--sidebar-width);
+                margin-top: 60px;
+                padding: 2rem;
+                min-height: calc(100vh - 60px);
+            }
+
+            .tf-widget {
+                background: var(--tf-card-bg); border: 1px solid var(--tf-border);
+                border-radius: 12px; padding: 1.5rem; display: flex; align-items: center;
+                gap: 1.2rem; transition: transform 0.2s, box-shadow 0.2s;
+            }
+            .tf-widget:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); }
+            .tf-widget-icon {
+                width: 55px; height: 55px; border-radius: 12px;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 1.4rem; flex-shrink: 0;
+            }
+            .tf-widget-icon.gold { background: rgba(212, 168, 67, 0.15); color: var(--tf-gold); }
+            .tf-widget-icon.blue { background: rgba(15, 52, 96, 0.4); color: #5dade2; }
+            .tf-widget-icon.green { background: rgba(39, 174, 96, 0.15); color: #2ecc71; }
+            .tf-widget-icon.red { background: rgba(192, 57, 43, 0.15); color: #e74c3c; }
+            .tf-widget-icon.purple { background: rgba(142, 68, 173, 0.15); color: #9b59b6; }
+            .tf-widget-info h3 { font-size: 1.8rem; font-weight: 700; color: var(--tf-white); margin: 0; line-height: 1; }
+            .tf-widget-info p { font-size: 0.8rem; color: var(--tf-gray); margin: 0.2rem 0 0; }
+            .tf-widget-info .trend { font-size: 0.75rem; font-weight: 600; margin-top: 0.2rem; }
+            .tf-widget-info .trend.up { color: #2ecc71; }
+            .tf-widget-info .trend.down { color: #e74c3c; }
+
+            .tf-card {
+                background: var(--tf-card-bg); border: 1px solid var(--tf-border);
+                border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            }
+            .tf-card-header {
+                display: flex; justify-content: space-between; align-items: center;
+                margin-bottom: 1.2rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--tf-border);
+            }
+            .tf-card-header h3 {
+                font-size: 1rem; font-weight: 700; color: var(--tf-gold); margin: 0;
+                display: flex; align-items: center; gap: 0.5rem;
+            }
+
+            .tf-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+            .tf-table thead th {
+                background: var(--tf-navy); color: var(--tf-gold); padding: 0.8rem 1rem;
+                text-align: left; font-weight: 600; font-size: 0.8rem; text-transform: uppercase;
+                letter-spacing: 0.5px; border-bottom: 2px solid var(--tf-gold); white-space: nowrap;
+            }
+            .tf-table tbody tr { transition: background 0.2s; }
+            .tf-table tbody tr:hover { background: rgba(212, 168, 67, 0.05); }
+            .tf-table tbody td {
+                padding: 0.7rem 1rem; border-bottom: 1px solid var(--tf-border);
+                vertical-align: middle; font-size: 0.88rem;
+            }
+
+            .badge-role { padding: 0.25rem 0.7rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+            .badge-admin { background: #c0392b; color: white; }
+            .badge-rh { background: var(--tf-dark-blue); color: var(--tf-gold); border: 1px solid var(--tf-gold); }
+            .badge-candidat { background: #27ae60; color: white; }
+
+            .btn-gold {
+                background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
+                color: var(--tf-midnight); border: none; padding: 0.5rem 1.2rem; border-radius: 8px;
+                font-weight: 600; transition: all 0.3s; text-decoration: none;
+                display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.88rem; cursor: pointer;
+            }
+            .btn-gold:hover {
+                background: linear-gradient(135deg, var(--tf-gold-light), var(--tf-gold));
+                color: var(--tf-midnight); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(212, 168, 67, 0.3);
+            }
+            .btn-outline-gold {
+                border: 1px solid var(--tf-gold); color: var(--tf-gold); background: transparent;
+                padding: 0.5rem 1.2rem; border-radius: 8px; font-weight: 600; transition: all 0.3s;
+                text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;
+                font-size: 0.88rem; cursor: pointer;
+            }
+            .btn-outline-gold:hover { background: var(--tf-gold); color: var(--tf-midnight); }
+            .btn-danger-tf {
+                background: #c0392b; color: white; border: none; padding: 0.4rem 1rem;
+                border-radius: 8px; font-weight: 600; transition: all 0.3s; cursor: pointer;
+            }
+            .btn-danger-tf:hover { background: #e74c3c; }
+            .btn-sm-tf { padding: 0.3rem 0.7rem; font-size: 0.8rem; border-radius: 6px; }
+
+            .tf-form .form-label { color: var(--tf-gold); font-weight: 600; margin-bottom: 0.3rem; font-size: 0.85rem; }
+            .tf-form .form-control, .tf-form .form-select {
+                background: var(--tf-navy); border: 1px solid var(--tf-border);
+                color: var(--tf-white); border-radius: 8px; padding: 0.6rem 1rem;
+            }
+            .tf-form .form-control:focus, .tf-form .form-select:focus {
+                border-color: var(--tf-gold); box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.15);
+                background: var(--tf-navy); color: var(--tf-white);
+            }
+            .tf-form .form-control::placeholder { color: var(--tf-gray); }
+            .tf-form .form-control.is-invalid, .tf-form .form-select.is-invalid {
+                border-color: #e74c3c; box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.15);
+            }
+            .tf-form .invalid-feedback, .tf-form ul li { color: #e74c3c; font-size: 0.8rem; margin-top: 0.25rem; }
+            .form-hint { display: block; color: var(--tf-gray); font-size: 0.75rem; margin-top: 0.3rem; font-style: italic; }
+            .form-hint i { margin-right: 0.2rem; }
+
+            .tf-flash { padding: 0.8rem 1.2rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid; display: flex; align-items: center; gap: 0.5rem; }
+            .tf-flash-success { background: rgba(39, 174, 96, 0.12); border-color: #27ae60; color: #2ecc71; }
+            .tf-flash-error { background: rgba(192, 57, 43, 0.12); border-color: #c0392b; color: #e74c3c; }
+            .tf-flash-warning { background: rgba(243, 156, 18, 0.12); border-color: #f39c12; color: #f1c40f; }
+
+            .tf-avatar {
+                width: 40px; height: 40px; border-radius: 50%;
+                background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
+                color: var(--tf-midnight); display: inline-flex; align-items: center;
+                justify-content: center; font-weight: 700; font-size: 0.9rem;
+            }
+
+            .tf-detail dt { color: var(--tf-gold); font-weight: 600; margin-bottom: 0.2rem; }
+            .tf-detail dd { color: var(--tf-white); margin-bottom: 1rem; padding-left: 0; }
+
+            .tf-search { display: flex; gap: 0.8rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+            .tf-search input, .tf-search select {
+                background: var(--tf-navy); border: 1px solid var(--tf-border); color: var(--tf-white);
+                padding: 0.6rem 1rem; border-radius: 8px; flex: 1; min-width: 200px;
+            }
+            .tf-search input:focus, .tf-search select:focus {
+                border-color: var(--tf-gold); outline: none; box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.15);
+            }
+            .tf-search input::placeholder { color: var(--tf-gray); }
+
+            .tf-activity-item { display: flex; gap: 0.8rem; padding: 0.7rem 0; border-bottom: 1px solid var(--tf-border); }
+            .tf-activity-item:last-child { border-bottom: none; }
+            .tf-activity-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+            .tf-activity-dot.green { background: #2ecc71; }
+            .tf-activity-dot.gold { background: var(--tf-gold); }
+            .tf-activity-dot.blue { background: #5dade2; }
+            .tf-activity-dot.red { background: #e74c3c; }
+            .tf-activity-text { font-size: 0.85rem; color: var(--tf-white); }
+            .tf-activity-time { font-size: 0.72rem; color: var(--tf-gray); margin-top: 0.1rem; }
+
+            .tf-quick-action {
+                display: flex; flex-direction: column; align-items: center; justify-content: center;
+                padding: 1.2rem; background: var(--tf-navy); border: 1px solid var(--tf-border);
+                border-radius: 12px; text-decoration: none; color: var(--tf-white);
+                transition: all 0.2s; text-align: center;
+            }
+            .tf-quick-action:hover {
+                border-color: var(--tf-gold); background: rgba(212, 168, 67, 0.08);
+                color: var(--tf-gold); transform: translateY(-2px);
+            }
+            .tf-quick-action i { font-size: 1.5rem; color: var(--tf-gold); margin-bottom: 0.5rem; }
+            .tf-quick-action span { font-size: 0.8rem; font-weight: 600; }
+
+            .tf-actions { display: flex; gap: 0.4rem; flex-wrap: nowrap; }
+            .tf-actions a, .tf-actions button { padding: 0.35rem 0.7rem; font-size: 0.85rem; border-radius: 6px; }
+
+            .tf-login-wrapper {
+                display: flex; align-items: center; justify-content: center;
+                min-height: 100vh; background: var(--tf-midnight);
+            }
+            .tf-login-card {
+                background: var(--tf-card-bg); border: 1px solid var(--tf-border); border-radius: 16px;
+                padding: 2.5rem; width: 100%; max-width: 420px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            }
+            .brand-lg { text-align: center; margin-bottom: 2rem; }
+            .brand-lg h1 { color: var(--tf-gold); font-size: 1.8rem; font-weight: 800; }
+            .brand-lg p { color: var(--tf-gray); font-size: 0.85rem; }
+
+            /* Form styles */
+            .tf-form-group { margin-bottom: 1.2rem; }
+            .tf-label { display: block; color: var(--tf-gold); font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; }
+            .tf-input, .tf-input.form-control, .tf-input.form-select {
+                background: var(--tf-navy); border: 1px solid var(--tf-border); color: var(--tf-white);
+                padding: 0.65rem 1rem; border-radius: 8px; width: 100%; font-size: 0.9rem;
+                transition: border-color 0.2s, box-shadow 0.2s;
+            }
+            .tf-input:focus { border-color: var(--tf-gold); outline: none; box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.15); background: var(--tf-navy); color: var(--tf-white); }
+            .tf-input::placeholder { color: var(--tf-gray); }
+            textarea.tf-input { resize: vertical; min-height: 100px; }
+            select.tf-input option { background: var(--tf-navy); color: var(--tf-white); }
+
+            /* Detail list for show pages */
+            .tf-detail-list { padding: 0; }
+            .tf-detail-item { display: flex; justify-content: space-between; align-items: center; padding: 0.7rem 0; border-bottom: 1px solid var(--tf-border); }
+            .tf-detail-item:last-child { border-bottom: none; }
+            .tf-detail-label { color: var(--tf-gray); font-size: 0.85rem; font-weight: 500; }
+            .tf-detail-value { color: var(--tf-white); font-weight: 600; font-size: 0.9rem; text-align: right; }
+
+            @media (max-width: 992px) {
+                .tf-sidebar { display: none; }
+                .tf-topbar { left: 0; }
+                .tf-main { margin-left: 0; }
+            }
+        </style>
+        {% block stylesheets %}{% endblock %}
+    </head>
+    <body>
+        <aside class="tf-sidebar">
+            <div class="tf-sidebar-brand">
+                <a href="{{ path('app_dashboard') }}">
+                    <i class="fas fa-briefcase"></i> TalentFlow
+                </a>
+                <small>Admin Connect</small>
+            </div>
+
+            <div class="tf-sidebar-section">Principal</div>
+            <ul class="tf-sidebar-nav">
+                <li>
+                    <a href="{{ path('app_dashboard') }}" class="{% if app.request.attributes.get('_route') == 'app_dashboard' %}active{% endif %}">
+                        <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                    </a>
+                </li>
+
+                {% if is_granted('ROLE_ADMIN') %}
+                <div class="tf-sidebar-section">Administration</div>
+                <li>
+                    <a href="{{ path('app_user_index') }}" class="{% if 'app_user' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-users-cog"></i> Gestion Utilisateurs
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_user_new') }}">
+                        <i class="fas fa-user-plus"></i> Nouvel Utilisateur
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if is_granted('ROLE_RH') or is_granted('ROLE_ADMIN') %}
+                <div class="tf-sidebar-section">Recrutement</div>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-clipboard-list"></i> Offres d'emploi
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-file-alt"></i> Candidatures
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-calendar-check"></i> Entretiens
+                    </a>
+                </li>
+                {% endif %}
+
+                <div class="tf-sidebar-section">Forum</div>
+                <li>
+                    <a href="{{ path('post_index') }}" class="{% if 'post' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-comments"></i> Posts
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('comment_index') }}" class="{% if 'comment' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-reply"></i> Commentaires
+                    </a>
+                </li>
+
+                {% if is_granted('ROLE_CANDIDAT') and not is_granted('ROLE_ADMIN') %}
+                <div class="tf-sidebar-section">Mon Espace</div>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-paper-plane"></i> Mes Candidatures
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-search"></i> Offres disponibles
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-id-badge"></i> Mon Profil
+                    </a>
+                </li>
+                {% endif %}
+
+                <div class="tf-sidebar-section">Système</div>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-cog"></i> Paramètres
+                    </a>
+                </li>
+            </ul>
+
+            {% if app.user %}
+            <div class="tf-sidebar-footer">
+                <div class="user-info">
+                    <div class="tf-avatar-sm">
+                        {{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}
+                    </div>
+                    <div class="user-details">
+                        <div class="user-name">{{ app.user.fullName }}</div>
+                        <div class="user-role">{{ app.user.roleLabel }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </aside>
+
+        <header class="tf-topbar">
+            <div class="tf-topbar-left">
+                <h1>{% block page_title %}Tableau de bord{% endblock %}</h1>
+            </div>
+            <div class="tf-topbar-right">
+                {% if app.user %}
+                <div class="top-user">
+                    <div class="tf-avatar-sm">
+                        {{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}
+                    </div>
+                    <span>{{ app.user.fullName }}</span>
+                </div>
+                <a href="{{ path('app_logout') }}">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </a>
+                {% endif %}
+            </div>
+        </header>
+
+        <main class="tf-main">
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="tf-flash tf-flash-{{ label }}">
+                        <i class="fas fa-{{ label == 'success' ? 'check-circle' : (label == 'warning' ? 'exclamation-triangle' : 'exclamation-circle') }}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+
+            {% block body %}{% endblock %}
+        </main>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+        {% block javascripts %}{% endblock %}
+    </body>
+</html>

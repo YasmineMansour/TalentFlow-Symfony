@@ -1,0 +1,84 @@
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}Forum - Commentaires{% endblock %}
+{% block page_title %}Gestion des Commentaires{% endblock %}
+
+{% block body %}
+<div class="tf-card">
+    <div class="tf-card-header">
+        <h3><i class="fas fa-comments"></i> Liste des Commentaires <span style="color: var(--tf-gray); font-weight: 400; font-size: 0.9rem;">({{ comments|length }})</span></h3>
+        <a href="{{ path('comment_new') }}" class="btn-gold">
+            <i class="fas fa-plus"></i> Nouveau Commentaire
+        </a>
+    </div>
+
+    {% if comments|length > 0 %}
+    <div class="table-responsive">
+        <table class="tf-table">
+            <thead>
+                <tr>
+                    <th>Contenu</th>
+                    <th>Post</th>
+                    <th>Auteur</th>
+                    <th>Créé le</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for comment in comments %}
+                <tr>
+                    <td style="max-width: 300px;">
+                        <span style="color: var(--tf-light);">
+                            {{ comment.content|length > 80 ? comment.content|slice(0, 80) ~ '...' : comment.content }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if comment.post %}
+                        <a href="{{ path('post_show', {id: comment.post.id}) }}" style="color: var(--tf-gold); text-decoration: none; font-weight: 500;">
+                            <i class="fas fa-link" style="font-size: 0.7rem;"></i> {{ comment.post.title|length > 30 ? comment.post.title|slice(0, 30) ~ '...' : comment.post.title }}
+                        </a>
+                        {% else %}
+                            <span style="color: var(--tf-gray);">N/A</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="tf-avatar" style="width: 30px; height: 30px; font-size: 0.65rem;">
+                                {{ comment.authorName|first|upper }}
+                            </span>
+                            <span>{{ comment.authorName }}</span>
+                        </div>
+                    </td>
+                    <td style="color: var(--tf-gray);">{{ comment.createdAt ? comment.createdAt|date('d/m/Y H:i') : '—' }}</td>
+                    <td>
+                        <div class="tf-actions">
+                            <a href="{{ path('comment_show', {id: comment.id}) }}" class="btn-outline-gold btn-sm-tf" title="Voir">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ path('comment_edit', {id: comment.id}) }}" class="btn-gold btn-sm-tf" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form method="post" action="{{ path('comment_delete', {id: comment.id}) }}" style="display:inline" onsubmit="return confirm('Supprimer ce commentaire ?')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ comment.id) }}">
+                                <button type="submit" class="btn-danger-tf btn-sm-tf" title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 3rem; color: var(--tf-gray);">
+        <i class="fas fa-comments" style="font-size: 3rem; color: var(--tf-border); margin-bottom: 1rem; display: block;"></i>
+        <p style="font-size: 1.1rem;">Aucun commentaire pour le moment</p>
+        <a href="{{ path('comment_new') }}" class="btn-gold" style="margin-top: 0.5rem;">
+            <i class="fas fa-plus"></i> Ajouter un commentaire
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
