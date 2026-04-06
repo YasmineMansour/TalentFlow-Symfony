@@ -1,0 +1,78 @@
+{{ form_start(form, {'attr': {'class': 'tf-form'}}) }}
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="mb-3">
+                {{ form_label(form.titrePoste) }}
+                {{ form_widget(form.titrePoste) }}
+                {{ form_errors(form.titrePoste) }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                {{ form_label(form.entreprise) }}
+                {{ form_widget(form.entreprise) }}
+                {{ form_errors(form.entreprise) }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                {{ form_label(form.typeContrat) }}
+                {{ form_widget(form.typeContrat) }}
+                {{ form_errors(form.typeContrat) }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                {{ form_label(form.statut) }}
+                {{ form_widget(form.statut) }}
+                {{ form_errors(form.statut) }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                {{ form_label(form.dateCandidature) }}
+                {{ form_widget(form.dateCandidature) }}
+                {{ form_errors(form.dateCandidature) }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                {{ form_label(form.dateEntretien) }}
+                {{ form_widget(form.dateEntretien) }}
+                {{ form_errors(form.dateEntretien) }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                {{ form_label(form.lieu) }}
+                {{ form_widget(form.lieu) }}
+                {{ form_errors(form.lieu) }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                {{ form_label(form.salaireSouhaite) }}
+                {{ form_widget(form.salaireSouhaite) }}
+                {{ form_errors(form.salaireSouhaite) }}
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="mb-3">
+                {{ form_label(form.description) }}
+                {{ form_widget(form.description) }}
+                {{ form_errors(form.description) }}
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="mb-3">
+                {{ form_label(form.notes) }}
+                {{ form_widget(form.notes) }}
+                {{ form_errors(form.notes) }}
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn-gold mt-3">
+        <i class="fas fa-save"></i> {{ button_label|default('Enregistrer') }}
+    </button>
+{{ form_end(form) }}

@@ -2,8 +2,10 @@
 
 namespace App\Controller;
 
+use App\Repository\CandidatureRepository;
 use App\Repository\DecisionFinaleRepository;
 use App\Repository\EntretienRepository;
+use App\Repository\OffreRepository;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,33 +17,35 @@ class DashboardController extends AbstractController
     public function index(
         UserRepository $userRepository,
         EntretienRepository $entretienRepository,
-        DecisionFinaleRepository $decisionFinaleRepository
+        DecisionFinaleRepository $decisionFinaleRepository,
+        CandidatureRepository $candidatureRepository,
+        OffreRepository $offreRepository
     ): Response
     {
-        $user = $this->getUser();
-
         if ($this->isGranted('ROLE_ADMIN')) {
-            return $this->renderAdminDashboard($userRepository);
+            return $this->renderAdminDashboard($userRepository, $candidatureRepository, $entretienRepository, $offreRepository);
         }
 
         if ($this->isGranted('ROLE_RH')) {
-            return $this->renderRhDashboard($userRepository, $entretienRepository, $decisionFinaleRepository);
+            return $this->renderRhDashboard($userRepository, $entretienRepository, $decisionFinaleRepository, $candidatureRepository, $offreRepository);
         }
 
-        return $this->renderCandidatDashboard();
+        return $this->renderCandidatDashboard($candidatureRepository, $offreRepository);
     }
 
-    private function renderAdminDashboard(UserRepository $userRepository): Response
+    private function renderAdminDashboard(
+        UserRepository $userRepository,
+        CandidatureRepository $candidatureRepository,
+        EntretienRepository $entretienRepository,
+        OffreRepository $offreRepository
+    ): Response
     {
         $allUsers = $userRepository->findAllOrdered();
         $totalUsers = count($allUsers);
-
-        // Count by role
         $admins = $userRepository->findByRole('ROLE_ADMIN');
         $rhs = $userRepository->findByRole('ROLE_RH');
         $candidats = $userRepository->findByRole('ROLE_CANDIDAT');
 
-        // New users this week (created in the last 7 days)
         $oneWeekAgo = new \DateTimeImmutable('-7 days');
         $newThisWeek = 0;
         foreach ($allUsers as $u) {
@@ -50,7 +54,6 @@ class DashboardController extends AbstractController
             }
         }
 
-        // Growth rate
         $twoWeeksAgo = new \DateTimeImmutable('-14 days');
         $newLastWeek = 0;
         foreach ($allUsers as $u) {
@@ -60,10 +63,8 @@ class DashboardController extends AbstractController
         }
         $growthRate = $newLastWeek > 0 ? round((($newThisWeek - $newLastWeek) / $newLastWeek) * 100) : ($newThisWeek > 0 ? 100 : 0);
 
-        // Recent users (last 5)
         $recentUsers = array_slice($allUsers, 0, 5);
 
-        // Monthly registration data for chart (last 6 months)
         $monthlyData = [];
         for ($i = 5; $i >= 0; $i--) {
             $start = new \DateTimeImmutable("first day of -$i months midnight");
@@ -80,6 +81,10 @@ class DashboardController extends AbstractController
             ];
         }
 
+        $totalCandidatures = count($candidatureRepository->findAll());
+        $totalOffres = count($offreRepository->findAll());
+        $totalEntretiens = count($entretienRepository->findAll());
+
         return $this->render('dashboard/admin.html.twig', [
             'totalUsers' => $totalUsers,
             'totalAdmins' => count($admins),
@@ -89,34 +94,59 @@ class DashboardController extends AbstractController
             'growthRate' => $growthRate,
             'recentUsers' => $recentUsers,
             'monthlyData' => $monthlyData,
+            'totalCandidatures' => $totalCandidatures,
+            'totalOffres' => $totalOffres,
+            'totalEntretiens' => $totalEntretiens,
         ]);
     }
 
     private function renderRhDashboard(
         UserRepository $userRepository,
         EntretienRepository $entretienRepository,
-        DecisionFinaleRepository $decisionFinaleRepository
+        DecisionFinaleRepository $decisionFinaleRepository,
+        CandidatureRepository $candidatureRepository,
+        OffreRepository $offreRepository
     ): Response
     {
         $candidats = $userRepository->findByRole('ROLE_CANDIDAT');
+        $totalCandidatures = count($candidatureRepository->findAll());
+        $totalOffres = count($offreRepository->findAll());
 
         return $this->render('dashboard/rh.html.twig', [
             'totalCandidats' => count($candidats),
-            'offresActives' => 0,       // Placeholder - module Offres
-            'candidaturesRecues' => 0,   // Placeholder - module Candidatures
+            'offresActives' => $totalOffres,
+            'candidaturesRecues' => $totalCandidatures,
             'entretiensAujourdhui' => $entretienRepository->countToday(),
             'decisionsEnAttente' => $decisionFinaleRepository->countPending(),
         ]);
     }
 
-    private function renderCandidatDashboard(): Response
+    private function renderCandidatDashboard(
+        CandidatureRepository $candidatureRepository,
+        OffreRepository $offreRepository
+    ): Response
     {
+        $allCandidatures = $candidatureRepository->findAll();
+        $totalOffres = count($offreRepository->findAll());
+
+        $enAttente = 0;
+        $acceptees = 0;
+        $refusees = 0;
+        foreach ($allCandidatures as $c) {
+            match ($c->getStatut()) {
+                'En attente' => $enAttente++,
+                'Acceptée' => $acceptees++,
+                'Refusée' => $refusees++,
+                default => null,
+            };
+        }
+
         return $this->render('dashboard/candidat.html.twig', [
-            'candidaturesEnvoyees' => 0, // Placeholder
-            'offresDisponibles' => 0,    // Placeholder
-            'enAttente' => 0,            // Placeholder
-            'acceptees' => 0,            // Placeholder
-            'refusees' => 0,             // Placeholder
+            'candidaturesEnvoyees' => count($allCandidatures),
+            'offresDisponibles' => $totalOffres,
+            'enAttente' => $enAttente,
+            'acceptees' => $acceptees,
+            'refusees' => $refusees,
         ]);
     }
 }

@@ -706,9 +706,10 @@
                 <a href="{{ path('app_dashboard') }}">
                     <i class="fas fa-briefcase"></i> TalentFlow
                 </a>
-                <small>Admin Connect</small>
+                <small>{{ app.user ? app.user.prenom ~ ' ' ~ app.user.nom ~ ' • ' ~ app.user.roleLabel : 'Gestion RH' }}</small>
             </div>
 
+            {# ── Principal ── #}
             <div class="tf-sidebar-section">Principal</div>
             <ul class="tf-sidebar-nav">
                 <li>
@@ -717,25 +718,27 @@
                     </a>
                 </li>
 
+                {# ── 👥 Utilisateurs (ADMIN uniquement) ── #}
                 {% if is_granted('ROLE_ADMIN') %}
-                <div class="tf-sidebar-section">Administration</div>
+                <div class="tf-sidebar-section">👥 Utilisateurs</div>
                 <li>
                     <a href="{{ path('app_user_index') }}" class="{% if 'app_user' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-users-cog"></i> Gestion Utilisateurs
+                        <i class="fas fa-users-cog"></i> Liste des utilisateurs
                     </a>
                 </li>
                 <li>
                     <a href="{{ path('app_user_new') }}">
-                        <i class="fas fa-user-plus"></i> Nouvel Utilisateur
+                        <i class="fas fa-user-plus"></i> Nouvel utilisateur
                     </a>
                 </li>
                 {% endif %}
 
-                {% if is_granted('ROLE_RH') or is_granted('ROLE_ADMIN') %}
-                <div class="tf-sidebar-section">Recrutement</div>
+                {# ── 💼 Offres d'emploi (ADMIN + RH : gestion / CANDIDAT : consultation) ── #}
+                <div class="tf-sidebar-section">💼 Offres d'emploi</div>
+                {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_RH') %}
                 <li>
                     <a href="{{ path('offre_index') }}" class="{% if 'offre' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-clipboard-list"></i> Offres d'emploi
+                        <i class="fas fa-clipboard-list"></i> Gestion des offres
                     </a>
                 </li>
                 <li>
@@ -753,9 +756,43 @@
                         <i class="fas fa-gift"></i> Avantages
                     </a>
                 </li>
+                {% endif %}
+                {% if is_granted('ROLE_CANDIDAT') and not is_granted('ROLE_ADMIN') and not is_granted('ROLE_RH') %}
+                <li>
+                    <a href="{{ path('offre_index') }}" class="{% if 'offre' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-search"></i> Consulter les offres
+                    </a>
+                </li>
+                {% endif %}
+
+                {# ── 📄 Candidatures (tous, vue différente par rôle) ── #}
+                <div class="tf-sidebar-section">📄 Candidatures</div>
+                {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_RH') %}
+                <li>
+                    <a href="{{ path('app_candidature_index') }}" class="{% if 'app_candidature' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-folder-open"></i> Gestion des candidatures
+                    </a>
+                </li>
+                {% endif %}
+                {% if is_granted('ROLE_CANDIDAT') and not is_granted('ROLE_ADMIN') and not is_granted('ROLE_RH') %}
+                <li>
+                    <a href="{{ path('app_candidature_index') }}" class="{% if 'app_candidature' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-paper-plane"></i> Mes candidatures
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_candidature_new') }}">
+                        <i class="fas fa-plus-circle"></i> Nouvelle candidature
+                    </a>
+                </li>
+                {% endif %}
+
+                {# ── 📅 Entretiens (ADMIN + RH uniquement) ── #}
+                {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_RH') %}
+                <div class="tf-sidebar-section">📅 Entretiens</div>
                 <li>
                     <a href="{{ path('app_entretien_index') }}" class="{% if 'app_entretien' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-calendar-check"></i> Entretiens
+                        <i class="fas fa-calendar-check"></i> Gestion des entretiens
                     </a>
                 </li>
                 <li>
@@ -765,41 +802,16 @@
                 </li>
                 {% endif %}
 
-                <div class="tf-sidebar-section">Communauté</div>
+                {# ── 💬 Forum (tous les rôles) ── #}
+                <div class="tf-sidebar-section">💬 Forum</div>
                 <li>
                     <a href="{{ path('post_index') }}" class="{% if 'post' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-comments"></i> Forum
-                    </a>
-                </li>
-
-                {% if is_granted('ROLE_CANDIDAT') and not is_granted('ROLE_ADMIN') %}
-                <div class="tf-sidebar-section">Mon Espace</div>
-                <li>
-                    <a href="#">
-                        <i class="fas fa-paper-plane"></i> Mes Candidatures
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ path('offre_index') }}" class="{% if 'offre' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-search"></i> Offres disponibles
-                    </a>
-                </li>
-                <li>
-                    <a href="#">
-                        <i class="fas fa-id-badge"></i> Mon Profil
-                    </a>
-                </li>
-                {% endif %}
-
-                <div class="tf-sidebar-section">Système</div>
-                <li>
-                    <a href="#">
-                        <i class="fas fa-cog"></i> Paramètres
+                        <i class="fas fa-comments"></i> Fil de discussion
                     </a>
                 </li>
             </ul>
 
-            {# User footer #}
+            {# ── Déconnexion ── #}
             {% if app.user %}
             <div class="tf-sidebar-footer">
                 <div class="user-info">
@@ -811,6 +823,9 @@
                         <div class="user-role">{{ app.user.roleLabel }}</div>
                     </div>
                 </div>
+                <a href="{{ path('app_logout') }}" class="btn-gold w-100 mt-2 justify-content-center" style="font-size:0.8rem;">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </a>
             </div>
             {% endif %}
         </aside>

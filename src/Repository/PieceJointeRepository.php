@@ -15,4 +15,30 @@ class PieceJointeRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, PieceJointe::class);
     }
+
+    /**
+     * @return PieceJointe[]
+     */
+    public function findByCandidature(int $candidatureId): array
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.candidature = :id')
+            ->setParameter('id', $candidatureId)
+            ->orderBy('p.uploadedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return PieceJointe[]
+     */
+    public function findByType(string $type): array
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.typeDocument = :type')
+            ->setParameter('type', $type)
+            ->orderBy('p.uploadedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

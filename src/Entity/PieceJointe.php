@@ -10,51 +10,77 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'piece_jointe')]
 class PieceJointe
 {
-    public const TYPES = ['CV', 'LM', 'DIPLOME', 'AUTRE'];
-
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le nom du fichier ne peut pas être vide.')]
+    #[Assert\Length(max: 255)]
+    private ?string $nomFichier = null;
+
+    #[ORM\Column(length: 50)]
+    #[Assert\NotBlank(message: 'Le type de document ne peut pas être vide.')]
+    #[Assert\Choice(
+        choices: ['CV', 'Lettre de motivation', 'Diplôme', 'Certificat', 'Autre'],
+        message: 'Type de document invalide.'
+    )]
+    private ?string $typeDocument = null;
+
+    #[ORM\Column(length: 500)]
+    private ?string $cheminFichier = null;
+
+    #[ORM\Column]
+    #[Assert\Positive]
+    private ?int $tailleFichier = null;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $uploadedAt = null;
+
     #[ORM\ManyToOne(targetEntity: Candidature::class, inversedBy: 'piecesJointes')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Candidature $candidature = null;
 
-    #[ORM\Column(length: 255)]
-    #[Assert\NotBlank]
-    private ?string $titre = null;
-
-    #[ORM\Column(length: 500)]
-    #[Assert\NotBlank]
-    private ?string $url = null;
-
-    #[ORM\Column(length: 20)]
-    #[Assert\Choice(choices: self::TYPES)]
-    private ?string $typeDoc = null;
-
-    #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
-
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
+        $this->uploadedAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int { return $this->id; }
 
+    public function getNomFichier(): ?string { return $this->nomFichier; }
+    public function setNomFichier(string $nomFichier): static { $this->nomFichier = $nomFichier; return $this; }
+
+    public function getTypeDocument(): ?string { return $this->typeDocument; }
+    public function setTypeDocument(string $typeDocument): static { $this->typeDocument = $typeDocument; return $this; }
+
+    public function getCheminFichier(): ?string { return $this->cheminFichier; }
+    public function setCheminFichier(string $cheminFichier): static { $this->cheminFichier = $cheminFichier; return $this; }
+
+    public function getTailleFichier(): ?int { return $this->tailleFichier; }
+    public function setTailleFichier(int $tailleFichier): static { $this->tailleFichier = $tailleFichier; return $this; }
+
+    public function getUploadedAt(): ?\DateTimeImmutable { return $this->uploadedAt; }
+    public function setUploadedAt(\DateTimeImmutable $uploadedAt): static { $this->uploadedAt = $uploadedAt; return $this; }
+
     public function getCandidature(): ?Candidature { return $this->candidature; }
     public function setCandidature(?Candidature $candidature): static { $this->candidature = $candidature; return $this; }
 
-    public function getTitre(): ?string { return $this->titre; }
-    public function setTitre(string $titre): static { $this->titre = $titre; return $this; }
+    public function getTailleFormatee(): string
+    {
+        $taille = $this->tailleFichier;
+        if ($taille >= 1048576) {
+            return round($taille / 1048576, 2) . ' Mo';
+        }
+        if ($taille >= 1024) {
+            return round($taille / 1024, 2) . ' Ko';
+        }
+        return $taille . ' octets';
+    }
 
-    public function getUrl(): ?string { return $this->url; }
-    public function setUrl(string $url): static { $this->url = $url; return $this; }
-
-    public function getTypeDoc(): ?string { return $this->typeDoc; }
-    public function setTypeDoc(string $typeDoc): static { $this->typeDoc = $typeDoc; return $this; }
-
-    public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static { $this->createdAt = $createdAt; return $this; }
+    public function getExtension(): string
+    {
+        return strtolower(pathinfo($this->nomFichier, PATHINFO_EXTENSION));
+    }
 }

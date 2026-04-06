@@ -2,76 +2,108 @@
 
 namespace App\Repository;
 
-use Doctrine\DBAL\ArrayParameterType;
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Exception;
+use App\Entity\Candidature;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
 
-class CandidatureRepository
+/**
+ * @extends ServiceEntityRepository<Candidature>
+ */
+class CandidatureRepository extends ServiceEntityRepository
 {
-    public function __construct(private readonly Connection $connection)
+    public function __construct(ManagerRegistry $registry)
     {
+        parent::__construct($registry, Candidature::class);
     }
 
-    public function isAvailable(): bool
+    /**
+     * @return Candidature[]
+     */
+    public function findAllOrdered(string $sortBy = 'createdAt', string $sortDir = 'DESC'): array
     {
-        try {
-            return $this->connection->createSchemaManager()->tablesExist(['candidature']);
-        } catch (Exception) {
-            return false;
+        $allowed = ['titrePoste', 'entreprise', 'typeContrat', 'statut', 'dateCandidature', 'createdAt'];
+        if (!in_array($sortBy, $allowed, true)) {
+            $sortBy = 'createdAt';
         }
+        $sortDir = strtoupper($sortDir) === 'ASC' ? 'ASC' : 'DESC';
+
+        return $this->createQueryBuilder('c')
+            ->orderBy('c.' . $sortBy, $sortDir)
+            ->getQuery()
+            ->getResult();
     }
 
-    public function findIdByEmail(string $email): ?int
+    /**
+     * @return Candidature[]
+     */
+    public function search(string $query): array
     {
-        try {
-            $result = $this->connection->fetchOne(
-                'SELECT id FROM candidature WHERE LOWER(email) = LOWER(?) ORDER BY id DESC LIMIT 1',
-                [trim($email)]
-            );
-        } catch (Exception) {
-            return null;
-        }
-
-        return $result !== false ? (int) $result : null;
+        return $this->createQueryBuilder('c')
+            ->where('c.titrePoste LIKE :q')
+            ->orWhere('c.entreprise LIKE :q')
+            ->orWhere('c.lieu LIKE :q')
+            ->orWhere('c.description LIKE :q')
+            ->setParameter('q', '%' . $query . '%')
+            ->orderBy('c.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 
-    public function findEmailById(int $id): ?string
-    {
-        try {
-            $result = $this->connection->fetchOne(
-                'SELECT email FROM candidature WHERE id = ?',
-                [$id]
-            );
-        } catch (Exception) {
-            return null;
+    /**
+     * Advanced filter: search + typeContrat + statut + sort.
+     *
+     * @return Candidature[]
+     */
+    public function findFiltered(
+        string $search = '',
+        string $typeContrat = '',
+        string $statut = '',
+        string $sortBy = 'createdAt',
+        string $sortDir = 'DESC'
+    ): array {
+        $qb = $this->createQueryBuilder('c');
+
+        if (!empty($search)) {
+            $qb->andWhere('c.titrePoste LIKE :search OR c.entreprise LIKE :search OR c.lieu LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
         }
 
-        return $result !== false ? (string) $result : null;
+        if (!empty($typeContrat)) {
+            $qb->andWhere('c.typeContrat = :type')
+               ->setParameter('type', $typeContrat);
+        }
+
+        if (!empty($statut)) {
+            $qb->andWhere('c.statut = :statut')
+               ->setParameter('statut', $statut);
+        }
+
+        $allowed = ['titrePoste', 'entreprise', 'typeContrat', 'statut', 'dateCandidature', 'createdAt'];
+        if (!in_array($sortBy, $allowed, true)) {
+            $sortBy = 'createdAt';
+        }
+        $sortDir = strtoupper($sortDir) === 'ASC' ? 'ASC' : 'DESC';
+
+        $qb->orderBy('c.' . $sortBy, $sortDir);
+
+        return $qb->getQuery()->getResult();
     }
 
-    public function findEmailsByIds(array $ids): array
+    public function countByStatut(): array
     {
-        $ids = array_values(array_unique(array_filter(array_map('intval', $ids), static fn (int $id): bool => $id > 0)));
+        return $this->createQueryBuilder('c')
+            ->select('c.statut, COUNT(c.id) as total')
+            ->groupBy('c.statut')
+            ->getQuery()
+            ->getResult();
+    }
 
-        if ($ids === []) {
-            return [];
-        }
-
-        try {
-            $rows = $this->connection->fetchAllAssociative(
-                'SELECT id, email FROM candidature WHERE id IN (?)',
-                [$ids],
-                [ArrayParameterType::INTEGER]
-            );
-        } catch (Exception) {
-            return [];
-        }
-
-        $emailsById = [];
-        foreach ($rows as $row) {
-            $emailsById[(int) $row['id']] = (string) $row['email'];
-        }
-
-        return $emailsById;
+    public function countByTypeContrat(): array
+    {
+        return $this->createQueryBuilder('c')
+            ->select('c.typeContrat, COUNT(c.id) as total')
+            ->groupBy('c.typeContrat')
+            ->getQuery()
+            ->getResult();
     }
 }
