@@ -1,0 +1,135 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ entreprise.nom }} - TalentFlow{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1 class="mb-4">{{ entreprise.nom }}</h1>
+
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-building"></i> Détails de l'entreprise #{{ entreprise.id }}</span>
+                {% if not complete %}
+                    <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle"></i> Profil incomplet</span>
+                {% else %}
+                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> Profil complet</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Secteur :</strong>
+                        <p>{{ entreprise.secteur ?? 'Non renseigné' }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Adresse :</strong>
+                        <p>{{ entreprise.adresse ?? 'Non renseignée' }}</p>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Email :</strong>
+                        <p>{{ entreprise.email ?? 'Non renseigné' }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Téléphone :</strong>
+                        <p>{{ entreprise.telephone ?? 'Non renseigné' }}</p>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <strong>Description :</strong>
+                        <p>{{ entreprise.description ?? 'Non renseignée' }}</p>
+                    </div>
+                </div>
+                {% if entreprise.logo %}
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <strong>Logo :</strong>
+                        <p><img src="{{ entreprise.logo }}" alt="{{ entreprise.nom }}" class="img-thumbnail" style="max-height:100px;"></p>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Taille :</strong>
+                        <p>
+                            {% if taille == 'Grande' %}
+                                <span class="badge bg-success"><i class="bi bi-building"></i> {{ taille }}</span>
+                            {% elseif taille == 'Moyenne' %}
+                                <span class="badge bg-info text-dark"><i class="bi bi-building"></i> {{ taille }}</span>
+                            {% elseif taille == 'Petite' %}
+                                <span class="badge bg-secondary"><i class="bi bi-building"></i> {{ taille }}</span>
+                            {% else %}
+                                <span class="text-muted">{{ taille }}</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Niveau d'activité :</strong>
+                        <p>
+                            {% if activite == 'Très active' %}
+                                <span class="text-success"><i class="bi bi-lightning-charge-fill"></i> {{ activite }}</span>
+                            {% elseif activite == 'Active' %}
+                                <span class="text-primary"><i class="bi bi-lightning-charge"></i> {{ activite }}</span>
+                            {% elseif activite == 'Peu active' %}
+                                <span class="text-warning"><i class="bi bi-lightning"></i> {{ activite }}</span>
+                            {% else %}
+                                <span class="text-muted"><i class="bi bi-moon"></i> {{ activite }}</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Nombre d'offres :</strong>
+                        <p><span class="badge bg-primary">{{ entreprise.offres|length }}</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Offres liées #}
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-briefcase"></i> Offres publiées ({{ entreprise.offres|length }})
+            </div>
+            <div class="card-body">
+                {% if entreprise.offres is empty %}
+                    <p class="text-muted">Aucune offre publiée par cette entreprise.</p>
+                {% else %}
+                    <ul class="list-group">
+                        {% for offre in entreprise.offres %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>
+                                    <a href="{{ path('offre_show', {id: offre.id}) }}">{{ offre.titre }}</a>
+                                    <span class="badge bg-info text-dark ms-2">{{ offre.typeContrat }}</span>
+                                </span>
+                                <span class="badge bg-{{ offre.statut == 'PUBLISHED' ? 'success' : (offre.statut == 'DRAFT' ? 'secondary' : 'danger') }}">
+                                    {{ offre.statut }}
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a href="{{ path('entreprise_index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Retour
+            </a>
+            <div>
+                <a href="{{ path('entreprise_edit', {id: entreprise.id}) }}" class="btn btn-warning">
+                    <i class="bi bi-pencil"></i> Modifier
+                </a>
+                <form method="post" action="{{ path('entreprise_delete', {id: entreprise.id}) }}" class="d-inline" onsubmit="return confirm('Supprimer cette entreprise ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ entreprise.id) }}">
+                    <button class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

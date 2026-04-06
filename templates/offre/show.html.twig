@@ -1,0 +1,160 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ offre.titre }} - TalentFlow{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1 class="mb-4">{{ offre.titre }}</h1>
+
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-briefcase"></i> Détails de l'offre #{{ offre.id }}</span>
+                {% if not complete %}
+                    <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle"></i> Incomplète</span>
+                {% else %}
+                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> Complète</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Description :</strong>
+                        <p>{{ offre.description ?? 'Non renseignée' }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Localisation :</strong>
+                        <p>{{ offre.localisation ?? 'Non renseignée' }}</p>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Entreprise :</strong>
+                        <p>
+                            {% if offre.entreprise %}
+                                <a href="{{ path('entreprise_show', {id: offre.entreprise.id}) }}">{{ offre.entreprise.nom }}</a>
+                            {% else %}
+                                <span class="text-muted">Non renseignée</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Catégorie :</strong>
+                        <p>
+                            {% if offre.categorie %}
+                                <a href="{{ path('categorie_show', {id: offre.categorie.id}) }}">{{ offre.categorie.nom }}</a>
+                            {% else %}
+                                <span class="text-muted">Non renseignée</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Type de contrat :</strong>
+                        <p><span class="badge bg-info text-dark">{{ offre.typeContrat }}</span></p>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Mode de travail :</strong>
+                        <p>{{ offre.modeTravail }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Statut :</strong>
+                        <p>
+                            {% if offre.statut == 'PUBLISHED' %}
+                                <span class="badge bg-success">Publiée</span>
+                            {% elseif offre.statut == 'DRAFT' %}
+                                <span class="badge bg-secondary">Brouillon</span>
+                            {% else %}
+                                <span class="badge bg-danger">Fermée</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Salaire :</strong>
+                        <p>{{ offre.salaireRange }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Classement :</strong>
+                        <p>
+                            {% if classement == 'Or' %}
+                                <span class="badge bg-warning text-dark"><i class="bi bi-trophy-fill"></i> Or</span>
+                            {% elseif classement == 'Argent' %}
+                                <span class="badge bg-secondary"><i class="bi bi-trophy"></i> Argent</span>
+                            {% elseif classement == 'Bronze' %}
+                                <span class="badge" style="background-color:#cd7f32;color:#fff;"><i class="bi bi-trophy"></i> Bronze</span>
+                            {% else %}
+                                <span class="text-muted">Non classé</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Cohérence salariale :</strong>
+                        <p>
+                            {% if coherence == 'Cohérent' %}
+                                <span class="text-success"><i class="bi bi-check-circle-fill"></i> {{ coherence }}</span>
+                            {% elseif coherence == 'Incohérent' %}
+                                <span class="text-danger"><i class="bi bi-x-circle-fill"></i> {{ coherence }}</span>
+                            {% else %}
+                                <span class="text-muted">{{ coherence }}</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <strong>Active :</strong>
+                        <p>{{ offre.active ? 'Oui' : 'Non' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Avantages liés #}
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-gift"></i> Avantages ({{ offre.avantages|length }})
+            </div>
+            <div class="card-body">
+                {% if offre.avantages is empty %}
+                    <p class="text-muted">Aucun avantage lié à cette offre.</p>
+                {% else %}
+                    <ul class="list-group">
+                        {% for av in offre.avantages %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>
+                                    <strong>{{ av.nom }}</strong>
+                                    <span class="badge bg-info text-dark ms-2">{{ av.type }}</span>
+                                    {% if av.description %}<br><small class="text-muted">{{ av.description }}</small>{% endif %}
+                                </span>
+                                <a href="{{ path('avantage_edit', {id: av.id}) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a href="{{ path('offre_index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Retour
+            </a>
+            <div>
+                <a href="{{ path('offre_edit', {id: offre.id}) }}" class="btn btn-warning">
+                    <i class="bi bi-pencil"></i> Modifier
+                </a>
+                <form method="post" action="{{ path('offre_delete', {id: offre.id}) }}" class="d-inline" onsubmit="return confirm('Supprimer cette offre ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ offre.id) }}">
+                    <button class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

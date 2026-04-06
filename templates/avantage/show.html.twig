@@ -1,0 +1,91 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ avantage.nom }} - TalentFlow{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1 class="mb-4">{{ avantage.nom }}</h1>
+
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-gift"></i> Détails de l'avantage #{{ avantage.id }}</span>
+                {% if not complete %}
+                    <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle"></i> Incomplet</span>
+                {% else %}
+                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> Complet</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Type :</strong>
+                        <p><span class="badge bg-info text-dark">{{ avantage.type }}</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Offre associée :</strong>
+                        <p>
+                            {% if avantage.offre %}
+                                <a href="{{ path('offre_show', {id: avantage.offre.id}) }}">{{ avantage.offre.titre }}</a>
+                            {% else %}
+                                <span class="text-muted">Aucune</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Importance :</strong>
+                        <p>
+                            {% if importance == 'Élevée' %}
+                                <span class="badge bg-success">{{ importance }}</span>
+                            {% elseif importance == 'Moyenne' %}
+                                <span class="badge bg-primary">{{ importance }}</span>
+                            {% elseif importance == 'Standard' %}
+                                <span class="badge bg-warning text-dark">{{ importance }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ importance }}</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Qualité description :</strong>
+                        <p>
+                            {% if qualiteDescription == 'Détaillée' %}
+                                <span class="badge bg-success">{{ qualiteDescription }}</span>
+                            {% elseif qualiteDescription == 'Correcte' %}
+                                <span class="badge bg-primary">{{ qualiteDescription }}</span>
+                            {% elseif qualiteDescription == 'Insuffisante' %}
+                                <span class="badge bg-warning text-dark">{{ qualiteDescription }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ qualiteDescription }}</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <strong>Description :</strong>
+                    <p>{{ avantage.description ?? 'Non renseignée' }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a href="{{ path('avantage_index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Retour
+            </a>
+            <div>
+                <a href="{{ path('avantage_edit', {id: avantage.id}) }}" class="btn btn-warning">
+                    <i class="bi bi-pencil"></i> Modifier
+                </a>
+                <form method="post" action="{{ path('avantage_delete', {id: avantage.id}) }}" class="d-inline" onsubmit="return confirm('Supprimer cet avantage ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ avantage.id) }}">
+                    <button class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
