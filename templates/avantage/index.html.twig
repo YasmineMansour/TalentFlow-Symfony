@@ -4,145 +4,142 @@
 
 {% block body %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="bi bi-gift"></i> Liste des Avantages</h1>
-    <a href="{{ path('avantage_new') }}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Nouvel Avantage
-    </a>
+    <h2 class="tf-title"><i class="fas fa-gift"></i> Avantages</h2>
+    <a href="{{ path('avantage_new') }}" class="btn-gold"><i class="fas fa-plus"></i> Nouvel avantage</a>
 </div>
 
-<form method="get" action="{{ path('avantage_index') }}" class="mb-4">
-    <div class="card">
-        <div class="card-body">
-            <div class="input-group mb-3">
-                <input type="text" name="q" class="form-control" placeholder="Rechercher par nom..." value="{{ search }}">
-                <button class="btn btn-outline-secondary" type="submit">
-                    <i class="bi bi-search"></i> Rechercher
-                </button>
-                {% if search or type or offreId or tri != 'id' %}
-                <a href="{{ path('avantage_index') }}" class="btn btn-outline-danger">
-                    <i class="bi bi-x-circle"></i> Réinitialiser
-                </a>
-                {% endif %}
-            </div>
-
-            <div class="row">
-                <div class="col-md-3">
-                    <label class="form-label fw-bold"><i class="bi bi-tag"></i> Type</label>
-                    <select name="type" class="form-select" onchange="this.form.submit()">
-                        <option value="">-- Tous --</option>
-                        {% for t in types %}
-                            <option value="{{ t }}" {{ type == t ? 'selected' : '' }}>{{ t }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label fw-bold"><i class="bi bi-briefcase"></i> Offre</label>
-                    <select name="offre" class="form-select" onchange="this.form.submit()">
-                        <option value="">-- Toutes --</option>
-                        {% for o in offres %}
-                            <option value="{{ o.id }}" {{ offreId == o.id ? 'selected' : '' }}>{{ o.titre }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label fw-bold"><i class="bi bi-sort-down"></i> Trier par</label>
-                    <select name="tri" class="form-select" onchange="this.form.submit()">
-                        <option value="id" {{ tri == 'id' ? 'selected' : '' }}>Date (par défaut)</option>
-                        <option value="nom" {{ tri == 'nom' ? 'selected' : '' }}>Nom</option>
-                        <option value="type" {{ tri == 'type' ? 'selected' : '' }}>Type</option>
-                    </select>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label fw-bold"><i class="bi bi-arrow-down-up"></i> Ordre</label>
-                    <select name="ordre" class="form-select" onchange="this.form.submit()">
-                        <option value="DESC" {{ ordre == 'DESC' ? 'selected' : '' }}>Décroissant</option>
-                        <option value="ASC" {{ ordre == 'ASC' ? 'selected' : '' }}>Croissant</option>
-                    </select>
-                </div>
-            </div>
+<div class="tf-card mb-4">
+    <form method="get" action="{{ path('avantage_index') }}" class="row g-3 align-items-end">
+        <div class="col-md-3">
+            <input type="text" name="q" value="{{ search }}" class="tf-search" placeholder="Rechercher un avantage...">
         </div>
-    </div>
-</form>
+        <div class="col-md-2">
+            <label style="color: var(--tf-gray); font-size: 0.85rem;">Type</label>
+            <select name="type" class="tf-search">
+                <option value="">Tous</option>
+                {% for t in types %}
+                    <option value="{{ t }}" {{ type == t ? 'selected' }}>{{ t }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label style="color: var(--tf-gray); font-size: 0.85rem;">Offre</label>
+            <select name="offre" class="tf-search">
+                <option value="">Toutes</option>
+                {% for o in offres %}
+                    <option value="{{ o.id }}" {{ offreId == o.id ? 'selected' }}>{{ o.titre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label style="color: var(--tf-gray); font-size: 0.85rem;">Trier par</label>
+            <select name="tri" class="tf-search">
+                <option value="id" {{ tri == 'id' ? 'selected' }}>ID</option>
+                <option value="nom" {{ tri == 'nom' ? 'selected' }}>Nom</option>
+                <option value="type" {{ tri == 'type' ? 'selected' }}>Type</option>
+            </select>
+        </div>
+        <div class="col-md-1">
+            <label style="color: var(--tf-gray); font-size: 0.85rem;">Ordre</label>
+            <select name="ordre" class="tf-search">
+                <option value="ASC" {{ ordre == 'ASC' ? 'selected' }}>Asc</option>
+                <option value="DESC" {{ ordre == 'DESC' ? 'selected' }}>Desc</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn-gold w-100"><i class="fas fa-search"></i> Filtrer</button>
+        </div>
+    </form>
+</div>
 
-{% if avantageData is empty %}
-    <div class="alert alert-info">Aucun avantage trouvé.</div>
-{% else %}
-<div class="table-responsive">
-    <table class="table table-striped table-hover">
-        <thead class="table-dark">
-            <tr>
-                <th>#</th>
-                <th>Nom</th>
-                <th>Type</th>
-                <th>Importance</th>
-                <th>Description</th>
-                <th>Offre associée</th>
-                <th>Complet</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in avantageData %}
+{% for flash in app.flashes('success') %}
+    <div class="tf-flash">{{ flash }}</div>
+{% endfor %}
+
+<div class="tf-card">
+    <div class="table-responsive">
+        <table class="table table-dark table-hover" style="background: transparent;">
+            <thead>
+                <tr style="color: var(--tf-gold);">
+                    <th>#</th>
+                    <th>Nom</th>
+                    <th>Type</th>
+                    <th>Offre</th>
+                    <th>Importance</th>
+                    <th>Qualité desc.</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in avantageData %}
                 <tr>
                     <td>{{ item.avantage.id }}</td>
+                    <td style="color: var(--tf-gold); font-weight: 600;">{{ item.avantage.nom }}</td>
                     <td>
-                        <a href="{{ path('avantage_show', {id: item.avantage.id}) }}">{{ item.avantage.nom }}</a>
-                    </td>
-                    <td><span class="badge bg-info text-dark">{{ item.avantage.type }}</span></td>
-                    <td>
-                        {% if item.importance == 'Élevée' %}
-                            <span class="badge bg-success">{{ item.importance }}</span>
-                        {% elseif item.importance == 'Moyenne' %}
-                            <span class="badge bg-primary">{{ item.importance }}</span>
-                        {% elseif item.importance == 'Standard' %}
-                            <span class="badge bg-warning text-dark">{{ item.importance }}</span>
+                        {% if item.avantage.type == 'Financier' %}
+                            <span class="badge bg-success"><i class="fas fa-euro-sign"></i> {{ item.avantage.type }}</span>
+                        {% elseif item.avantage.type == 'Bien-être' %}
+                            <span class="badge" style="background: #8e44ad;"><i class="fas fa-heart"></i> {{ item.avantage.type }}</span>
+                        {% elseif item.avantage.type == 'Matériel' %}
+                            <span class="badge" style="background: var(--tf-dark-blue);"><i class="fas fa-laptop"></i> {{ item.avantage.type }}</span>
                         {% else %}
-                            <span class="badge bg-secondary">{{ item.importance }}</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if item.qualiteDescription == 'Détaillée' %}
-                            <span class="badge bg-success">{{ item.qualiteDescription }}</span>
-                        {% elseif item.qualiteDescription == 'Correcte' %}
-                            <span class="badge bg-primary">{{ item.qualiteDescription }}</span>
-                        {% elseif item.qualiteDescription == 'Insuffisante' %}
-                            <span class="badge bg-warning text-dark">{{ item.qualiteDescription }}</span>
-                        {% else %}
-                            <span class="badge bg-secondary">{{ item.qualiteDescription }}</span>
+                            <span class="badge bg-secondary"><i class="fas fa-question"></i> {{ item.avantage.type }}</span>
                         {% endif %}
                     </td>
                     <td>
                         {% if item.avantage.offre %}
-                            <a href="{{ path('offre_show', {id: item.avantage.offre.id}) }}">{{ item.avantage.offre.titre }}</a>
+                            <a href="{{ path('offre_show', {id: item.avantage.offre.id}) }}" style="color: var(--tf-gold);">{{ item.avantage.offre.titre }}</a>
                         {% else %}
-                            <span class="text-muted">-</span>
+                            <span style="color: var(--tf-gray);">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.importance == 'Élevée' %}
+                            <span class="badge bg-success"><i class="fas fa-arrow-up"></i> {{ item.importance }}</span>
+                        {% elseif item.importance == 'Moyenne' %}
+                            <span class="badge" style="background: var(--tf-dark-blue);"><i class="fas fa-minus"></i> {{ item.importance }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary"><i class="fas fa-arrow-down"></i> {{ item.importance }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.qualiteDescription == 'Bonne' %}
+                            <span style="color: #2ecc71;"><i class="fas fa-check"></i> {{ item.qualiteDescription }}</span>
+                        {% elseif item.qualiteDescription == 'Moyenne' %}
+                            <span style="color: var(--tf-gold);"><i class="fas fa-minus"></i> {{ item.qualiteDescription }}</span>
+                        {% else %}
+                            <span style="color: #e74c3c;"><i class="fas fa-times"></i> {{ item.qualiteDescription }}</span>
                         {% endif %}
                     </td>
                     <td>
                         {% if item.complete %}
-                            <span class="badge bg-success"><i class="bi bi-check-circle"></i></span>
+                            <span class="badge bg-success"><i class="fas fa-check-circle"></i> Complet</span>
                         {% else %}
-                            <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle"></i></span>
+                            <span class="badge bg-warning text-dark"><i class="fas fa-exclamation-triangle"></i> Incomplet</span>
                         {% endif %}
                     </td>
                     <td>
-                        <a href="{{ path('avantage_edit', {id: item.avantage.id}) }}" class="btn btn-sm btn-outline-primary" title="Modifier">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <form method="post" action="{{ path('avantage_delete', {id: item.avantage.id}) }}" class="d-inline" onsubmit="return confirm('Supprimer cet avantage ?');">
-                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ item.avantage.id) }}">
-                            <button class="btn btn-sm btn-outline-danger" title="Supprimer">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </form>
+                        <div class="d-flex gap-1">
+                            <a href="{{ path('avantage_show', {id: item.avantage.id}) }}" class="btn-outline-gold" style="padding: 4px 10px; font-size: 0.8rem;"><i class="fas fa-eye"></i></a>
+                            <a href="{{ path('avantage_edit', {id: item.avantage.id}) }}" class="btn-gold" style="padding: 4px 10px; font-size: 0.8rem;"><i class="fas fa-edit"></i></a>
+                            <form method="post" action="{{ path('avantage_delete', {id: item.avantage.id}) }}" style="display:inline;" onsubmit="event.preventDefault(); confirmDelete(this, '{{ item.avantage.nom|e('js') }}');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ item.avantage.id) }}">
+                                <button class="btn-danger-tf" style="padding: 4px 10px; font-size: 0.8rem;"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center" style="color: var(--tf-gray); padding: 2rem;">
+                        <i class="fas fa-folder-open fa-2x mb-2" style="display: block;"></i>
+                        Aucun avantage trouvé.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
-{% endif %}
 {% endblock %}

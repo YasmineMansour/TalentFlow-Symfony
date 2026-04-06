@@ -3,8 +3,6 @@
 namespace App\Form;
 
 use App\Entity\Post;
-use App\Entity\User;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -19,18 +17,21 @@ class PostType extends AbstractType
             ->add('title', TextType::class, [
                 'label' => 'Titre',
                 'empty_data' => '',
-                'attr' => ['placeholder' => 'Entrez le titre du post'],
+                'attr' => [
+                    'placeholder' => 'Entrez le titre du post',
+                    'minlength' => 3,
+                    'maxlength' => 255,
+                ],
             ])
             ->add('content', TextareaType::class, [
                 'label' => 'Contenu',
                 'empty_data' => '',
-                'attr' => ['placeholder' => 'Entrez le contenu', 'rows' => 6],
-            ])
-            ->add('author', EntityType::class, [
-                'class' => User::class,
-                'choice_label' => fn(User $u) => $u->getFullName(),
-                'label' => 'Auteur',
-                'placeholder' => 'Sélectionnez un auteur',
+                'attr' => [
+                    'placeholder' => 'Entrez le contenu',
+                    'rows' => 6,
+                    'minlength' => 10,
+                    'maxlength' => 10000,
+                ],
             ]);
     }
 

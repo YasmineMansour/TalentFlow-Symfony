@@ -16,12 +16,12 @@ class CategorieType extends AbstractType
         $builder
             ->add('nom', TextType::class, [
                 'label' => 'Nom de la catégorie',
-                'attr' => ['placeholder' => 'Ex: Développement Web'],
+                'attr' => ['placeholder' => 'Ex: Développement Web', 'minlength' => 2, 'maxlength' => 255],
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description',
                 'required' => false,
-                'attr' => ['rows' => 4, 'placeholder' => 'Décrivez la catégorie...'],
+                'attr' => ['rows' => 4, 'placeholder' => 'Décrivez la catégorie...', 'minlength' => 10],
             ]);
     }
 

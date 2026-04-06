@@ -10,8 +10,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/comment')]
+#[IsGranted('ROLE_USER')]
 class CommentController extends AbstractController
 {
     #[Route('/', name: 'comment_index', methods: ['GET'])]
@@ -26,6 +28,7 @@ class CommentController extends AbstractController
     public function new(Request $request, EntityManagerInterface $em): Response
     {
         $comment = new Comment();
+        $comment->setAuthor($this->getUser());
         $form = $this->createForm(CommentType::class, $comment);
         $form->handleRequest($request);
 

@@ -66,6 +66,10 @@ class Candidature
     private ?\DateTimeImmutable $dateCandidature = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    #[Assert\GreaterThanOrEqual(
+        propertyPath: 'dateCandidature',
+        message: 'La date d\'entretien doit être postérieure à la date de candidature.'
+    )]
     private ?\DateTimeImmutable $dateEntretien = null;
 
     #[ORM\Column(length: 100, nullable: true)]

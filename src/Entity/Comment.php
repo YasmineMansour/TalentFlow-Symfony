@@ -20,15 +20,17 @@ class Comment
 
     #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: 'Le post est obligatoire.')]
     private ?Post $post = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: 'L\'auteur est obligatoire.')]
     private ?User $author = null;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: 'Le commentaire ne peut pas être vide')]
-    #[Assert\Length(min: 2, minMessage: 'Le commentaire doit contenir au moins {{ limit }} caractères')]
+    #[Assert\Length(min: 2, max: 5000, minMessage: 'Le commentaire doit contenir au moins {{ limit }} caractères', maxMessage: 'Le commentaire ne peut pas dépasser {{ limit }} caractères')]
     private ?string $content = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]

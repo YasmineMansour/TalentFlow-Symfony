@@ -90,8 +90,13 @@ class DecisionFinaleController extends AbstractController
     }
 
     #[Route('/sync', name: 'app_decision_finale_sync', methods: ['POST'])]
-    public function sync(EntretienRepository $entretienRepository, EntityManagerInterface $entityManager): Response
+    public function sync(Request $request, EntretienRepository $entretienRepository, EntityManagerInterface $entityManager): Response
     {
+        if (!$this->isCsrfTokenValid('decision_sync', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Jeton CSRF invalide.');
+            return $this->redirectToRoute('app_decision_finale_index');
+        }
+
         $created = 0;
 
         foreach ($entretienRepository->findRealisedWithoutDecision() as $entretien) {
@@ -117,6 +122,11 @@ class DecisionFinaleController extends AbstractController
     #[Route('/auto-decide', name: 'app_decision_finale_auto_decide', methods: ['POST'])]
     public function autoDecide(Request $request, DecisionFinaleRepository $decisionFinaleRepository, EntityManagerInterface $entityManager): Response
     {
+        if (!$this->isCsrfTokenValid('decision_auto_decide', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Jeton CSRF invalide.');
+            return $this->redirectToRoute('app_decision_finale_index');
+        }
+
         $acceptThreshold = (float) $request->request->get('accept_threshold', 14);
         $rejectThreshold = (float) $request->request->get('reject_threshold', 8);
 

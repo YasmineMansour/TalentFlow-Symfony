@@ -17,17 +17,17 @@ class EntrepriseType extends AbstractType
         $builder
             ->add('nom', TextType::class, [
                 'label' => 'Nom de l\'entreprise',
-                'attr' => ['placeholder' => 'Ex: TechCorp'],
+                'attr' => ['placeholder' => 'Ex: TechCorp', 'minlength' => 2, 'maxlength' => 255],
             ])
             ->add('secteur', TextType::class, [
                 'label' => 'Secteur d\'activité',
                 'required' => false,
-                'attr' => ['placeholder' => 'Ex: Informatique, Finance...'],
+                'attr' => ['placeholder' => 'Ex: Informatique, Finance...', 'minlength' => 2, 'maxlength' => 255],
             ])
             ->add('adresse', TextType::class, [
                 'label' => 'Adresse',
                 'required' => false,
-                'attr' => ['placeholder' => 'Ex: 10 Rue de la Paix, Tunis'],
+                'attr' => ['placeholder' => 'Ex: 10 Rue de la Paix, Tunis', 'minlength' => 5, 'maxlength' => 255],
             ])
             ->add('email', EmailType::class, [
                 'label' => 'Email',
@@ -37,12 +37,12 @@ class EntrepriseType extends AbstractType
             ->add('telephone', TextType::class, [
                 'label' => 'Téléphone',
                 'required' => false,
-                'attr' => ['placeholder' => 'Ex: +216 71 000 000'],
+                'attr' => ['placeholder' => 'Ex: +216 71 000 000', 'maxlength' => 20, 'pattern' => '[\+]?[0-9\s\-]{8,20}'],
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description',
                 'required' => false,
-                'attr' => ['rows' => 4, 'placeholder' => 'Décrivez l\'entreprise...'],
+                'attr' => ['rows' => 4, 'placeholder' => 'Décrivez l\'entreprise...', 'minlength' => 10],
             ])
             ->add('logo', TextType::class, [
                 'label' => 'URL du logo',

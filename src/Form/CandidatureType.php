@@ -19,16 +19,16 @@ class CandidatureType extends AbstractType
         $builder
             ->add('titrePoste', TextType::class, [
                 'label' => 'Titre du poste',
-                'attr' => ['placeholder' => 'Ex: Développeur PHP', 'class' => 'form-control'],
+                'attr' => ['placeholder' => 'Ex: Développeur PHP', 'class' => 'form-control', 'minlength' => 3, 'maxlength' => 150],
             ])
             ->add('entreprise', TextType::class, [
                 'label' => 'Entreprise',
-                'attr' => ['placeholder' => 'Nom de l\'entreprise', 'class' => 'form-control'],
+                'attr' => ['placeholder' => 'Nom de l\'entreprise', 'class' => 'form-control', 'minlength' => 2, 'maxlength' => 150],
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description du poste',
                 'required' => false,
-                'attr' => ['placeholder' => 'Décrivez le poste...', 'class' => 'form-control', 'rows' => 4],
+                'attr' => ['placeholder' => 'Décrivez le poste...', 'class' => 'form-control', 'rows' => 4, 'maxlength' => 3000],
             ])
             ->add('typeContrat', ChoiceType::class, [
                 'label' => 'Type de contrat',
@@ -68,18 +68,18 @@ class CandidatureType extends AbstractType
             ->add('lieu', TextType::class, [
                 'label' => 'Lieu',
                 'required' => false,
-                'attr' => ['placeholder' => 'Ville ou adresse', 'class' => 'form-control'],
+                'attr' => ['placeholder' => 'Ville ou adresse', 'class' => 'form-control', 'maxlength' => 100],
             ])
             ->add('salaireSouhaite', MoneyType::class, [
                 'label' => 'Salaire souhaité (TND)',
                 'currency' => 'TND',
                 'required' => false,
-                'attr' => ['placeholder' => '0.00', 'class' => 'form-control'],
+                'attr' => ['placeholder' => '0.00', 'class' => 'form-control', 'min' => 0, 'max' => 999999.99],
             ])
             ->add('notes', TextareaType::class, [
                 'label' => 'Notes',
                 'required' => false,
-                'attr' => ['placeholder' => 'Notes personnelles...', 'class' => 'form-control', 'rows' => 3],
+                'attr' => ['placeholder' => 'Notes personnelles...', 'class' => 'form-control', 'rows' => 3, 'maxlength' => 2000],
             ])
         ;
     }

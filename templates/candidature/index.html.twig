@@ -60,6 +60,7 @@
                         </a>
                     </th>
                     <th>Lieu</th>
+                    <th><i class="fas fa-paperclip"></i> PJ</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -75,10 +76,19 @@
                     <td>{{ c.dateCandidature|date('d/m/Y') }}</td>
                     <td>{{ c.lieu ?? '—' }}</td>
                     <td>
+                        {% if c.piecesJointes|length > 0 %}
+                            <span class="badge" style="background: var(--tf-gold); color: var(--tf-midnight);">
+                                <i class="fas fa-paperclip"></i> {{ c.piecesJointes|length }}
+                            </span>
+                        {% else %}
+                            <span style="color: var(--tf-gray);">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
                         <div class="d-flex gap-1">
                             <a href="{{ path('app_candidature_show', {id: c.id}) }}" class="btn btn-sm btn-outline-light" title="Voir"><i class="fas fa-eye"></i></a>
                             <a href="{{ path('app_candidature_edit', {id: c.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier"><i class="fas fa-edit"></i></a>
-                            <form method="post" action="{{ path('app_candidature_delete', {id: c.id}) }}" onsubmit="return confirm('Supprimer cette candidature ?');" style="display:inline;">
+                            <form method="post" action="{{ path('app_candidature_delete', {id: c.id}) }}" onsubmit="event.preventDefault(); confirmDelete(this, '{{ c.titrePoste|e('js') }}');" style="display:inline;">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ c.id) }}">
                                 <button class="btn btn-sm btn-outline-danger" title="Supprimer"><i class="fas fa-trash"></i></button>
                             </form>
@@ -87,7 +97,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="7" class="text-center" style="color: var(--tf-gray); padding: 2rem;">
+                    <td colspan="8" class="text-center" style="color: var(--tf-gray); padding: 2rem;">
                         <i class="fas fa-inbox fa-2x"></i><br>Aucune candidature trouvée.
                     </td>
                 </tr>

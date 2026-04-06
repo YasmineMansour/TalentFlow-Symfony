@@ -937,19 +937,20 @@
         }
 
         // Submit form confirmation (create / edit)
-        function confirmFormSubmit(formEl, actionType) {
+        function confirmFormSubmit(formEl, actionType, entityName) {
+            entityName = entityName || 'cet élément';
             const configs = {
                 create: {
                     title: 'Confirmer la création',
-                    message: 'Êtes-vous sûr de vouloir créer ce nouvel utilisateur ?<br><small style="color:#a0a0b0">Vérifiez bien les informations saisies.</small>',
-                    icon: 'fa-user-plus',
+                    message: `Êtes-vous sûr de vouloir créer ${entityName} ?<br><small style="color:#a0a0b0">Vérifiez bien les informations saisies.</small>`,
+                    icon: 'fa-plus-circle',
                     iconClass: 'success',
                     confirmIcon: 'fa-check',
                     confirmText: 'Oui, créer'
                 },
                 edit: {
                     title: 'Confirmer la modification',
-                    message: 'Êtes-vous sûr de vouloir enregistrer ces modifications ?<br><small style="color:#a0a0b0">Les données précédentes seront écrasées.</small>',
+                    message: `Êtes-vous sûr de vouloir modifier ${entityName} ?<br><small style="color:#a0a0b0">Les données précédentes seront écrasées.</small>`,
                     icon: 'fa-save',
                     iconClass: 'warning',
                     confirmIcon: 'fa-check',
@@ -966,7 +967,6 @@
                 confirmIcon: cfg.confirmIcon,
                 confirmText: cfg.confirmText,
                 onConfirm: function() {
-                    // Bypass confirmation on re-submit
                     formEl.setAttribute('data-confirmed', 'true');
                     formEl.submit();
                 }

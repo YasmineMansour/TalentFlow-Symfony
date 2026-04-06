@@ -1,40 +1,23 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Nouvel Avantage - TalentFlow{% endblock %}
+{% block title %}Nouvel avantage - TalentFlow{% endblock %}
 
 {% block body %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <h1 class="mb-4"><i class="bi bi-plus-circle"></i> Nouvel Avantage</h1>
+<h2 class="tf-title"><i class="fas fa-plus-circle"></i> Nouvel avantage</h2>
 
-        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
-            <div class="card">
-                <div class="card-body">
-                    <div class="mb-3">
-                        {{ form_row(form.nom) }}
-                    </div>
-                    <div class="mb-3">
-                        {{ form_row(form.description) }}
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            {{ form_row(form.type) }}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            {{ form_row(form.offre) }}
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer d-flex justify-content-between">
-                    <a href="{{ path('avantage_index') }}" class="btn btn-secondary">
-                        <i class="bi bi-arrow-left"></i> Retour
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-lg"></i> Créer
-                    </button>
-                </div>
-            </div>
-        {{ form_end(form) }}
-    </div>
+<div class="tf-card" style="max-width: 700px;">
+    {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'tf-form', 'onsubmit': "if(!this.dataset.confirmed){event.preventDefault(); confirmFormSubmit(this, 'create', 'cet avantage');}" }}) }}
+
+        {{ form_row(form.nom) }}
+        {{ form_row(form.description) }}
+        {{ form_row(form.type) }}
+        {{ form_row(form.offre) }}
+
+        <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn-gold"><i class="fas fa-save"></i> Créer</button>
+            <a href="{{ path('avantage_index') }}" class="btn-outline-gold"><i class="fas fa-arrow-left"></i> Retour</a>
+        </div>
+
+    {{ form_end(form) }}
 </div>
 {% endblock %}

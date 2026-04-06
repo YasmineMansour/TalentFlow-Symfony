@@ -13,8 +13,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/offre')]
+#[IsGranted('ROLE_USER')]
 class OffreController extends AbstractController
 {
     #[Route('/', name: 'offre_index', methods: ['GET'])]
@@ -56,6 +58,7 @@ class OffreController extends AbstractController
     }
 
     #[Route('/new', name: 'offre_new', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_RH')]
     public function new(Request $request, EntityManagerInterface $em): Response
     {
         $offre = new Offre();
@@ -86,6 +89,7 @@ class OffreController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'offre_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[IsGranted('ROLE_RH')]
     public function edit(Request $request, Offre $offre, EntityManagerInterface $em): Response
     {
         $form = $this->createForm(OffreType::class, $offre);
@@ -104,6 +108,7 @@ class OffreController extends AbstractController
     }
 
     #[Route('/{id}/delete', name: 'offre_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[IsGranted('ROLE_RH')]
     public function delete(Request $request, Offre $offre, EntityManagerInterface $em): Response
     {
         if ($this->isCsrfTokenValid('delete' . $offre->getId(), $request->request->get('_token'))) {

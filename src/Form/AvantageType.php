@@ -19,12 +19,12 @@ class AvantageType extends AbstractType
         $builder
             ->add('nom', TextType::class, [
                 'label' => 'Nom de l\'avantage',
-                'attr' => ['placeholder' => 'Ex: Ticket restaurant'],
+                'attr' => ['placeholder' => 'Ex: Ticket restaurant', 'minlength' => 2, 'maxlength' => 255],
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description',
                 'required' => false,
-                'attr' => ['rows' => 3],
+                'attr' => ['rows' => 3, 'minlength' => 5],
             ])
             ->add('type', ChoiceType::class, [
                 'label' => 'Type d\'avantage',

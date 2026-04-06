@@ -46,6 +46,7 @@ class Offre
     private ?string $localisation = null;
 
     #[ORM\Column(name: 'type_contrat', length: 50, options: ['default' => 'CDI'])]
+    #[Assert\NotBlank(message: 'Le type de contrat est obligatoire.')]
     #[Assert\Choice(
         choices: ['CDI', 'CDD', 'Stage', 'Freelance', 'Alternance'],
         message: 'Type de contrat invalide.'
@@ -53,6 +54,7 @@ class Offre
     private ?string $typeContrat = 'CDI';
 
     #[ORM\Column(name: 'mode_travail', length: 50, options: ['default' => 'ON_SITE'])]
+    #[Assert\NotBlank(message: 'Le mode de travail est obligatoire.')]
     #[Assert\Choice(
         choices: ['ON_SITE', 'REMOTE', 'HYBRID'],
         message: 'Mode de travail invalide.'

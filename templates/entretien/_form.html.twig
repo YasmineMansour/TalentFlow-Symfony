@@ -1,4 +1,4 @@
-{{ form_start(form, {'attr': {'class': 'tf-form', 'novalidate': 'novalidate'}}) }}
+{{ form_start(form, {'attr': {'class': 'tf-form', 'novalidate': 'novalidate', 'onsubmit': "if(!this.dataset.confirmed){event.preventDefault(); confirmFormSubmit(this, '" ~ (form_action|default('create')) ~ "', 'cet entretien');}"}}) }}
     <div class="row">
         <div class="col-md-6 mb-3">
             {{ form_label(form.candidateEmail) }}

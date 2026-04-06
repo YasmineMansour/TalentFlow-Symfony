@@ -29,6 +29,8 @@ class PieceJointe
     private ?string $typeDocument = null;
 
     #[ORM\Column(length: 500)]
+    #[Assert\NotBlank(message: 'Le chemin du fichier ne peut pas être vide.')]
+    #[Assert\Length(max: 500)]
     private ?string $cheminFichier = null;
 
     #[ORM\Column]
@@ -40,6 +42,7 @@ class PieceJointe
 
     #[ORM\ManyToOne(targetEntity: Candidature::class, inversedBy: 'piecesJointes')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: 'La candidature est obligatoire.')]
     private ?Candidature $candidature = null;
 
     public function __construct()

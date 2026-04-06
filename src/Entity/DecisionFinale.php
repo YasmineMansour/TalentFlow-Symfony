@@ -33,6 +33,7 @@ class DecisionFinale
     private ?string $motif = null;
 
     #[ORM\Column(name: 'date_decision', type: Types::DATETIME_MUTABLE)]
+    #[Assert\NotNull(message: 'La date de décision est obligatoire.')]
     private ?\DateTimeInterface $dateDecision = null;
 
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, nullable: true)]
@@ -42,6 +43,7 @@ class DecisionFinale
     private ?\DateTimeInterface $updatedAt = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\Range(min: 0, max: 20, notInRangeMessage: 'Le score doit être entre {{ min }} et {{ max }}.')]
     private ?float $score = null;
 
     public function getId(): ?int

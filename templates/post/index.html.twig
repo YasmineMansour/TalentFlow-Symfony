@@ -58,7 +58,7 @@
                             <a href="{{ path('post_edit', {id: post.id}) }}" class="btn-gold btn-sm-tf" title="Modifier">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <form method="post" action="{{ path('post_delete', {id: post.id}) }}" style="display:inline" onsubmit="return confirm('Supprimer ce post et tous ses commentaires ?')">
+                            <form method="post" action="{{ path('post_delete', {id: post.id}) }}" style="display:inline" onsubmit="event.preventDefault(); confirmDelete(this, '{{ post.title|e('js') }}');">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ post.id) }}">
                                 <button type="submit" class="btn-danger-tf btn-sm-tf" title="Supprimer">
                                     <i class="fas fa-trash"></i>

@@ -1,68 +1,340 @@
-{% extends 'base.html.twig' %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalentFlow - Plateforme de Gestion du Recrutement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --tf-midnight: #1a1a2e;
+            --tf-navy: #16213e;
+            --tf-dark-blue: #0f3460;
+            --tf-gold: #d4a843;
+            --tf-gold-light: #e8c96d;
+            --tf-gold-dark: #b8922f;
+            --tf-white: #f5f5f5;
+            --tf-gray: #a0a0b0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; min-height: 100vh; background: #0d1117; color: var(--tf-white); overflow-x: hidden; }
 
-{% block title %}Connexion - TalentFlow{% endblock %}
+        /* ─── NAVBAR ─── */
+        .tf-navbar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(13, 17, 23, 0.9); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(212,168,67,0.1);
+            padding: 0.8rem 2rem;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .tf-navbar-brand {
+            display: flex; align-items: center; gap: 0.6rem;
+            text-decoration: none; color: var(--tf-gold); font-weight: 800; font-size: 1.3rem;
+        }
+        .tf-navbar-brand i { font-size: 1.1rem; }
+        .tf-navbar-links { display: flex; align-items: center; gap: 1.5rem; }
+        .tf-navbar-links a {
+            color: var(--tf-gray); text-decoration: none; font-size: 0.85rem;
+            font-weight: 500; transition: color 0.2s;
+        }
+        .tf-navbar-links a:hover { color: var(--tf-gold); }
 
-{% block navbar %}{% endblock %}
+        /* ─── HERO SPLIT LAYOUT ─── */
+        .tf-page { display: flex; min-height: 100vh; padding-top: 60px; }
 
-{% block body %}
-<div class="tf-login-wrapper" style="margin: -2rem; min-height: 100vh; padding: 2rem;">
-    <div class="tf-login-card">
-        <div class="brand-lg">
-            <h1><i class="fas fa-briefcase"></i> TalentFlow</h1>
-            <p>Plateforme de Gestion du Recrutement</p>
+        /* Left: Info Panel */
+        .tf-info-panel {
+            flex: 1; display: flex; flex-direction: column; justify-content: center;
+            padding: 4rem 5rem;
+            background: linear-gradient(160deg, #0d1117 0%, #1a1a2e 50%, #0f3460 100%);
+            position: relative; overflow: hidden;
+        }
+        .tf-info-panel::before {
+            content: ''; position: absolute; top: -50%; right: -30%;
+            width: 600px; height: 600px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(212,168,67,0.06) 0%, transparent 70%);
+        }
+        .tf-info-panel::after {
+            content: ''; position: absolute; bottom: -40%; left: -20%;
+            width: 500px; height: 500px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(15,52,96,0.2) 0%, transparent 70%);
+        }
+        .tf-info-content { position: relative; z-index: 1; }
+        .tf-info-content h1 {
+            font-size: 2.8rem; font-weight: 900; line-height: 1.15; margin-bottom: 1rem;
+        }
+        .tf-info-content h1 span { color: var(--tf-gold); }
+        .tf-info-content .tf-tagline {
+            font-size: 1.1rem; color: var(--tf-gray); line-height: 1.7; margin-bottom: 2.5rem; max-width: 480px;
+        }
+        .tf-features { display: flex; flex-direction: column; gap: 1.2rem; }
+        .tf-feature {
+            display: flex; align-items: center; gap: 1rem;
+            padding: 0.8rem 1.2rem; border-radius: 12px;
+            background: rgba(22,33,62,0.5); border: 1px solid rgba(212,168,67,0.08);
+            transition: all 0.3s;
+        }
+        .tf-feature:hover { border-color: rgba(212,168,67,0.2); background: rgba(22,33,62,0.7); }
+        .tf-feature-icon {
+            width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
+            background: linear-gradient(135deg, rgba(212,168,67,0.15), rgba(15,52,96,0.3));
+            display: flex; align-items: center; justify-content: center;
+            color: var(--tf-gold); font-size: 1rem;
+        }
+        .tf-feature-text h4 { font-size: 0.85rem; font-weight: 700; color: var(--tf-white); margin-bottom: 0.15rem; }
+        .tf-feature-text p { font-size: 0.75rem; color: var(--tf-gray); margin: 0; }
+
+        /* Right: Login Form */
+        .tf-login-panel {
+            width: 520px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            padding: 2rem 3rem;
+            background: rgba(22,33,62,0.4);
+            border-left: 1px solid rgba(212,168,67,0.08);
+        }
+        .tf-login-box { width: 100%; max-width: 380px; }
+        .tf-login-header { text-align: center; margin-bottom: 2rem; }
+        .tf-login-header .icon-circle {
+            width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 1rem;
+            background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; color: var(--tf-midnight);
+            box-shadow: 0 6px 20px rgba(212,168,67,0.25);
+        }
+        .tf-login-header h2 { font-size: 1.4rem; font-weight: 800; color: var(--tf-white); margin-bottom: 0.2rem; }
+        .tf-login-header p { font-size: 0.8rem; color: var(--tf-gray); }
+
+        .form-label {
+            color: var(--tf-gold); font-weight: 600; font-size: 0.8rem;
+            display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.4rem;
+        }
+        .form-control {
+            background: rgba(13,17,23,0.7); border: 1px solid rgba(212,168,67,0.12);
+            color: var(--tf-white); border-radius: 10px;
+            padding: 0.7rem 1rem; font-size: 0.9rem; transition: all 0.3s;
+        }
+        .form-control:focus {
+            background: rgba(13,17,23,0.9); border-color: var(--tf-gold);
+            box-shadow: 0 0 0 3px rgba(212,168,67,0.08); color: var(--tf-white);
+        }
+        .form-control::placeholder { color: #5a5a70; }
+
+        .btn-login {
+            background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
+            color: var(--tf-midnight); border: none; padding: 0.75rem;
+            border-radius: 10px; font-weight: 700; font-size: 0.95rem;
+            width: 100%; cursor: pointer; transition: all 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+        }
+        .btn-login:hover {
+            background: linear-gradient(135deg, var(--tf-gold-light), var(--tf-gold));
+            transform: translateY(-1px); box-shadow: 0 6px 18px rgba(212,168,67,0.2);
+        }
+        .btn-login:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .tf-alert {
+            padding: 0.7rem 0.9rem; border-radius: 10px; margin-bottom: 0.8rem;
+            font-size: 0.8rem; display: flex; align-items: flex-start; gap: 0.5rem;
+        }
+        .tf-alert-error { background: rgba(192,57,43,0.1); border: 1px solid rgba(231,76,60,0.25); color: #e74c3c; }
+        .tf-alert-warning { background: rgba(212,168,67,0.08); border: 1px solid rgba(212,168,67,0.25); color: var(--tf-gold-light); }
+
+        .forgot-link { color: var(--tf-gray); text-decoration: none; font-size: 0.8rem; transition: color 0.2s; }
+        .forgot-link:hover { color: var(--tf-gold); }
+
+        .input-group-icon { position: relative; }
+        .input-group-icon i.field-icon {
+            position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+            color: var(--tf-gray); cursor: pointer; z-index: 2; font-size: 0.9rem;
+        }
+        .input-group-icon i.field-icon:hover { color: var(--tf-gold); }
+
+        .tf-divider { border-top: 1px solid rgba(212,168,67,0.08); margin: 1.2rem 0; }
+
+        .tf-footer-login {
+            text-align: center; color: var(--tf-gray); font-size: 0.72rem;
+        }
+
+        /* ─── STATS BAR ─── */
+        .tf-stats {
+            display: flex; gap: 2rem; margin-top: 2.5rem; padding-top: 2rem;
+            border-top: 1px solid rgba(212,168,67,0.08);
+        }
+        .tf-stat { text-align: center; }
+        .tf-stat-num { font-size: 1.6rem; font-weight: 800; color: var(--tf-gold); }
+        .tf-stat-label { font-size: 0.7rem; color: var(--tf-gray); text-transform: uppercase; letter-spacing: 1px; }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 992px) {
+            .tf-page { flex-direction: column; }
+            .tf-info-panel { padding: 3rem 2rem; min-height: auto; }
+            .tf-info-content h1 { font-size: 2rem; }
+            .tf-login-panel { width: 100%; border-left: none; border-top: 1px solid rgba(212,168,67,0.08); padding: 2rem; }
+            .tf-stats { gap: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="tf-navbar">
+        <a href="#" class="tf-navbar-brand">
+            <i class="fas fa-briefcase"></i> TalentFlow
+        </a>
+        <div class="tf-navbar-links">
+            <a href="#"><i class="fas fa-info-circle"></i> À propos</a>
+            <a href="#"><i class="fas fa-phone"></i> Contact</a>
+        </div>
+    </nav>
+
+    <div class="tf-page">
+        <!-- LEFT: INFO PANEL -->
+        <div class="tf-info-panel">
+            <div class="tf-info-content">
+                <h1>Bienvenue sur<br><span>TalentFlow</span></h1>
+                <p class="tf-tagline">
+                    La plateforme intelligente de gestion du recrutement.
+                    Centralisez vos offres, candidatures et entretiens en un seul endroit.
+                </p>
+
+                <div class="tf-features">
+                    <div class="tf-feature">
+                        <div class="tf-feature-icon"><i class="fas fa-bullhorn"></i></div>
+                        <div class="tf-feature-text">
+                            <h4>Gestion des offres</h4>
+                            <p>Publiez et gérez vos offres d'emploi facilement</p>
+                        </div>
+                    </div>
+                    <div class="tf-feature">
+                        <div class="tf-feature-icon"><i class="fas fa-file-alt"></i></div>
+                        <div class="tf-feature-text">
+                            <h4>Suivi des candidatures</h4>
+                            <p>Suivez chaque candidature du dépôt à la décision</p>
+                        </div>
+                    </div>
+                    <div class="tf-feature">
+                        <div class="tf-feature-icon"><i class="fas fa-calendar-check"></i></div>
+                        <div class="tf-feature-text">
+                            <h4>Planification d'entretiens</h4>
+                            <p>Organisez et planifiez vos entretiens en un clic</p>
+                        </div>
+                    </div>
+                    <div class="tf-feature">
+                        <div class="tf-feature-icon"><i class="fas fa-shield-alt"></i></div>
+                        <div class="tf-feature-text">
+                            <h4>Sécurité renforcée</h4>
+                            <p>Authentification à deux facteurs par email</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tf-stats">
+                    <div class="tf-stat">
+                        <div class="tf-stat-num">3</div>
+                        <div class="tf-stat-label">Rôles</div>
+                    </div>
+                    <div class="tf-stat">
+                        <div class="tf-stat-num">5</div>
+                        <div class="tf-stat-label">Modules</div>
+                    </div>
+                    <div class="tf-stat">
+                        <div class="tf-stat-num">2FA</div>
+                        <div class="tf-stat-label">Sécurité</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        {% if lockout_minutes is not null %}
-            <div class="tf-flash tf-flash-error">
-                <i class="fas fa-ban"></i> Compte temporairement bloqué suite à trop de tentatives échouées.
-                <br><small>Réessayez dans <strong>{{ lockout_minutes }}</strong> minute(s).</small>
+        <!-- RIGHT: LOGIN FORM -->
+        <div class="tf-login-panel">
+            <div class="tf-login-box">
+                <div class="tf-login-header">
+                    <div class="icon-circle"><i class="fas fa-sign-in-alt"></i></div>
+                    <h2>Connexion</h2>
+                    <p>Accédez à votre espace personnel</p>
+                </div>
+
+                {% if lockout_minutes is not null %}
+                    <div class="tf-alert tf-alert-error">
+                        <i class="fas fa-ban"></i>
+                        <div>Compte bloqué temporairement.
+                        <br><small>Réessayez dans <strong>{{ lockout_minutes }}</strong> min.</small></div>
+                    </div>
+                {% endif %}
+
+                {% if error %}
+                    <div class="tf-alert tf-alert-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <div>{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+                    </div>
+                {% endif %}
+
+                {% if remaining_attempts is not null and remaining_attempts > 0 %}
+                    <div class="tf-alert tf-alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div><strong>{{ remaining_attempts }}</strong> tentative(s) restante(s).</div>
+                    </div>
+                {% endif %}
+
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="inputEmail" class="form-label">
+                            <i class="fas fa-envelope"></i> Email
+                        </label>
+                        <input type="email" value="{{ last_username }}" name="_username" id="inputEmail"
+                               class="form-control" placeholder="votre@email.com" required autofocus
+                               {% if lockout_minutes is not null %}disabled{% endif %}>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="inputPassword" class="form-label">
+                            <i class="fas fa-lock"></i> Mot de passe
+                        </label>
+                        <div class="input-group-icon">
+                            <input type="password" name="_password" id="inputPassword"
+                                   class="form-control" placeholder="••••••••" required
+                                   {% if lockout_minutes is not null %}disabled{% endif %}>
+                            <i class="fas fa-eye field-icon" id="togglePassword"></i>
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                    <button class="btn-login mt-2" type="submit"
+                            {% if lockout_minutes is not null %}disabled{% endif %}>
+                        <i class="fas fa-arrow-right"></i> Se connecter
+                    </button>
+                </form>
+
+                <div class="tf-divider"></div>
+
+                <div class="text-center">
+                    <a href="{{ path('app_forgot_password') }}" class="forgot-link">
+                        <i class="fas fa-key"></i> Mot de passe oublié ?
+                    </a>
+                </div>
+
+                <div class="tf-divider"></div>
+
+                <div class="tf-footer-login">
+                    <i class="fas fa-lock"></i> Connexion sécurisée avec vérification en deux étapes
+                </div>
             </div>
-        {% endif %}
-
-        {% if error %}
-            <div class="tf-flash tf-flash-error">
-                <i class="fas fa-exclamation-circle"></i> {{ error.messageKey|trans(error.messageData, 'security') }}
-            </div>
-        {% endif %}
-
-        {% if remaining_attempts is not null and remaining_attempts > 0 %}
-            <div class="tf-flash tf-flash-warning" style="background: rgba(212, 168, 67, 0.15); border-left: 4px solid #d4a843; color: #e8c96d;">
-                <i class="fas fa-exclamation-triangle"></i> Attention : il vous reste <strong>{{ remaining_attempts }}</strong> tentative(s) avant le blocage temporaire.
-            </div>
-        {% endif %}
-
-        <form method="post" class="tf-form">
-            <div class="mb-3">
-                <label for="inputEmail" class="form-label">
-                    <i class="fas fa-envelope"></i> Email
-                </label>
-                <input type="email" value="{{ last_username }}" name="_username" id="inputEmail" 
-                       class="form-control" placeholder="votre@email.com" required autofocus
-                       {% if lockout_minutes is not null %}disabled{% endif %}>
-            </div>
-
-            <div class="mb-3">
-                <label for="inputPassword" class="form-label">
-                    <i class="fas fa-lock"></i> Mot de passe
-                </label>
-                <input type="password" name="_password" id="inputPassword" 
-                       class="form-control" placeholder="••••••••" required
-                       {% if lockout_minutes is not null %}disabled{% endif %}>
-            </div>
-
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-
-            <button class="btn-gold w-100 mt-3" type="submit" style="justify-content: center; padding: 0.7rem;"
-                    {% if lockout_minutes is not null %}disabled{% endif %}>
-                <i class="fas fa-sign-in-alt"></i> Se connecter
-            </button>
-        </form>
-
-        <div class="text-center mt-3">
-            <a href="{{ path('app_forgot_password') }}" style="color: #d4a843; text-decoration: none; font-size: 0.9rem;">
-                <i class="fas fa-key"></i> Mot de passe oublié ?
-            </a>
         </div>
     </div>
-</div>
-{% endblock %}
+
+    <script>
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const input = document.getElementById('inputPassword');
+            if (input.type === 'password') {
+                input.type = 'text';
+                this.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                this.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+    </script>
+</body>
+</html>

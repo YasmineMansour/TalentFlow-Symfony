@@ -14,7 +14,7 @@
                 </a>
             </div>
 
-            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'onsubmit': "if(!this.dataset.confirmed){event.preventDefault(); confirmFormSubmit(this, 'create', 'ce commentaire');}"}}) }}
                 <div class="tf-form-group">
                     {{ form_label(form.content, null, {'label_attr': {'class': 'tf-label'}}) }}
                     {{ form_widget(form.content, {'attr': {'class': 'tf-input', 'rows': '5', 'placeholder': 'Rédigez votre commentaire...'}}) }}
@@ -24,11 +24,6 @@
                     {{ form_label(form.post, null, {'label_attr': {'class': 'tf-label'}}) }}
                     {{ form_widget(form.post, {'attr': {'class': 'tf-input'}}) }}
                     {{ form_errors(form.post) }}
-                </div>
-                <div class="tf-form-group">
-                    {{ form_label(form.author, null, {'label_attr': {'class': 'tf-label'}}) }}
-                    {{ form_widget(form.author, {'attr': {'class': 'tf-input'}}) }}
-                    {{ form_errors(form.author) }}
                 </div>
 
                 <div style="display: flex; gap: 0.8rem; margin-top: 1.5rem;">

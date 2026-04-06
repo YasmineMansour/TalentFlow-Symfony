@@ -44,6 +44,7 @@ class DecisionFinaleType extends AbstractType
                     'class' => 'form-control',
                     'rows' => 4,
                     'placeholder' => 'Explication de la décision...',
+                    'maxlength' => 255,
                 ],
             ])
             ->add('score', NumberType::class, [
@@ -53,6 +54,8 @@ class DecisionFinaleType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'step' => 0.01,
+                    'min' => 0,
+                    'max' => 20,
                     'placeholder' => 'Score final',
                 ],
             ]);

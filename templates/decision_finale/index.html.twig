@@ -55,9 +55,11 @@
         </div>
         <div class="col-lg-5 d-flex flex-wrap gap-2 justify-content-lg-end">
             <form method="post" action="{{ path('app_decision_finale_sync') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('decision_sync') }}">
                 <button type="submit" class="btn-outline-gold"><i class="fas fa-arrows-rotate"></i> Générer</button>
             </form>
             <form method="post" action="{{ path('app_decision_finale_auto_decide') }}" class="d-flex gap-2 flex-wrap justify-content-lg-end">
+                <input type="hidden" name="_token" value="{{ csrf_token('decision_auto_decide') }}">
                 <div style="min-width: 130px;">
                     <label for="accept-threshold" style="display:block; color: var(--tf-gray); font-size: 0.72rem; margin-bottom: 0.35rem;">Seuil acceptation</label>
                     <input id="accept-threshold" type="number" name="accept_threshold" value="14" step="0.5" min="0" max="20" class="form-control" style="max-width: 130px; background: var(--tf-navy); border: 1px solid var(--tf-border); color: var(--tf-white);" placeholder="Ex: 14">
@@ -122,7 +124,7 @@
                                         </form>
                                     {% endif %}
                                     <a href="{{ path('app_decision_finale_edit', {'id': item.id}) }}" class="btn-gold" title="Modifier"><i class="fas fa-edit"></i></a>
-                                    <form method="post" action="{{ path('app_decision_finale_delete', {'id': item.id}) }}" style="display:inline;" onsubmit="return confirm('Supprimer la décision #{{ item.id }} ?');">
+                                    <form method="post" action="{{ path('app_decision_finale_delete', {'id': item.id}) }}" style="display:inline;" onsubmit="event.preventDefault(); confirmDelete(this, 'décision #{{ item.id }}');">
                                         <input type="hidden" name="_token" value="{{ csrf_token('delete_decision_' ~ item.id) }}">
                                         <button type="submit" class="btn-danger-tf" title="Supprimer"><i class="fas fa-trash"></i></button>
                                     </form>

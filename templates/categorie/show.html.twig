@@ -3,95 +3,94 @@
 {% block title %}{{ categorie.nom }} - TalentFlow{% endblock %}
 
 {% block body %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <h1 class="mb-4">{{ categorie.nom }}</h1>
+<h2 class="tf-title"><i class="fas fa-tag"></i> {{ categorie.nom }}</h2>
 
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-tags"></i> Détails de la catégorie #{{ categorie.id }}</span>
-                {% if not complete %}
-                    <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle"></i> Incomplète</span>
-                {% else %}
-                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> Complète</span>
-                {% endif %}
-            </div>
-            <div class="card-body">
-                <div class="row mb-3">
-                    <div class="col-md-12">
-                        <strong>Description :</strong>
-                        <p>{{ categorie.description ?? 'Non renseignée' }}</p>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        <strong>Popularité :</strong>
-                        <p>
-                            {% if popularite == 'Très populaire' %}
-                                <span class="badge bg-success"><i class="bi bi-star-fill"></i> {{ popularite }}</span>
-                            {% elseif popularite == 'Populaire' %}
-                                <span class="badge bg-info text-dark"><i class="bi bi-star-half"></i> {{ popularite }}</span>
-                            {% elseif popularite == 'Peu populaire' %}
-                                <span class="badge bg-secondary"><i class="bi bi-star"></i> {{ popularite }}</span>
-                            {% else %}
-                                <span class="text-muted">{{ popularite }}</span>
-                            {% endif %}
-                        </p>
-                    </div>
-                    <div class="col-md-4">
-                        <strong>Taux d'activité :</strong>
-                        <p>{{ tauxActivite }}</p>
-                    </div>
-                    <div class="col-md-4">
-                        <strong>Nombre d'offres :</strong>
-                        <p><span class="badge bg-primary">{{ categorie.offres|length }}</span></p>
-                    </div>
-                </div>
-            </div>
+<div class="tf-card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <span style="color: var(--tf-gray); font-size: 0.85rem;">Catégorie #{{ categorie.id }}</span>
+        {% if not complete %}
+            <span class="badge bg-warning text-dark"><i class="fas fa-exclamation-triangle"></i> Profil incomplet</span>
+        {% else %}
+            <span class="badge bg-success"><i class="fas fa-check-circle"></i> Profil complet</span>
+        {% endif %}
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <p><strong style="color: var(--tf-gold);">Nom :</strong> <span style="color: var(--tf-gray);">{{ categorie.nom }}</span></p>
+            <p><strong style="color: var(--tf-gold);">Description :</strong></p>
+            <p style="color: var(--tf-gray);">{{ categorie.description ?? 'Non renseignée' }}</p>
         </div>
-
-        {# Offres liées #}
-        <div class="card mb-4">
-            <div class="card-header">
-                <i class="bi bi-briefcase"></i> Offres dans cette catégorie ({{ categorie.offres|length }})
-            </div>
-            <div class="card-body">
-                {% if categorie.offres is empty %}
-                    <p class="text-muted">Aucune offre dans cette catégorie.</p>
+        <div class="col-md-6">
+            <p><strong style="color: var(--tf-gold);">Popularité :</strong>
+                {% if popularite == 'Très populaire' %}
+                    <span class="badge bg-success"><i class="fas fa-fire"></i> {{ popularite }}</span>
+                {% elseif popularite == 'Populaire' %}
+                    <span class="badge" style="background: var(--tf-dark-blue);"><i class="fas fa-star"></i> {{ popularite }}</span>
                 {% else %}
-                    <ul class="list-group">
-                        {% for offre in categorie.offres %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>
-                                    <a href="{{ path('offre_show', {id: offre.id}) }}">{{ offre.titre }}</a>
-                                    <span class="badge bg-info text-dark ms-2">{{ offre.typeContrat }}</span>
-                                </span>
-                                <span class="badge bg-{{ offre.statut == 'PUBLISHED' ? 'success' : (offre.statut == 'DRAFT' ? 'secondary' : 'danger') }}">
-                                    {{ offre.statut }}
-                                </span>
-                            </li>
-                        {% endfor %}
-                    </ul>
+                    <span class="badge bg-secondary"><i class="fas fa-minus"></i> {{ popularite }}</span>
                 {% endif %}
-            </div>
-        </div>
-
-        <div class="d-flex justify-content-between">
-            <a href="{{ path('categorie_index') }}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Retour
-            </a>
-            <div>
-                <a href="{{ path('categorie_edit', {id: categorie.id}) }}" class="btn btn-warning">
-                    <i class="bi bi-pencil"></i> Modifier
-                </a>
-                <form method="post" action="{{ path('categorie_delete', {id: categorie.id}) }}" class="d-inline" onsubmit="return confirm('Supprimer cette catégorie ?');">
-                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ categorie.id) }}">
-                    <button class="btn btn-danger">
-                        <i class="bi bi-trash"></i> Supprimer
-                    </button>
-                </form>
-            </div>
+            </p>
+            <p><strong style="color: var(--tf-gold);">Taux d'activité :</strong>
+                {% if tauxActivite == 'Très active' %}
+                    <span style="color: #2ecc71;"><i class="fas fa-bolt"></i> {{ tauxActivite }}</span>
+                {% elseif tauxActivite == 'Active' %}
+                    <span style="color: var(--tf-gold);"><i class="fas fa-bolt"></i> {{ tauxActivite }}</span>
+                {% elseif tauxActivite == 'Peu active' %}
+                    <span style="color: #e67e22;"><i class="fas fa-bolt"></i> {{ tauxActivite }}</span>
+                {% else %}
+                    <span style="color: var(--tf-gray);"><i class="fas fa-moon"></i> {{ tauxActivite }}</span>
+                {% endif %}
+            </p>
+            <p><strong style="color: var(--tf-gold);">Nombre d'offres :</strong> <span class="badge" style="background: var(--tf-dark-blue);">{{ categorie.offres|length }}</span></p>
         </div>
     </div>
+</div>
+
+{# Offres liées #}
+<div class="tf-card mt-4">
+    <h5 style="color: var(--tf-gold);"><i class="fas fa-briefcase"></i> Offres dans cette catégorie ({{ categorie.offres|length }})</h5>
+    <hr style="border-color: var(--tf-border);">
+    {% if categorie.offres is empty %}
+        <p style="color: var(--tf-gray);"><i class="fas fa-info-circle"></i> Aucune offre dans cette catégorie.</p>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-dark table-hover" style="background: transparent;">
+                <thead>
+                    <tr style="color: var(--tf-gold);">
+                        <th>Titre</th>
+                        <th>Type</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for offre in categorie.offres %}
+                    <tr>
+                        <td><a href="{{ path('offre_show', {id: offre.id}) }}" style="color: var(--tf-gold);">{{ offre.titre }}</a></td>
+                        <td><span class="badge" style="background: var(--tf-dark-blue);">{{ offre.typeContrat }}</span></td>
+                        <td>
+                            {% if offre.statut == 'PUBLISHED' %}
+                                <span class="badge bg-success">Publiée</span>
+                            {% elseif offre.statut == 'DRAFT' %}
+                                <span class="badge bg-secondary">Brouillon</span>
+                            {% else %}
+                                <span class="badge bg-danger">Fermée</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+
+<div class="d-flex gap-2 mt-3">
+    <a href="{{ path('categorie_index') }}" class="btn-outline-gold"><i class="fas fa-arrow-left"></i> Retour</a>
+    <a href="{{ path('categorie_edit', {id: categorie.id}) }}" class="btn-gold"><i class="fas fa-edit"></i> Modifier</a>
+    <form method="post" action="{{ path('categorie_delete', {id: categorie.id}) }}" style="display:inline;" onsubmit="event.preventDefault(); confirmDelete(this, '{{ categorie.nom|e('js') }}');">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ categorie.id) }}">
+        <button class="btn-danger-tf"><i class="fas fa-trash"></i> Supprimer</button>
+    </form>
 </div>
 {% endblock %}

@@ -106,4 +106,28 @@ class CandidatureRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @param int[] $ids
+     * @return array<int, string>
+     */
+    public function findEmailsByIds(array $ids): array
+    {
+        if (empty($ids)) {
+            return [];
+        }
+
+        $candidatures = $this->createQueryBuilder('c')
+            ->where('c.id IN (:ids)')
+            ->setParameter('ids', array_unique(array_filter($ids)))
+            ->getQuery()
+            ->getResult();
+
+        $map = [];
+        foreach ($candidatures as $c) {
+            $map[$c->getId()] = $c->getTitrePoste() . ' - ' . $c->getEntreprise();
+        }
+
+        return $map;
+    }
 }

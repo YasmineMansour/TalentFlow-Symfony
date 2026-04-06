@@ -57,6 +57,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
         message: 'L\'email "{{ value }}" n\'est pas valide.',
         mode: 'strict'
     )]
+    #[Assert\Length(max: 180, maxMessage: 'L\'email ne peut pas dépasser {{ limit }} caractères.')]
     private ?string $email = null;
 
     /**

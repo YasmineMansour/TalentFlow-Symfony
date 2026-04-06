@@ -27,11 +27,12 @@ class Post
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: 'Le contenu ne peut pas être vide')]
-    #[Assert\Length(min: 10, minMessage: 'Le contenu doit contenir au moins {{ limit }} caractères')]
+    #[Assert\Length(min: 10, max: 10000, minMessage: 'Le contenu doit contenir au moins {{ limit }} caractères', maxMessage: 'Le contenu ne peut pas dépasser {{ limit }} caractères')]
     private ?string $content = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: 'L\'auteur est obligatoire.')]
     private ?User $author = null;
 
     #[ORM\Column(options: ['default' => 0])]
@@ -41,6 +42,7 @@ class Post
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(length: 500, nullable: true)]
+    #[Assert\Length(max: 500, maxMessage: 'Le chemin de l\'image ne peut pas dépasser {{ limit }} caractères.')]
     private ?string $imagePath = null;
 
     /** @var Collection<int, Comment> */

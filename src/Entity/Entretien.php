@@ -20,6 +20,8 @@ class Entretien
     private ?int $id = null;
 
     #[ORM\Column(name: 'candidature_id')]
+    #[Assert\NotNull(message: 'La candidature est obligatoire.')]
+    #[Assert\Positive(message: 'L\'identifiant de candidature doit être positif.')]
     private ?int $candidatureId = null;
 
     #[ORM\Column(name: 'date_heure', type: Types::DATETIME_MUTABLE)]
@@ -32,9 +34,11 @@ class Entretien
     private ?string $type = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255, maxMessage: 'Le lieu ne peut pas dépasser {{ limit }} caractères.')]
     private ?string $lieu = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Url(message: 'Le lien doit être une URL valide.')]
     private ?string $lien = null;
 
     #[ORM\Column(length: 20, nullable: true)]
@@ -85,7 +89,7 @@ class Entretien
         return $this->dateHeure;
     }
 
-    public function setDateHeure(\DateTimeInterface $dateHeure): static
+    public function setDateHeure(?\DateTimeInterface $dateHeure): static
     {
         $this->dateHeure = $dateHeure;
 

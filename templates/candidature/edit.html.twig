@@ -6,7 +6,7 @@
 <h2 class="tf-title"><i class="fas fa-edit"></i> Modifier : {{ candidature.titrePoste }}</h2>
 
 <div class="tf-card">
-    {{ include('candidature/_form.html.twig', {button_label: 'Enregistrer les modifications'}) }}
+    {{ include('candidature/_form.html.twig', {button_label: 'Enregistrer les modifications', form_action: 'edit'}) }}
 </div>
 
 <a href="{{ path('app_candidature_index') }}" class="btn-outline-gold mt-3"><i class="fas fa-arrow-left"></i> Retour à la liste</a>

@@ -22,17 +22,17 @@ class OffreType extends AbstractType
         $builder
             ->add('titre', TextType::class, [
                 'label' => 'Titre de l\'offre',
-                'attr' => ['placeholder' => 'Ex: Développeur PHP Senior'],
+                'attr' => ['placeholder' => 'Ex: Développeur PHP Senior', 'minlength' => 3, 'maxlength' => 255],
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description',
                 'required' => false,
-                'attr' => ['rows' => 5, 'placeholder' => 'Décrivez le poste...'],
+                'attr' => ['rows' => 5, 'placeholder' => 'Décrivez le poste...', 'minlength' => 10],
             ])
             ->add('localisation', TextType::class, [
                 'label' => 'Localisation',
                 'required' => false,
-                'attr' => ['placeholder' => 'Ex: Tunis, Sfax...'],
+                'attr' => ['placeholder' => 'Ex: Tunis, Sfax...', 'minlength' => 2, 'maxlength' => 255],
             ])
             ->add('entreprise', EntityType::class, [
                 'class' => Entreprise::class,
@@ -69,12 +69,12 @@ class OffreType extends AbstractType
             ->add('salaireMin', NumberType::class, [
                 'label' => 'Salaire minimum (DT)',
                 'required' => false,
-                'attr' => ['placeholder' => '0'],
+                'attr' => ['placeholder' => '0', 'min' => 0],
             ])
             ->add('salaireMax', NumberType::class, [
                 'label' => 'Salaire maximum (DT)',
                 'required' => false,
-                'attr' => ['placeholder' => '0'],
+                'attr' => ['placeholder' => '0', 'min' => 0],
             ])
             ->add('active', CheckboxType::class, [
                 'label' => 'Offre active',
