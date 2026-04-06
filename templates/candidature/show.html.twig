@@ -1,0 +1,109 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ candidature.titrePoste }} - TalentFlow{% endblock %}
+
+{% block body %}
+<h2 class="tf-title"><i class="fas fa-file-alt"></i> {{ candidature.titrePoste }}</h2>
+
+<div class="tf-card">
+    <div class="row g-4">
+        <div class="col-md-6">
+            <p><strong style="color: var(--tf-gold);">Poste :</strong> {{ candidature.titrePoste }}</p>
+            <p><strong style="color: var(--tf-gold);">Entreprise :</strong> {{ candidature.entreprise }}</p>
+            <p><strong style="color: var(--tf-gold);">Type de contrat :</strong> <span class="badge" style="background: var(--tf-dark-blue);">{{ candidature.typeContrat }}</span></p>
+            <p><strong style="color: var(--tf-gold);">Statut :</strong> <span class="badge bg-{{ candidature.statutBadgeClass }}">{{ candidature.statut }}</span></p>
+            <p><strong style="color: var(--tf-gold);">Lieu :</strong> {{ candidature.lieu ?? '—' }}</p>
+        </div>
+        <div class="col-md-6">
+            <p><strong style="color: var(--tf-gold);">Date de candidature :</strong> {{ candidature.dateCandidature|date('d/m/Y') }}</p>
+            <p><strong style="color: var(--tf-gold);">Date d'entretien :</strong> {{ candidature.dateEntretien ? candidature.dateEntretien|date('d/m/Y') : '—' }}</p>
+            <p><strong style="color: var(--tf-gold);">Salaire souhaité :</strong> {{ candidature.salaireSouhaite ? candidature.salaireSouhaite ~ ' TND' : '—' }}</p>
+            <p><strong style="color: var(--tf-gold);">Créée le :</strong> {{ candidature.createdAt|date('d/m/Y à H:i') }}</p>
+            <p><strong style="color: var(--tf-gold);">Modifiée le :</strong> {{ candidature.updatedAt ? candidature.updatedAt|date('d/m/Y à H:i') : '—' }}</p>
+        </div>
+    </div>
+
+    {% if candidature.description %}
+    <hr style="border-color: var(--tf-border);">
+    <p><strong style="color: var(--tf-gold);">Description :</strong></p>
+    <p style="color: var(--tf-gray);">{{ candidature.description|nl2br }}</p>
+    {% endif %}
+
+    {% if candidature.notes %}
+    <hr style="border-color: var(--tf-border);">
+    <p><strong style="color: var(--tf-gold);">Notes :</strong></p>
+    <p style="color: var(--tf-gray);">{{ candidature.notes|nl2br }}</p>
+    {% endif %}
+</div>
+
+{# Pièces Jointes Section #}
+<div class="tf-card mt-4">
+    <h5 style="color: var(--tf-gold);"><i class="fas fa-paperclip"></i> Pièces Jointes</h5>
+    <hr style="border-color: var(--tf-border);">
+
+    {% if candidature.piecesJointes|length > 0 %}
+    <div class="table-responsive mb-4">
+        <table class="table table-dark table-hover" style="background: transparent;">
+            <thead>
+                <tr style="color: var(--tf-gold);">
+                    <th>Fichier</th>
+                    <th>Type</th>
+                    <th>Taille</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pj in candidature.piecesJointes %}
+                <tr>
+                    <td><i class="fas fa-file"></i> {{ pj.nomFichier }}</td>
+                    <td><span class="badge" style="background: var(--tf-dark-blue);">{{ pj.typeDocument }}</span></td>
+                    <td>{{ pj.tailleFormatee }}</td>
+                    <td>{{ pj.uploadedAt|date('d/m/Y H:i') }}</td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="{{ path('app_piece_jointe_download', {id: pj.id}) }}" class="btn btn-sm btn-outline-light" title="Télécharger"><i class="fas fa-download"></i></a>
+                            <form method="post" action="{{ path('app_piece_jointe_delete', {id: pj.id}) }}" onsubmit="return confirm('Supprimer cette pièce jointe ?');" style="display:inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_pj' ~ pj.id) }}">
+                                <button class="btn btn-sm btn-outline-danger" title="Supprimer"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="color: var(--tf-gray); margin-bottom: 1rem;"><i class="fas fa-info-circle"></i> Aucune pièce jointe pour cette candidature.</p>
+    {% endif %}
+
+    {# Upload Form #}
+    <div style="background: var(--tf-navy); border: 1px dashed var(--tf-border); border-radius: 8px; padding: 1.5rem;">
+        <h6 style="color: var(--tf-gold);"><i class="fas fa-upload"></i> Ajouter une pièce jointe</h6>
+        {{ form_start(pieceJointeForm, {'action': path('app_candidature_upload', {id: candidature.id}), 'attr': {'class': 'tf-form', 'enctype': 'multipart/form-data'}}) }}
+            <div class="row g-3">
+                <div class="col-md-4">
+                    {{ form_label(pieceJointeForm.typeDocument) }}
+                    {{ form_widget(pieceJointeForm.typeDocument) }}
+                    {{ form_errors(pieceJointeForm.typeDocument) }}
+                </div>
+                <div class="col-md-5">
+                    {{ form_label(pieceJointeForm.fichier) }}
+                    {{ form_widget(pieceJointeForm.fichier) }}
+                    {{ form_errors(pieceJointeForm.fichier) }}
+                    <small style="color: var(--tf-gray);">PDF, DOC, DOCX, JPG, PNG — max 5 Mo</small>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn-gold w-100"><i class="fas fa-upload"></i> Envoyer</button>
+                </div>
+            </div>
+        {{ form_end(pieceJointeForm) }}
+    </div>
+</div>
+
+<div class="d-flex gap-2 mt-3">
+    <a href="{{ path('app_candidature_index') }}" class="btn-outline-gold"><i class="fas fa-arrow-left"></i> Retour</a>
+    <a href="{{ path('app_candidature_edit', {id: candidature.id}) }}" class="btn-gold"><i class="fas fa-edit"></i> Modifier</a>
+</div>
+{% endblock %}

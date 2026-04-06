@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard RH - TalentFlow{% endblock %}
+
+{% block body %}
+<h2 class="tf-title"><i class="fas fa-user-tie"></i> Dashboard RH</h2>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="tf-card text-center">
+            <i class="fas fa-users fa-2x" style="color: var(--tf-gold);"></i>
+            <h3 class="mt-2" style="color: var(--tf-gold);">{{ totalCandidats }}</h3>
+            <p style="color: var(--tf-gray);">Candidats</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="tf-card text-center">
+            <i class="fas fa-file-alt fa-2x" style="color: #2ecc71;"></i>
+            <h3 class="mt-2" style="color: #2ecc71;">{{ totalCandidatures }}</h3>
+            <p style="color: var(--tf-gray);">Candidatures</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="tf-card text-center">
+            <i class="fas fa-chart-pie fa-2x" style="color: #3498db;"></i>
+            <h3 class="mt-2" style="color: #3498db;">{{ candidaturesByStatut|length }}</h3>
+            <p style="color: var(--tf-gray);">Statuts différents</p>
+        </div>
+    </div>
+</div>
+
+<div class="tf-card">
+    <h5 style="color: var(--tf-gold);"><i class="fas fa-chart-pie"></i> Candidatures par statut</h5>
+    <hr style="border-color: var(--tf-border);">
+    {% for item in candidaturesByStatut %}
+    <div class="d-flex justify-content-between mb-2">
+        <span>{{ item.statut }}</span>
+        <span class="badge" style="background: var(--tf-dark-blue);">{{ item.total }}</span>
+    </div>
+    {% else %}
+    <p style="color: var(--tf-gray);">Aucune candidature pour le moment.</p>
+    {% endfor %}
+</div>
+{% endblock %}

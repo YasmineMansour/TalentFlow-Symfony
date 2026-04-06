@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Espace - TalentFlow{% endblock %}
+
+{% block body %}
+<h2 class="tf-title"><i class="fas fa-user"></i> Mon Espace Candidat</h2>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="tf-card text-center">
+            <i class="fas fa-paper-plane fa-2x" style="color: var(--tf-gold);"></i>
+            <h3 class="mt-2" style="color: var(--tf-gold);">{{ candidaturesEnvoyees }}</h3>
+            <p style="color: var(--tf-gray);">Candidatures envoyées</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="tf-card text-center">
+            <i class="fas fa-hourglass-half fa-2x" style="color: #f39c12;"></i>
+            <h3 class="mt-2" style="color: #f39c12;">{{ enAttente }}</h3>
+            <p style="color: var(--tf-gray);">En attente</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="tf-card text-center">
+            <i class="fas fa-check-circle fa-2x" style="color: #2ecc71;"></i>
+            <h3 class="mt-2" style="color: #2ecc71;">{{ acceptees }}</h3>
+            <p style="color: var(--tf-gray);">Acceptées</p>
+        </div>
+    </div>
+</div>
+
+<div class="tf-card">
+    <p style="color: var(--tf-gray); text-align: center; padding: 2rem;">
+        <i class="fas fa-info-circle fa-2x" style="color: var(--tf-gold);"></i><br><br>
+        Bienvenue sur votre espace candidat. Consultez vos candidatures via le menu.
+    </p>
+</div>
+{% endblock %}

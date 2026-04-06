@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion - TalentFlow{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block body %}
+<div class="tf-login-wrapper" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+    <div class="tf-login-card">
+        <div class="brand-lg">
+            <i class="fas fa-briefcase" style="font-size: 2.5rem; color: var(--tf-gold);"></i>
+            <h1>TalentFlow</h1>
+            <p>Gestion RH intelligente</p>
+        </div>
+
+        {% if error %}
+            <div class="tf-flash tf-flash-error">
+                <i class="fas fa-exclamation-circle"></i> {{ error.messageKey|trans(error.messageData, 'security') }}
+            </div>
+        {% endif %}
+
+        <form method="post" class="tf-form">
+            <div class="mb-3">
+                <label for="inputEmail" class="form-label">Email</label>
+                <div style="position: relative;">
+                    <i class="fas fa-envelope" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--tf-gray);"></i>
+                    <input type="email" value="{{ last_username }}" name="_username" id="inputEmail"
+                           class="form-control" style="padding-left: 2.5rem;"
+                           autocomplete="email" required autofocus
+                           placeholder="votre@email.com">
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="inputPassword" class="form-label">Mot de passe</label>
+                <div style="position: relative;">
+                    <i class="fas fa-lock" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--tf-gray);"></i>
+                    <input type="password" name="_password" id="inputPassword"
+                           class="form-control" style="padding-left: 2.5rem;"
+                           autocomplete="current-password" required
+                           placeholder="••••••••">
+                </div>
+            </div>
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+            <button class="btn-gold w-100 py-2" type="submit" style="font-size: 1rem;">
+                <i class="fas fa-sign-in-alt"></i> Se connecter
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

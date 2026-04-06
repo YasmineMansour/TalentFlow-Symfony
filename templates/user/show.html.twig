@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ user.fullName }} - TalentFlow{% endblock %}
+
+{% block body %}
+<h2 class="tf-title"><i class="fas fa-user"></i> {{ user.fullName }}</h2>
+
+<div class="tf-card">
+    <div class="row">
+        <div class="col-md-6">
+            <p><strong style="color: var(--tf-gold);">Nom :</strong> {{ user.nom }}</p>
+            <p><strong style="color: var(--tf-gold);">Prénom :</strong> {{ user.prenom }}</p>
+            <p><strong style="color: var(--tf-gold);">Email :</strong> {{ user.email }}</p>
+            <p><strong style="color: var(--tf-gold);">Téléphone :</strong> {{ user.telephone ?? '—' }}</p>
+        </div>
+        <div class="col-md-6">
+            <p><strong style="color: var(--tf-gold);">Rôle :</strong> <span class="badge" style="background: var(--tf-dark-blue);">{{ user.roleLabel }}</span></p>
+            <p><strong style="color: var(--tf-gold);">Inscrit le :</strong> {{ user.createdAt|date('d/m/Y à H:i') }}</p>
+            <p><strong style="color: var(--tf-gold);">Modifié le :</strong> {{ user.updatedAt ? user.updatedAt|date('d/m/Y à H:i') : '—' }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex gap-2 mt-3">
+    <a href="{{ path('app_user_index') }}" class="btn-outline-gold"><i class="fas fa-arrow-left"></i> Retour</a>
+    <a href="{{ path('app_user_edit', {id: user.id}) }}" class="btn-gold"><i class="fas fa-edit"></i> Modifier</a>
+</div>
+{% endblock %}

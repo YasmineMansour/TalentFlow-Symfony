@@ -1,0 +1,164 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Admin - TalentFlow{% endblock %}
+
+{% block body %}
+<h2 class="tf-title"><i class="fas fa-tachometer-alt"></i> Dashboard Administrateur</h2>
+
+{# Stats Cards #}
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="tf-card text-center">
+            <i class="fas fa-users fa-2x" style="color: var(--tf-gold);"></i>
+            <h3 class="mt-2" style="color: var(--tf-gold);">{{ totalUsers }}</h3>
+            <p style="color: var(--tf-gray);">Utilisateurs</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="tf-card text-center">
+            <i class="fas fa-file-alt fa-2x" style="color: #2ecc71;"></i>
+            <h3 class="mt-2" style="color: #2ecc71;">{{ totalCandidatures }}</h3>
+            <p style="color: var(--tf-gray);">Candidatures</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="tf-card text-center">
+            <i class="fas fa-user-plus fa-2x" style="color: #3498db;"></i>
+            <h3 class="mt-2" style="color: #3498db;">{{ newThisWeek }}</h3>
+            <p style="color: var(--tf-gray);">Nouveaux cette semaine</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="tf-card text-center">
+            <i class="fas fa-chart-line fa-2x" style="color: {% if growthRate >= 0 %}#2ecc71{% else %}#e74c3c{% endif %};"></i>
+            <h3 class="mt-2" style="color: {% if growthRate >= 0 %}#2ecc71{% else %}#e74c3c{% endif %};">{{ growthRate }}%</h3>
+            <p style="color: var(--tf-gray);">Croissance</p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    {# Roles breakdown #}
+    <div class="col-md-4">
+        <div class="tf-card">
+            <h5 style="color: var(--tf-gold);"><i class="fas fa-users-cog"></i> Répartition des rôles</h5>
+            <hr style="border-color: var(--tf-border);">
+            <div class="d-flex justify-content-between mb-2">
+                <span><i class="fas fa-shield-alt" style="color: #e74c3c;"></i> Admins</span>
+                <span class="badge" style="background: #e74c3c;">{{ totalAdmins }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span><i class="fas fa-user-tie" style="color: #3498db;"></i> RH</span>
+                <span class="badge" style="background: #3498db;">{{ totalRh }}</span>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span><i class="fas fa-user" style="color: #2ecc71;"></i> Candidats</span>
+                <span class="badge" style="background: #2ecc71;">{{ totalCandidats }}</span>
+            </div>
+        </div>
+    </div>
+
+    {# Candidatures by status #}
+    <div class="col-md-4">
+        <div class="tf-card">
+            <h5 style="color: var(--tf-gold);"><i class="fas fa-chart-pie"></i> Candidatures par statut</h5>
+            <hr style="border-color: var(--tf-border);">
+            {% for item in candidaturesByStatut %}
+            <div class="d-flex justify-content-between mb-2">
+                <span>{{ item.statut }}</span>
+                <span class="badge" style="background: var(--tf-dark-blue);">{{ item.total }}</span>
+            </div>
+            {% else %}
+            <p style="color: var(--tf-gray);">Aucune candidature</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# Candidatures by type #}
+    <div class="col-md-4">
+        <div class="tf-card">
+            <h5 style="color: var(--tf-gold);"><i class="fas fa-briefcase"></i> Par type de contrat</h5>
+            <hr style="border-color: var(--tf-border);">
+            {% for item in candidaturesByType %}
+            <div class="d-flex justify-content-between mb-2">
+                <span>{{ item.typeContrat }}</span>
+                <span class="badge" style="background: var(--tf-dark-blue);">{{ item.total }}</span>
+            </div>
+            {% else %}
+            <p style="color: var(--tf-gray);">Aucune candidature</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{# Recent Users #}
+<div class="tf-card mb-4">
+    <h5 style="color: var(--tf-gold);"><i class="fas fa-clock"></i> Utilisateurs récents</h5>
+    <hr style="border-color: var(--tf-border);">
+    <div class="table-responsive">
+        <table class="table table-dark table-hover" style="background: transparent;">
+            <thead>
+                <tr style="color: var(--tf-gold);">
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Rôle</th>
+                    <th>Inscrit le</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in recentUsers %}
+                <tr>
+                    <td>{{ user.fullName }}</td>
+                    <td>{{ user.email }}</td>
+                    <td><span class="badge" style="background: var(--tf-dark-blue);">{{ user.roleLabel }}</span></td>
+                    <td>{{ user.createdAt|date('d/m/Y') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{# Chart #}
+<div class="tf-card">
+    <h5 style="color: var(--tf-gold);"><i class="fas fa-chart-bar"></i> Inscriptions (6 derniers mois)</h5>
+    <hr style="border-color: var(--tf-border);">
+    <canvas id="monthlyChart" height="100"></canvas>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    const ctx = document.getElementById('monthlyChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [{% for m in monthlyData %}'{{ m.label }}'{% if not loop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Inscriptions',
+                data: [{% for m in monthlyData %}{{ m.count }}{% if not loop.last %},{% endif %}{% endfor %}],
+                backgroundColor: 'rgba(212, 168, 67, 0.6)',
+                borderColor: '#d4a843',
+                borderWidth: 1,
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: '#a0a0b0', stepSize: 1 },
+                    grid: { color: 'rgba(42, 58, 78, 0.5)' }
+                },
+                x: {
+                    ticks: { color: '#a0a0b0' },
+                    grid: { display: false }
+                }
+            },
+            plugins: { legend: { labels: { color: '#f5f5f5' } } }
+        }
+    });
+</script>
+{% endblock %}

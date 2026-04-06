@@ -1,16 +1,264 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}
-        {% endblock %}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}TalentFlow{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>💼</text></svg>">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+        <style>
+            :root {
+                --tf-midnight: #1a1a2e;
+                --tf-navy: #16213e;
+                --tf-dark-blue: #0f3460;
+                --tf-gold: #d4a843;
+                --tf-gold-light: #e8c96d;
+                --tf-gold-dark: #b8922f;
+                --tf-white: #f5f5f5;
+                --tf-gray: #a0a0b0;
+                --tf-card-bg: #1e2a3a;
+                --tf-border: #2a3a4e;
+            }
 
-        {% block javascripts %}
-        {% endblock %}
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background-color: var(--tf-midnight);
+                color: var(--tf-white);
+                min-height: 100vh;
+            }
+
+            .tf-navbar {
+                background: linear-gradient(135deg, var(--tf-navy), var(--tf-dark-blue));
+                border-bottom: 2px solid var(--tf-gold);
+                padding: 0.8rem 2rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            }
+            .tf-navbar .brand {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: var(--tf-gold);
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            .tf-navbar .brand i { font-size: 1.3rem; }
+            .tf-navbar .nav-links {
+                display: flex;
+                gap: 1.5rem;
+                align-items: center;
+            }
+            .tf-navbar .nav-links a {
+                color: var(--tf-white);
+                text-decoration: none;
+                font-weight: 500;
+                transition: color 0.3s;
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+            }
+            .tf-navbar .nav-links a:hover { color: var(--tf-gold); }
+
+            .tf-container {
+                max-width: 1200px;
+                margin: 2rem auto;
+                padding: 0 1.5rem;
+            }
+
+            .tf-card {
+                background: var(--tf-card-bg);
+                border: 1px solid var(--tf-border);
+                border-radius: 12px;
+                padding: 2rem;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            }
+
+            .tf-title {
+                color: var(--tf-gold);
+                font-weight: 700;
+                margin-bottom: 1.5rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .btn-gold {
+                background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
+                color: var(--tf-midnight);
+                border: none;
+                padding: 0.5rem 1.2rem;
+                border-radius: 8px;
+                font-weight: 600;
+                transition: all 0.3s;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+            }
+            .btn-gold:hover {
+                background: linear-gradient(135deg, var(--tf-gold-light), var(--tf-gold));
+                color: var(--tf-midnight);
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(212, 168, 67, 0.3);
+            }
+            .btn-outline-gold {
+                border: 1px solid var(--tf-gold);
+                color: var(--tf-gold);
+                background: transparent;
+                padding: 0.5rem 1.2rem;
+                border-radius: 8px;
+                font-weight: 600;
+                transition: all 0.3s;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+            }
+            .btn-outline-gold:hover {
+                background: var(--tf-gold);
+                color: var(--tf-midnight);
+            }
+            .btn-danger-tf {
+                background: #c0392b;
+                color: white;
+                border: none;
+                padding: 0.4rem 1rem;
+                border-radius: 8px;
+                font-weight: 600;
+                transition: all 0.3s;
+            }
+            .btn-danger-tf:hover { background: #e74c3c; }
+
+            .tf-flash {
+                padding: 0.8rem 1.2rem;
+                border-radius: 8px;
+                margin-bottom: 1rem;
+                border-left: 4px solid;
+            }
+            .tf-flash-success {
+                background: rgba(39, 174, 96, 0.12);
+                border-color: #27ae60;
+                color: #2ecc71;
+            }
+            .tf-flash-error {
+                background: rgba(192, 57, 43, 0.12);
+                border-color: #c0392b;
+                color: #e74c3c;
+            }
+
+            .tf-login-wrapper {
+                min-height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background: linear-gradient(135deg, var(--tf-midnight), var(--tf-navy), var(--tf-dark-blue));
+            }
+            .tf-login-card {
+                width: 100%;
+                max-width: 420px;
+                background: var(--tf-card-bg);
+                border: 1px solid var(--tf-border);
+                border-radius: 16px;
+                padding: 2.5rem;
+                box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            }
+            .tf-login-card .brand-lg {
+                text-align: center;
+                margin-bottom: 2rem;
+            }
+            .tf-login-card .brand-lg h1 {
+                color: var(--tf-gold);
+                font-size: 2rem;
+                font-weight: 700;
+            }
+            .tf-login-card .brand-lg p {
+                color: var(--tf-gray);
+                margin-top: 0.3rem;
+            }
+
+            .tf-form .form-label {
+                color: var(--tf-gold);
+                font-weight: 600;
+                margin-bottom: 0.3rem;
+            }
+            .tf-form .form-control, .tf-form .form-select {
+                background: var(--tf-navy);
+                border: 1px solid var(--tf-border);
+                color: var(--tf-white);
+                border-radius: 8px;
+                padding: 0.6rem 1rem;
+            }
+            .tf-form .form-control:focus, .tf-form .form-select:focus {
+                border-color: var(--tf-gold);
+                box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.15);
+                background: var(--tf-navy);
+                color: var(--tf-white);
+            }
+            .tf-form .form-control::placeholder { color: var(--tf-gray); }
+
+            .tf-avatar {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
+                color: var(--tf-midnight);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 0.9rem;
+            }
+
+            @media (max-width: 768px) {
+                .tf-navbar { padding: 0.8rem 1rem; flex-wrap: wrap; gap: 0.5rem; }
+                .tf-container { padding: 0 1rem; margin: 1rem auto; }
+            }
+        </style>
+        {% block stylesheets %}{% endblock %}
+        {% block javascripts %}{% endblock %}
     </head>
     <body>
-        {% block body %}{% endblock %}
+        {% block navbar %}
+        {% if app.user %}
+        <nav class="tf-navbar">
+            <a href="{{ path('app_dashboard') }}" class="brand">
+                <i class="fas fa-briefcase"></i> TalentFlow
+            </a>
+            <div class="nav-links">
+                <a href="{{ path('app_dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="{{ path('app_user_index') }}"><i class="fas fa-users"></i> Utilisateurs</a>
+                <a href="{{ path('app_candidature_index') }}"><i class="fas fa-file-alt"></i> Candidatures</a>
+                <span style="color: var(--tf-gray);">|</span>
+                <span style="color: var(--tf-gray);">
+                    <i class="fas fa-user-circle"></i> {{ app.user.fullName }}
+                </span>
+                <a href="{{ path('app_logout') }}" style="color: #e74c3c;">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </a>
+            </div>
+        </nav>
+        {% endif %}
+        {% endblock %}
+
+        <div class="tf-container">
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="tf-flash tf-flash-{{ label }}">
+                        <i class="fas fa-{{ label == 'success' ? 'check-circle' : 'exclamation-circle' }}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+
+            {% block body %}{% endblock %}
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>

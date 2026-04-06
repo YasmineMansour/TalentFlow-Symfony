@@ -1,0 +1,82 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Utilisateurs - TalentFlow{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="tf-title mb-0"><i class="fas fa-users"></i> Gestion des Utilisateurs</h2>
+    <a href="{{ path('app_user_new') }}" class="btn-gold"><i class="fas fa-plus"></i> Nouvel utilisateur</a>
+</div>
+
+{# Search & Filter #}
+<div class="tf-card mb-4">
+    <form method="get" action="{{ path('app_user_index') }}" class="row g-3 tf-form">
+        <div class="col-md-6">
+            <input type="text" name="search" class="form-control" placeholder="Rechercher par nom, prénom ou email..." value="{{ search }}">
+        </div>
+        <div class="col-md-4">
+            <select name="role" class="form-select">
+                <option value="">-- Tous les rôles --</option>
+                <option value="ROLE_ADMIN" {{ role == 'ROLE_ADMIN' ? 'selected' }}>Admin</option>
+                <option value="ROLE_RH" {{ role == 'ROLE_RH' ? 'selected' }}>RH</option>
+                <option value="ROLE_CANDIDAT" {{ role == 'ROLE_CANDIDAT' ? 'selected' }}>Candidat</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn-gold w-100"><i class="fas fa-search"></i> Filtrer</button>
+        </div>
+    </form>
+</div>
+
+{# Table #}
+<div class="tf-card">
+    <div class="table-responsive">
+        <table class="table table-dark table-hover" style="background: transparent;">
+            <thead>
+                <tr style="color: var(--tf-gold);">
+                    <th>#</th>
+                    <th>Nom complet</th>
+                    <th>Email</th>
+                    <th>Téléphone</th>
+                    <th>Rôle</th>
+                    <th>Inscrit le</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="tf-avatar">{{ user.nom|first|upper }}{{ user.prenom|first|upper }}</div>
+                            {{ user.fullName }}
+                        </div>
+                    </td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.telephone ?? '—' }}</td>
+                    <td><span class="badge" style="background: var(--tf-dark-blue);">{{ user.roleLabel }}</span></td>
+                    <td>{{ user.createdAt|date('d/m/Y') }}</td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="{{ path('app_user_show', {id: user.id}) }}" class="btn btn-sm btn-outline-light" title="Voir"><i class="fas fa-eye"></i></a>
+                            <a href="{{ path('app_user_edit', {id: user.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier"><i class="fas fa-edit"></i></a>
+                            <form method="post" action="{{ path('app_user_delete', {id: user.id}) }}" onsubmit="return confirm('Supprimer cet utilisateur ?');" style="display:inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+                                <button class="btn btn-sm btn-outline-danger" title="Supprimer"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center" style="color: var(--tf-gray); padding: 2rem;">
+                        <i class="fas fa-inbox fa-2x"></i><br>Aucun utilisateur trouvé.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
