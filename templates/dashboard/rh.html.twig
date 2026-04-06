@@ -73,15 +73,15 @@
                     </a>
                 </div>
                 <div class="col-6">
-                    <a href="#" class="tf-quick-action">
+                    <a href="{{ path('app_entretien_new') }}" class="tf-quick-action">
                         <i class="fas fa-calendar-plus"></i>
                         <span>Planifier entretien</span>
                     </a>
                 </div>
                 <div class="col-6">
-                    <a href="#" class="tf-quick-action">
-                        <i class="fas fa-search"></i>
-                        <span>Rechercher CV</span>
+                    <a href="{{ path('app_decision_finale_index') }}" class="tf-quick-action">
+                        <i class="fas fa-gavel"></i>
+                        <span>Décisions finales</span>
                     </a>
                 </div>
             </div>
@@ -99,6 +99,13 @@
             <div class="tf-flash tf-flash-warning">
                 <i class="fas fa-exclamation-triangle"></i>
                 Vous avez <strong>{{ entretiensAujourdhui }} entretien{{ entretiensAujourdhui > 1 ? 's' : '' }}</strong> prévu{{ entretiensAujourdhui > 1 ? 's' : '' }} aujourd'hui.
+            </div>
+            {% endif %}
+
+            {% if decisionsEnAttente > 0 %}
+            <div class="tf-flash tf-flash-warning">
+                <i class="fas fa-scale-balanced"></i>
+                <strong>{{ decisionsEnAttente }} décision{{ decisionsEnAttente > 1 ? 's' : '' }}</strong> finale{{ decisionsEnAttente > 1 ? 's' : '' }} en attente.
             </div>
             {% endif %}
 

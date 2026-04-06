@@ -696,8 +696,13 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#">
+                    <a href="{{ path('app_entretien_index') }}" class="{% if 'app_entretien' in app.request.attributes.get('_route') %}active{% endif %}">
                         <i class="fas fa-calendar-check"></i> Entretiens
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_decision_finale_index') }}" class="{% if 'app_decision_finale' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-scale-balanced"></i> Décisions finales
                     </a>
                 </li>
                 {% endif %}

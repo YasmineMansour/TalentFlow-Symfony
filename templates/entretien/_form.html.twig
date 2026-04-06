@@ -1,0 +1,67 @@
+{{ form_start(form, {'attr': {'class': 'tf-form', 'novalidate': 'novalidate'}}) }}
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.candidateEmail) }}
+            {{ form_widget(form.candidateEmail) }}
+            {{ form_errors(form.candidateEmail) }}
+            <small class="form-hint"><i class="fas fa-envelope"></i> L'email saisi est utilisé pour retrouver automatiquement la candidature</small>
+        </div>
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.dateHeure) }}
+            {{ form_widget(form.dateHeure) }}
+            {{ form_errors(form.dateHeure) }}
+            <small class="form-hint"><i class="fas fa-clock"></i> Contrôle de conflit sur le même créneau</small>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.type) }}
+            {{ form_widget(form.type) }}
+            {{ form_errors(form.type) }}
+        </div>
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.statut) }}
+            {{ form_widget(form.statut) }}
+            {{ form_errors(form.statut) }}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.lieu) }}
+            {{ form_widget(form.lieu) }}
+            {{ form_errors(form.lieu) }}
+            <small class="form-hint"><i class="fas fa-map-marker-alt"></i> Recommandé pour un entretien présentiel</small>
+        </div>
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.lien) }}
+            {{ form_widget(form.lien) }}
+            {{ form_errors(form.lien) }}
+            <small class="form-hint"><i class="fas fa-video"></i> Recommandé pour un entretien en ligne</small>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.noteTechnique) }}
+            {{ form_widget(form.noteTechnique) }}
+            {{ form_errors(form.noteTechnique) }}
+        </div>
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.noteCommunication) }}
+            {{ form_widget(form.noteCommunication) }}
+            {{ form_errors(form.noteCommunication) }}
+        </div>
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.commentaire) }}
+        {{ form_widget(form.commentaire) }}
+        {{ form_errors(form.commentaire) }}
+    </div>
+
+    <button type="submit" class="btn-gold mt-2">
+        <i class="fas {{ button_icon|default('fa-save') }}"></i> {{ button_label|default('Enregistrer') }}
+    </button>
+{{ form_end(form) }}
