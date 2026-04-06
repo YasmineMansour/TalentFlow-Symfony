@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Scheb\TwoFactorBundle\Model\Email\TwoFactorInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -103,9 +105,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     #[ORM\Column(options: ['default' => true])]
     private bool $twoFactorEnabled = true;
 
+    /** @var Collection<int, Post> */
+    #[ORM\OneToMany(targetEntity: Post::class, mappedBy: 'author')]
+    private Collection $posts;
+
+    /** @var Collection<int, Comment> */
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'author')]
+    private Collection $comments;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+        $this->posts = new ArrayCollection();
+        $this->comments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -353,4 +365,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
             $this->nom = mb_strtoupper($this->nom, 'UTF-8');
         }
     }
+
+    /** @return Collection<int, Post> */
+    public function getPosts(): Collection { return $this->posts; }
+
+    /** @return Collection<int, Comment> */
+    public function getComments(): Collection { return $this->comments; }
 }

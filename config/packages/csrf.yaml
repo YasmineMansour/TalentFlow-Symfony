@@ -1,0 +1,5 @@
+# Use standard session-based CSRF protection for forms
+framework:
+    form:
+        csrf_protection:
+            enabled: true
