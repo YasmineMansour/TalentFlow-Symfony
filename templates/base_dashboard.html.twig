@@ -7,6 +7,7 @@
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>💼</text></svg>">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
         <style>
             :root {
                 --tf-midnight: #1a1a2e;
@@ -648,6 +649,53 @@
                 .tf-topbar { left: 0; }
                 .tf-main { margin-left: 0; }
             }
+
+            /* ==================== BOOTSTRAP COMPAT (dark theme) ==================== */
+            .table { color: var(--tf-white); }
+            .table-striped > tbody > tr:nth-of-type(odd) { --bs-table-accent-bg: rgba(212, 168, 67, 0.03); color: var(--tf-white); }
+            .table-hover > tbody > tr:hover { --bs-table-hover-bg: rgba(212, 168, 67, 0.08); color: var(--tf-gold); }
+            .table-dark, .table thead.table-dark th { background-color: var(--tf-navy) !important; color: var(--tf-gold) !important; border-color: var(--tf-border) !important; }
+            .table td, .table th { border-color: var(--tf-border); }
+            .card { background: var(--tf-card-bg); border-color: var(--tf-border); color: var(--tf-white); }
+            .card-body { background: transparent; }
+            .card-header { background: var(--tf-navy); border-color: var(--tf-border); color: var(--tf-gold); }
+            .form-control, .form-select { background-color: var(--tf-navy); border-color: var(--tf-border); color: var(--tf-white); }
+            .form-control:focus, .form-select:focus { background-color: var(--tf-navy); border-color: var(--tf-gold); color: var(--tf-white); box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.15); }
+            .form-control::placeholder { color: var(--tf-gray); }
+            .form-label { color: var(--tf-gold); font-weight: 600; }
+            .input-group-text { background-color: var(--tf-navy); border-color: var(--tf-border); color: var(--tf-gold); }
+            .btn-primary { background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark)); border: none; color: var(--tf-midnight); font-weight: 600; }
+            .btn-primary:hover { background: linear-gradient(135deg, var(--tf-gold-light), var(--tf-gold)); color: var(--tf-midnight); }
+            .btn-outline-primary { border-color: var(--tf-gold); color: var(--tf-gold); }
+            .btn-outline-primary:hover { background: var(--tf-gold); color: var(--tf-midnight); }
+            .btn-outline-secondary { border-color: var(--tf-gray); color: var(--tf-gray); }
+            .btn-outline-secondary:hover { background: var(--tf-gray); color: var(--tf-midnight); }
+            .btn-outline-danger { border-color: #e74c3c; color: #e74c3c; }
+            .btn-outline-danger:hover { background: #e74c3c; color: white; }
+            .btn-danger { background: #c0392b; border-color: #c0392b; }
+            .btn-danger:hover { background: #e74c3c; border-color: #e74c3c; }
+            .btn-success { background: #27ae60; border-color: #27ae60; }
+            .btn-warning { background: var(--tf-gold); border-color: var(--tf-gold); color: var(--tf-midnight); }
+            .alert { border-radius: 8px; border-left-width: 4px; }
+            .alert-info { background: rgba(93, 173, 226, 0.1); border-color: #5dade2; color: #5dade2; }
+            .alert-success { background: rgba(39, 174, 96, 0.1); border-color: #27ae60; color: #2ecc71; }
+            .alert-danger { background: rgba(192, 57, 43, 0.1); border-color: #c0392b; color: #e74c3c; }
+            .alert-warning { background: rgba(243, 156, 18, 0.1); border-color: #f39c12; color: #f1c40f; }
+            .text-muted { color: var(--tf-gray) !important; }
+            .text-success { color: #2ecc71 !important; }
+            .text-danger { color: #e74c3c !important; }
+            h1, h2, h3, h4, h5, h6 { color: var(--tf-white); }
+            a { color: var(--tf-gold); }
+            a:hover { color: var(--tf-gold-light); }
+            .badge.bg-info { background-color: var(--tf-dark-blue) !important; color: var(--tf-gold) !important; }
+            .badge.bg-success { background-color: #27ae60 !important; }
+            .badge.bg-warning { background-color: var(--tf-gold) !important; color: var(--tf-midnight) !important; }
+            .badge.bg-secondary { background-color: var(--tf-navy) !important; border: 1px solid var(--tf-border); }
+            .badge.bg-danger { background-color: #c0392b !important; }
+            dl dt { color: var(--tf-gold); }
+            dl dd { color: var(--tf-white); }
+            .list-group-item { background: var(--tf-card-bg); border-color: var(--tf-border); color: var(--tf-white); }
+            .bi { font-style: normal; }
         </style>
         {% block stylesheets %}{% endblock %}
     </head>
@@ -686,13 +734,23 @@
                 {% if is_granted('ROLE_RH') or is_granted('ROLE_ADMIN') %}
                 <div class="tf-sidebar-section">Recrutement</div>
                 <li>
-                    <a href="#">
+                    <a href="{{ path('offre_index') }}" class="{% if 'offre' in app.request.attributes.get('_route') %}active{% endif %}">
                         <i class="fas fa-clipboard-list"></i> Offres d'emploi
                     </a>
                 </li>
                 <li>
-                    <a href="#">
-                        <i class="fas fa-file-alt"></i> Candidatures
+                    <a href="{{ path('entreprise_index') }}" class="{% if 'entreprise' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-building"></i> Entreprises
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('categorie_index') }}" class="{% if 'categorie' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-tags"></i> Catégories
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('avantage_index') }}" class="{% if 'avantage' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-gift"></i> Avantages
                     </a>
                 </li>
                 <li>
@@ -707,6 +765,13 @@
                 </li>
                 {% endif %}
 
+                <div class="tf-sidebar-section">Communauté</div>
+                <li>
+                    <a href="{{ path('post_index') }}" class="{% if 'post' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-comments"></i> Forum
+                    </a>
+                </li>
+
                 {% if is_granted('ROLE_CANDIDAT') and not is_granted('ROLE_ADMIN') %}
                 <div class="tf-sidebar-section">Mon Espace</div>
                 <li>
@@ -715,7 +780,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#">
+                    <a href="{{ path('offre_index') }}" class="{% if 'offre' in app.request.attributes.get('_route') %}active{% endif %}">
                         <i class="fas fa-search"></i> Offres disponibles
                     </a>
                 </li>
