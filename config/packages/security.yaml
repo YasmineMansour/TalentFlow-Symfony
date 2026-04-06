@@ -1,16 +1,10 @@
 security:
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
-        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
-            algorithm: bcrypt
-
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        app_user_provider:
-            entity:
-                class: App\Entity\User
-                property: email
-
+        users_in_memory: { memory: null }
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -30,12 +24,14 @@ security:
                 path: app_logout
                 target: app_login
 
-    # Role hierarchy
-    role_hierarchy:
-        ROLE_RH: ROLE_USER
-        ROLE_ADMIN: [ROLE_RH, ROLE_CANDIDAT]
+            # activate different ways to authenticate
+            # https://symfony.com/doc/current/security.html#the-firewall
 
-    # Access control rules
+            # https://symfony.com/doc/current/security/impersonating_user.html
+            # switch_user: true
+
+    # Easy way to control access for large sections of your site
+    # Note: Only the *first* access control that matches will be used
     access_control:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }

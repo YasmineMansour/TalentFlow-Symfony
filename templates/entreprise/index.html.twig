@@ -1,0 +1,133 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Entreprises - TalentFlow{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-building"></i> Liste des Entreprises</h1>
+    <a href="{{ path('entreprise_new') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Nouvelle Entreprise
+    </a>
+</div>
+
+<form method="get" action="{{ path('entreprise_index') }}" class="mb-4">
+    <div class="card">
+        <div class="card-body">
+            <div class="input-group mb-3">
+                <input type="text" name="q" class="form-control" placeholder="Rechercher par nom..." value="{{ search }}">
+                <button class="btn btn-outline-secondary" type="submit">
+                    <i class="bi bi-search"></i> Rechercher
+                </button>
+                {% if search or secteur or tri != 'id' %}
+                <a href="{{ path('entreprise_index') }}" class="btn btn-outline-danger">
+                    <i class="bi bi-x-circle"></i> Réinitialiser
+                </a>
+                {% endif %}
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold"><i class="bi bi-briefcase"></i> Secteur</label>
+                    <select name="secteur" class="form-select" onchange="this.form.submit()">
+                        <option value="">-- Tous --</option>
+                        {% for s in secteurs %}
+                            <option value="{{ s }}" {{ secteur == s ? 'selected' : '' }}>{{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold"><i class="bi bi-sort-down"></i> Trier par</label>
+                    <select name="tri" class="form-select" onchange="this.form.submit()">
+                        <option value="id" {{ tri == 'id' ? 'selected' : '' }}>Date (par défaut)</option>
+                        <option value="nom" {{ tri == 'nom' ? 'selected' : '' }}>Nom</option>
+                        <option value="secteur" {{ tri == 'secteur' ? 'selected' : '' }}>Secteur</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold"><i class="bi bi-arrow-down-up"></i> Ordre</label>
+                    <select name="ordre" class="form-select" onchange="this.form.submit()">
+                        <option value="DESC" {{ ordre == 'DESC' ? 'selected' : '' }}>Décroissant</option>
+                        <option value="ASC" {{ ordre == 'ASC' ? 'selected' : '' }}>Croissant</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{% if entrepriseData is empty %}
+    <div class="alert alert-info">Aucune entreprise trouvée.</div>
+{% else %}
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Nom</th>
+                <th>Secteur</th>
+                <th>Email</th>
+                <th>Téléphone</th>
+                <th>Offres</th>
+                <th>Taille</th>
+                <th>Activité</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in entrepriseData %}
+                <tr>
+                    <td>{{ item.entreprise.id }}</td>
+                    <td>
+                        <a href="{{ path('entreprise_show', {id: item.entreprise.id}) }}">{{ item.entreprise.nom }}</a>
+                        {% if not item.complete %}
+                            <span class="badge bg-warning text-dark" title="Profil incomplet">
+                                <i class="bi bi-exclamation-triangle"></i>
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.entreprise.secteur ?? '-' }}</td>
+                    <td>{{ item.entreprise.email ?? '-' }}</td>
+                    <td>{{ item.entreprise.telephone ?? '-' }}</td>
+                    <td><span class="badge bg-primary">{{ item.entreprise.offres|length }}</span></td>
+                    <td>
+                        {% if item.taille == 'Grande' %}
+                            <span class="badge bg-success"><i class="bi bi-building"></i> {{ item.taille }}</span>
+                        {% elseif item.taille == 'Moyenne' %}
+                            <span class="badge bg-info text-dark"><i class="bi bi-building"></i> {{ item.taille }}</span>
+                        {% elseif item.taille == 'Petite' %}
+                            <span class="badge bg-secondary"><i class="bi bi-building"></i> {{ item.taille }}</span>
+                        {% else %}
+                            <span class="text-muted">{{ item.taille }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.activite == 'Très active' %}
+                            <span class="text-success"><i class="bi bi-lightning-charge-fill"></i> {{ item.activite }}</span>
+                        {% elseif item.activite == 'Active' %}
+                            <span class="text-primary"><i class="bi bi-lightning-charge"></i> {{ item.activite }}</span>
+                        {% elseif item.activite == 'Peu active' %}
+                            <span class="text-warning"><i class="bi bi-lightning"></i> {{ item.activite }}</span>
+                        {% else %}
+                            <span class="text-muted"><i class="bi bi-moon"></i> {{ item.activite }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ path('entreprise_edit', {id: item.entreprise.id}) }}" class="btn btn-sm btn-outline-primary" title="Modifier">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form method="post" action="{{ path('entreprise_delete', {id: item.entreprise.id}) }}" class="d-inline" onsubmit="return confirm('Supprimer cette entreprise ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ item.entreprise.id) }}">
+                            <button class="btn btn-sm btn-outline-danger" title="Supprimer">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

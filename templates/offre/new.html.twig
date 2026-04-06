@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle Offre - TalentFlow{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1 class="mb-4"><i class="bi bi-plus-circle"></i> Nouvelle Offre</h1>
+
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+            <div class="card">
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form_row(form.titre) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(form.description) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(form.localisation) }}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form_row(form.entreprise) }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form_row(form.categorie) }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            {{ form_row(form.typeContrat) }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form_row(form.modeTravail) }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form_row(form.statut) }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            {{ form_row(form.salaireMin) }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form_row(form.salaireMax) }}
+                        </div>
+                        <div class="col-md-4 mb-3 d-flex align-items-end">
+                            {{ form_row(form.active) }}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex justify-content-between">
+                    <a href="{{ path('offre_index') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Retour
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> Créer
+                    </button>
+                </div>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}
