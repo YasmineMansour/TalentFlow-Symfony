@@ -1,4 +1,4 @@
-{% extends 'base_dashboard.html.twig' %}
+{% extends is_granted('ROLE_ADMIN') ? 'base_dashboard.html.twig' : 'base_navbar.html.twig' %}
 
 {% block title %}Commentaire #{{ comment.id }}{% endblock %}
 {% block page_title %}Détails du Commentaire{% endblock %}
@@ -86,6 +86,14 @@
                         <i class="fas fa-list"></i>
                         <span>Tous les commentaires</span>
                     </a>
+                </div>
+                <div class="col-12">
+                    <form method="post" action="{{ path('comment_delete', {id: comment.id}) }}" onsubmit="event.preventDefault(); confirmDelete(this, 'ce commentaire');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ comment.id) }}">
+                        <button type="submit" class="btn-danger-tf w-100" style="margin-top: 0.5rem;">
+                            <i class="fas fa-trash"></i> Supprimer ce commentaire
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

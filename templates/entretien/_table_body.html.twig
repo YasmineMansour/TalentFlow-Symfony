@@ -1,0 +1,45 @@
+{# Partial pour le tbody du tableau des entretiens #}
+{% for entretien in entretiens %}
+<tr>
+    <td style="color: var(--tf-gray);">{{ entretien.id }}</td>
+    <td>
+        <strong>Candidature #{{ entretien.candidatureId }}</strong>
+        <div style="color: var(--tf-gray); font-size: 0.75rem;">{{ candidatureLabels[entretien.candidatureId] ?? '—' }}</div>
+    </td>
+    <td>
+        <strong>{{ entretien.dateHeure ? entretien.dateHeure|date('d/m/Y H:i') : '—' }}</strong>
+        <div style="color: var(--tf-gray); font-size: 0.75rem;">{{ entretien.lieu ?: entretien.lien ?: 'Aucun détail' }}</div>
+    </td>
+    <td>{{ entretien.type ?: '—' }}</td>
+    <td>
+        {% set color = entretien.statut == 'REALISE' ? '#27ae60' : (entretien.statut == 'ANNULE' ? '#e74c3c' : '#5dade2') %}
+        <span class="badge-role" style="background: rgba(255,255,255,0.06); color: {{ color }}; border: 1px solid {{ color }};">
+            {{ entretien.statut }}
+        </span>
+    </td>
+    <td>Tech: {{ entretien.noteTechnique ?? '—' }}<br>Com: {{ entretien.noteCommunication ?? '—' }}</td>
+    <td>
+        {% if entretien.scoreFinal is not null %}
+            <strong>{{ entretien.scoreFinal|number_format(2, '.', ' ') }}/20</strong>
+            <div style="color: var(--tf-gray); font-size: 0.75rem;">{{ entretien.niveau }}</div>
+        {% else %}
+            <span style="color: var(--tf-gray);">—</span>
+        {% endif %}
+    </td>
+    <td>
+        <div class="tf-actions">
+            <a href="{{ path('app_entretien_edit', {id: entretien.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier"><i class="fas fa-edit"></i></a>
+            <form method="post" action="{{ path('app_entretien_delete', {id: entretien.id}) }}" onsubmit="event.preventDefault(); confirmDelete(this, 'Entretien #' ~ entretien.id);" style="display:inline;">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete_entretien_' ~ entretien.id) }}">
+                <button class="btn btn-sm btn-outline-danger" title="Supprimer"><i class="fas fa-trash"></i></button>
+            </form>
+        </div>
+    </td>
+</tr>
+{% else %}
+<tr>
+    <td colspan="8" class="text-center" style="color: var(--tf-gray); padding: 2rem;">
+        <i class="fas fa-inbox fa-2x"></i><br>Aucun entretien trouvé.
+    </td>
+</tr>
+{% endfor %}

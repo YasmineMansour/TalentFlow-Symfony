@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="light">
 <head>
+    <script>(function(){var t=localStorage.getItem('tf-theme');if(!t)t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');})()</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TalentFlow - Plateforme de Gestion du Recrutement</title>
@@ -174,6 +175,28 @@
             .tf-login-panel { width: 100%; border-left: none; border-top: 1px solid rgba(212,168,67,0.08); padding: 2rem; }
             .tf-stats { gap: 1.2rem; }
         }
+
+        /* ==================== LIGHT MODE ==================== */
+        [data-theme="light"] body { background: #f4f6fb; color: #1a1a2e; }
+        [data-theme="light"] .tf-navbar { background: rgba(255,255,255,0.95); border-bottom-color: #e2e6ef; }
+        [data-theme="light"] .tf-navbar-brand { color: var(--tf-gold); }
+        [data-theme="light"] .tf-navbar-links a { color: #5a5f7a; }
+        [data-theme="light"] .tf-navbar-links a:hover { color: var(--tf-gold); }
+        [data-theme="light"] .tf-info-panel { background: linear-gradient(135deg, #e8ecf4, #dfe3ed); }
+        [data-theme="light"] .tf-info-panel h1 { color: #1a1a2e; }
+        [data-theme="light"] .tf-info-panel p { color: #5a5f7a; }
+        [data-theme="light"] .tf-form-panel { background: #ffffff; }
+        [data-theme="light"] .tf-form-panel h2 { color: #1a1a2e; }
+        [data-theme="light"] .tf-form-panel p { color: #5a5f7a; }
+        [data-theme="light"] .tf-input-group input { background: #f4f6fb; border-color: #e2e6ef; color: #1a1a2e; }
+        [data-theme="light"] .tf-input-group i { color: #8b90a5; }
+        [data-theme="light"] .tf-alert-error { background: rgba(220,38,38,0.08); color: #dc2626; border-color: rgba(220,38,38,0.2); }
+        [data-theme="light"] .tf-stat-card { background: rgba(0,0,0,0.03); border-color: #e2e6ef; }
+        [data-theme="light"] .tf-stat-card span { color: #1a1a2e; }
+        [data-theme="light"] .tf-footer-login { color: #5a5f7a; }
+
+        .tf-theme-btn-login { width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(212,168,67,0.3); background: transparent; color: var(--tf-gray); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; transition: all 0.2s; }
+        .tf-theme-btn-login:hover { background: rgba(212,168,67,0.1); color: var(--tf-gold); border-color: var(--tf-gold); transform: rotate(15deg); }
     </style>
 </head>
 <body>
@@ -183,8 +206,12 @@
             <i class="fas fa-briefcase"></i> TalentFlow
         </a>
         <div class="tf-navbar-links">
-            <a href="#"><i class="fas fa-info-circle"></i> À propos</a>
-            <a href="#"><i class="fas fa-phone"></i> Contact</a>
+            <a href="{{ path('public_home') }}"><i class="fas fa-home"></i> Accueil</a>
+            <a href="{{ path('public_offres') }}"><i class="fas fa-briefcase"></i> Offres</a>
+            <button class="tf-theme-btn-login" onclick="TFTheme.toggle()" aria-label="Changer le thème" title="Mode clair/sombre">
+                <i class="fas fa-sun" id="theme-icon-sun"></i>
+                <i class="fas fa-moon" id="theme-icon-moon" style="display:none;"></i>
+            </button>
         </div>
     </nav>
 
@@ -335,6 +362,9 @@
                 this.classList.replace('fa-eye-slash', 'fa-eye');
             }
         });
+
+        var TFTheme={toggle:function(){var c=document.documentElement.getAttribute('data-theme')||'dark';var n=c==='dark'?'light':'dark';localStorage.setItem('tf-theme',n);document.documentElement.setAttribute('data-theme',n);document.documentElement.classList.toggle('dark',n==='dark');TFTheme._icons();},_icons:function(){var t=document.documentElement.getAttribute('data-theme');var s=document.getElementById('theme-icon-sun');var m=document.getElementById('theme-icon-moon');if(s&&m){s.style.display=t==='dark'?'':'none';m.style.display=t==='dark'?'none':'';}}};
+        TFTheme._icons();
     </script>
 </body>
 </html>

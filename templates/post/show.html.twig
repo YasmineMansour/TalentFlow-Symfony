@@ -1,4 +1,4 @@
-{% extends 'base_dashboard.html.twig' %}
+{% extends is_granted('ROLE_ADMIN') ? 'base_dashboard.html.twig' : 'base_navbar.html.twig' %}
 
 {% block title %}Post : {{ post.title }}{% endblock %}
 {% block page_title %}Détails du Post{% endblock %}
@@ -65,6 +65,19 @@
             {% else %}
             <p style="text-align: center; color: var(--tf-gray); padding: 1.5rem;">Aucun commentaire pour ce post.</p>
             {% endfor %}
+
+            <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--tf-border);">
+                <h5 style="color: var(--tf-gold); margin-bottom: 0.8rem;"><i class="fas fa-pen"></i> Ajouter un commentaire</h5>
+                {{ form_start(commentForm, {'attr': {'class': 'tf-form'}}) }}
+                    {{ form_widget(commentForm.content) }}
+                    {% for error in commentForm.content.vars.errors %}
+                        <div style="color: #e74c3c; font-size: 0.8rem; margin-top: 0.3rem;">{{ error.message }}</div>
+                    {% endfor %}
+                    <div style="margin-top: 0.8rem; text-align: right;">
+                        <button type="submit" class="btn-gold"><i class="fas fa-paper-plane"></i> Commenter</button>
+                    </div>
+                {{ form_end(commentForm) }}
+            </div>
         </div>
     </div>
 
@@ -117,6 +130,14 @@
                         <i class="fas fa-list"></i>
                         <span>Tous les posts</span>
                     </a>
+                </div>
+                <div class="col-12">
+                    <form method="post" action="{{ path('post_delete', {id: post.id}) }}" onsubmit="event.preventDefault(); confirmDelete(this, '{{ post.title|e('js') }}');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ post.id) }}">
+                        <button type="submit" class="btn-danger-tf w-100" style="margin-top: 0.5rem;">
+                            <i class="fas fa-trash"></i> Supprimer ce post
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

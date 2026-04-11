@@ -1,0 +1,40 @@
+{# Partial pour le tbody du tableau des décisions finales #}
+{% for item in decisions %}
+<tr>
+    <td style="color: var(--tf-gray);">{{ item.id }}</td>
+    <td>ID entretien: {{ item.entretien.id }}</td>
+    <td>
+        <strong>ID candidature: {{ item.entretien.candidatureId }}</strong>
+        <div style="color: var(--tf-gray); font-size: 0.75rem;">{{ candidatureEmails[item.entretien.candidatureId] ?? 'Email indisponible' }}</div>
+    </td>
+    <td>
+        {% set color = item.decision == 'ACCEPTE' ? '#2ecc71' : (item.decision == 'REFUSE' ? '#e74c3c' : '#f1c40f') %}
+        <span class="badge-role" style="background: rgba(255,255,255,0.06); color: {{ color }}; border: 1px solid {{ color }};">{{ item.decision }}</span>
+    </td>
+    <td>{{ item.score is not null ? item.score|number_format(2, '.', ' ') ~ '/20' : '—' }}</td>
+    <td>{{ item.dateDecision ? item.dateDecision|date('d/m/Y H:i') : '—' }}</td>
+    <td>{{ item.motif ?: '—' }}</td>
+    <td>
+        <div class="tf-actions">
+            {% if item.decision == 'EN_ATTENTE' %}
+                <form method="post" action="{{ path('app_decision_finale_update_status', {'id': item.id}) }}" style="display:inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('update_status_decision_' ~ item.id) }}">
+                    <input type="hidden" name="decision" value="ACCEPTE">
+                    <button type="submit" class="btn-gold" title="Accepter"><i class="fas fa-check"></i></button>
+                </form>
+                <form method="post" action="{{ path('app_decision_finale_update_status', {'id': item.id}) }}" style="display:inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('update_status_decision_' ~ item.id) }}">
+                    <input type="hidden" name="decision" value="REFUSE">
+                    <button type="submit" class="btn-danger-tf" title="Refuser"><i class="fas fa-times"></i></button>
+                </form>
+            {% endif %}
+        </div>
+    </td>
+</tr>
+{% else %}
+<tr>
+    <td colspan="8" class="text-center" style="color: var(--tf-gray); padding: 2rem;">
+        <i class="fas fa-inbox fa-2x"></i><br>Aucune décision trouvée.
+    </td>
+</tr>
+{% endfor %}

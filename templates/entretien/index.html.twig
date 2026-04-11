@@ -1,4 +1,4 @@
-{% extends 'base_dashboard.html.twig' %}
+{% extends is_granted('ROLE_ADMIN') ? 'base_dashboard.html.twig' : 'base_navbar.html.twig' %}
 
 {% block title %}Gestion des Entretiens - TalentFlow{% endblock %}
 {% block page_title %}Gestion des Entretiens{% endblock %}
@@ -93,8 +93,8 @@
                         <tr>
                             <td style="color: var(--tf-gray);">{{ entretien.id }}</td>
                             <td>
-                                <strong>ID candidature: {{ entretien.candidatureId }}</strong>
-                                <div style="color: var(--tf-gray); font-size: 0.75rem;">{{ candidatureEmails[entretien.candidatureId] ?? 'Email indisponible' }}</div>
+                                <strong>Candidature #{{ entretien.candidatureId }}</strong>
+                                <div style="color: var(--tf-gray); font-size: 0.75rem;">{{ candidatureLabels[entretien.candidatureId] ?? '—' }}</div>
                             </td>
                             <td>
                                 <strong>{{ entretien.dateHeure ? entretien.dateHeure|date('d/m/Y H:i') : '—' }}</strong>
@@ -137,4 +137,38 @@
         </div>
     {% endif %}
 </div>
+<script>
+// Recherche AJAX entretiens
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.tf-search');
+    const tableBody = document.querySelector('table tbody');
+    let debounceTimer;
+
+    function fetchEntretiens() {
+        const params = new URLSearchParams(new FormData(form)).toString();
+        fetch("{{ path('app_entretien_search') }}?" + params, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(r => r.text())
+            .then(html => {
+                tableBody.innerHTML = html;
+            });
+    }
+
+    // Déclenche sur saisie texte (avec debounce)
+    form.search && form.search.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(fetchEntretiens, 300);
+    });
+
+    // Déclenche sur changement de select
+    form.querySelectorAll('select').forEach(sel => {
+        sel.addEventListener('change', fetchEntretiens);
+    });
+
+    // Empêche le submit classique
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        fetchEntretiens();
+    });
+});
+</script>
 {% endblock %}

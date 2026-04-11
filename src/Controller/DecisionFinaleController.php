@@ -18,12 +18,37 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_RH')]
 class DecisionFinaleController extends AbstractController
 {
+    #[Route('/search', name: 'app_decision_finale_search', methods: ['GET'])]
+    public function search(Request $request, DecisionFinaleRepository $decisionFinaleRepository, CandidatureRepository $candidatureRepository): Response
+    {
+        $search = trim((string) $request->query->get('search', ''));
+        $decision = trim((string) $request->query->get('decision', ''));
+        $entrepriseFilter = null;
+        if ($this->isGranted('ROLE_RH') && !$this->isGranted('ROLE_ADMIN')) {
+            $entrepriseFilter = $this->getUser()->getEntreprise();
+        }
+        $decisions = $decisionFinaleRepository->search($search, $decision, $entrepriseFilter);
+        $candidatureEmails = $candidatureRepository->findEmailsByIds(array_map(
+            static fn ($item) => $item->getEntretien()?->getCandidatureId() ?? 0,
+            $decisions
+        ));
+
+        return $this->render('decision_finale/_table_body.html.twig', [
+            'decisions' => $decisions,
+            'candidatureEmails' => $candidatureEmails,
+        ]);
+    }
+
     #[Route('/', name: 'app_decision_finale_index', methods: ['GET'])]
     public function index(Request $request, DecisionFinaleRepository $decisionFinaleRepository, EntretienRepository $entretienRepository, CandidatureRepository $candidatureRepository): Response
     {
         $search = trim((string) $request->query->get('search', ''));
         $decision = trim((string) $request->query->get('decision', ''));
-        $decisions = $decisionFinaleRepository->search($search, $decision);
+        $entrepriseFilter = null;
+        if ($this->isGranted('ROLE_RH') && !$this->isGranted('ROLE_ADMIN')) {
+            $entrepriseFilter = $this->getUser()->getEntreprise();
+        }
+        $decisions = $decisionFinaleRepository->search($search, $decision, $entrepriseFilter);
         $candidatureEmails = $candidatureRepository->findEmailsByIds(array_map(
             static fn (DecisionFinale $decisionFinale): int => $decisionFinale->getEntretien()?->getCandidatureId() ?? 0,
             $decisions

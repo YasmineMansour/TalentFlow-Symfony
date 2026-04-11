@@ -1,4 +1,4 @@
-{% extends 'base_dashboard.html.twig' %}
+{% extends is_granted('ROLE_ADMIN') ? 'base_dashboard.html.twig' : 'base_navbar.html.twig' %}
 
 {% block title %}Modifier Post{% endblock %}
 {% block page_title %}Modifier le Post{% endblock %}
@@ -14,16 +14,24 @@
                 </a>
             </div>
 
-            {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'onsubmit': "if(!this.dataset.confirmed){event.preventDefault(); confirmFormSubmit(this, 'edit', 'ce post');}"}}) }}
+            {{ form_start(form, {'attr': {'onsubmit': "if(!this.dataset.confirmed){event.preventDefault(); confirmFormSubmit(this, 'edit', 'ce post');}"}}) }}
                 <div class="tf-form-group">
-                    {{ form_label(form.title, null, {'label_attr': {'class': 'tf-label'}}) }}
-                    {{ form_widget(form.title, {'attr': {'class': 'tf-input', 'placeholder': 'Titre du post'}}) }}
+                    {{ form_label(form.title, null, {'label_attr': {'class': 'tf-label'}}) }} <span style="color: #e74c3c;">*</span>
+                    {{ form_widget(form.title, {'attr': {'class': 'tf-input', 'placeholder': 'Titre du post (3 à 255 caractères)', 'required': 'required', 'minlength': '3', 'maxlength': '255', 'oninput': "this.closest('.tf-form-group').querySelector('.char-count').textContent = this.value.length + ' / 255'"}}) }}
                     {{ form_errors(form.title) }}
+                    <div style="display: flex; justify-content: space-between; margin-top: 0.3rem;">
+                        <small style="color: var(--tf-gray); font-size: 0.78rem;"><i class="fas fa-info-circle"></i> Min 3, max 255 caractères</small>
+                        <small class="char-count" style="color: var(--tf-gray); font-size: 0.78rem;">{{ post.title|length }} / 255</small>
+                    </div>
                 </div>
                 <div class="tf-form-group">
-                    {{ form_label(form.content, null, {'label_attr': {'class': 'tf-label'}}) }}
-                    {{ form_widget(form.content, {'attr': {'class': 'tf-input', 'rows': '6', 'placeholder': 'Rédigez votre contenu ici...'}}) }}
+                    {{ form_label(form.content, null, {'label_attr': {'class': 'tf-label'}}) }} <span style="color: #e74c3c;">*</span>
+                    {{ form_widget(form.content, {'attr': {'class': 'tf-input', 'rows': '6', 'placeholder': 'Rédigez votre contenu ici... (min 10 caractères)', 'required': 'required', 'minlength': '10', 'maxlength': '10000', 'oninput': "this.closest('.tf-form-group').querySelector('.char-count').textContent = this.value.length + ' / 10000'"}}) }}
                     {{ form_errors(form.content) }}
+                    <div style="display: flex; justify-content: space-between; margin-top: 0.3rem;">
+                        <small style="color: var(--tf-gray); font-size: 0.78rem;"><i class="fas fa-info-circle"></i> Min 10, max 10 000 caractères</small>
+                        <small class="char-count" style="color: var(--tf-gray); font-size: 0.78rem;">{{ post.content|length }} / 10000</small>
+                    </div>
                 </div>
 
                 <div style="display: flex; gap: 0.8rem; margin-top: 1.5rem;">

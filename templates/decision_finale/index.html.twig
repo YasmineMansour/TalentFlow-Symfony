@@ -1,4 +1,4 @@
-{% extends 'base_dashboard.html.twig' %}
+{% extends is_granted('ROLE_ADMIN') ? 'base_dashboard.html.twig' : 'base_navbar.html.twig' %}
 
 {% block title %}Décisions Finales - TalentFlow{% endblock %}
 {% block page_title %}Décisions Finales{% endblock %}
@@ -142,4 +142,38 @@
         </div>
     {% endif %}
 </div>
+<script>
+// Recherche AJAX décisions finales
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.tf-search');
+    const tableBody = document.querySelector('table tbody');
+    let debounceTimer;
+
+    function fetchDecisions() {
+        const params = new URLSearchParams(new FormData(form)).toString();
+        fetch("{{ path('app_decision_finale_search') }}?" + params, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(r => r.text())
+            .then(html => {
+                tableBody.innerHTML = html;
+            });
+    }
+
+    // Déclenche sur saisie texte (avec debounce)
+    form.search && form.search.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(fetchDecisions, 300);
+    });
+
+    // Déclenche sur changement de select
+    form.querySelectorAll('select').forEach(sel => {
+        sel.addEventListener('change', fetchDecisions);
+    });
+
+    // Empêche le submit classique
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        fetchDecisions();
+    });
+});
+</script>
 {% endblock %}

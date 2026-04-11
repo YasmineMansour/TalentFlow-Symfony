@@ -1,0 +1,154 @@
+{% extends 'base_public.html.twig' %}
+
+{% block title %}{{ offre.titre }} - TalentFlow{% endblock %}
+{% block meta_description %}{{ offre.description|striptags|slice(0, 160) }}{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "JobPosting",
+    "title": {{ offre.titre|json_encode|raw }},
+    "description": {{ (offre.description|default(''))|json_encode|raw }},
+    "employmentType": {{ offre.typeContrat|json_encode|raw }},
+    "jobLocation": {
+        "@type": "Place",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": {{ (offre.localisation|default('Tunisie'))|json_encode|raw }},
+            "addressCountry": "TN"
+        }
+    },
+    {% if offre.entreprise %}
+    "hiringOrganization": {
+        "@type": "Organization",
+        "name": {{ offre.entreprise.nom|json_encode|raw }}
+    },
+    {% endif %}
+    {% if offre.salaireMin and offre.salaireMax %}
+    "baseSalary": {
+        "@type": "MonetaryAmount",
+        "currency": "TND",
+        "value": {
+            "@type": "QuantitativeValue",
+            "minValue": {{ offre.salaireMin }},
+            "maxValue": {{ offre.salaireMax }},
+            "unitText": "MONTH"
+        }
+    },
+    {% endif %}
+    "url": "{{ url('public_offre_show', {id: offre.id}) }}"
+}
+</script>
+{% endblock %}
+
+{% block body %}
+<section class="tf-section" style="max-width:900px;">
+    <div style="margin-bottom:1.5rem;">
+        <a href="{{ path('public_offres') }}" style="color:var(--tf-text-muted); text-decoration:none; font-size:0.9rem; display:inline-flex; align-items:center; gap:0.4rem; transition: color 0.2s;">
+            <i class="fas fa-arrow-left" aria-hidden="true"></i> Retour aux offres
+        </a>
+    </div>
+
+    <article class="tf-card" style="padding:2rem;" itemscope itemtype="https://schema.org/JobPosting">
+        <header>
+            <h1 itemprop="title" style="font-size:1.8rem; font-weight:800; margin-bottom:0.5rem;">{{ offre.titre }}</h1>
+            {% if offre.entreprise %}
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1.25rem; color:var(--tf-text-secondary); font-size:1rem;">
+                <i class="fas fa-building" aria-hidden="true"></i>
+                <span itemprop="hiringOrganization" itemscope itemtype="https://schema.org/Organization">
+                    <span itemprop="name">{{ offre.entreprise.nom }}</span>
+                </span>
+            </div>
+            {% endif %}
+
+            <div class="tf-offre-tags" style="margin-bottom:1.5rem;">
+                <span class="tf-tag tf-tag-gold">{{ offre.typeContrat }}</span>
+                {% if offre.modeTravail == 'REMOTE' %}
+                    <span class="tf-tag tf-tag-green">Télétravail</span>
+                {% elseif offre.modeTravail == 'HYBRID' %}
+                    <span class="tf-tag tf-tag-blue">Hybride</span>
+                {% else %}
+                    <span class="tf-tag tf-tag-purple">Présentiel</span>
+                {% endif %}
+                {% if offre.categorie %}
+                    <span class="tf-tag tf-tag-orange">{{ offre.categorie.nom }}</span>
+                {% endif %}
+            </div>
+        </header>
+
+        {# ====== INFOS CLÉS ====== #}
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:1rem; margin-bottom:2rem; padding:1.25rem; background:var(--tf-bg-alt); border-radius:var(--tf-radius);">
+            <div>
+                <div style="font-size:0.78rem; color:var(--tf-text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.25rem;">
+                    <i class="fas fa-map-marker-alt" aria-hidden="true"></i> Localisation
+                </div>
+                <div style="font-weight:600;">{{ offre.localisation|default('Non précisé') }}</div>
+            </div>
+            <div>
+                <div style="font-size:0.78rem; color:var(--tf-text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.25rem;">
+                    <i class="fas fa-file-contract" aria-hidden="true"></i> Contrat
+                </div>
+                <div style="font-weight:600;">{{ offre.typeContrat }}</div>
+            </div>
+            <div>
+                <div style="font-size:0.78rem; color:var(--tf-text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.25rem;">
+                    <i class="fas fa-laptop-house" aria-hidden="true"></i> Mode
+                </div>
+                <div style="font-weight:600;">
+                    {% if offre.modeTravail == 'REMOTE' %}Télétravail
+                    {% elseif offre.modeTravail == 'HYBRID' %}Hybride
+                    {% else %}Présentiel{% endif %}
+                </div>
+            </div>
+            {% if offre.salaireMin or offre.salaireMax %}
+            <div>
+                <div style="font-size:0.78rem; color:var(--tf-text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.25rem;">
+                    <i class="fas fa-coins" aria-hidden="true"></i> Salaire
+                </div>
+                <div style="font-weight:600; color:var(--tf-gold);">{{ offre.salaireMin }} – {{ offre.salaireMax }} TND</div>
+            </div>
+            {% endif %}
+        </div>
+
+        {# ====== DESCRIPTION ====== #}
+        {% if offre.description %}
+        <div style="margin-bottom:2rem;">
+            <h2 style="font-size:1.15rem; font-weight:700; margin-bottom:0.75rem; color:var(--tf-text);">Description du poste</h2>
+            <div itemprop="description" style="color:var(--tf-text-secondary); line-height:1.8; white-space:pre-line;">{{ offre.description }}</div>
+        </div>
+        {% endif %}
+
+        {# ====== AVANTAGES ====== #}
+        {% if offre.avantages is defined and offre.avantages|length > 0 %}
+        <div style="margin-bottom:2rem;">
+            <h2 style="font-size:1.15rem; font-weight:700; margin-bottom:0.75rem; color:var(--tf-text);">Avantages</h2>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                {% for avantage in offre.avantages %}
+                <span class="tf-tag tf-tag-green"><i class="fas fa-check" aria-hidden="true"></i> {{ avantage.nom }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {# ====== CTA ====== #}
+        <div style="padding-top:1.5rem; border-top:1px solid var(--tf-border); display:flex; gap:1rem; flex-wrap:wrap; align-items:center;">
+            {% if app.user and is_granted('ROLE_CANDIDAT') %}
+                <a href="{{ path('app_candidature_new', {offre: offre.id}) }}" class="tf-btn tf-btn-gold tf-btn-lg">
+                    <i class="fas fa-paper-plane" aria-hidden="true"></i> Postuler maintenant
+                </a>
+            {% elseif not app.user %}
+                <a href="{{ path('app_login') }}" class="tf-btn tf-btn-gold tf-btn-lg">
+                    <i class="fas fa-sign-in-alt" aria-hidden="true"></i> Connectez-vous pour postuler
+                </a>
+                <a href="{{ path('app_register') }}" class="tf-btn tf-btn-outline">
+                    <i class="fas fa-user-plus" aria-hidden="true"></i> Créer un compte
+                </a>
+            {% endif %}
+            <a href="{{ path('public_offres') }}" class="tf-btn tf-btn-ghost">
+                <i class="fas fa-arrow-left" aria-hidden="true"></i> Autres offres
+            </a>
+        </div>
+    </article>
+</section>
+{% endblock %}

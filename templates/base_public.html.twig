@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="{% block meta_description %}TalentFlow - Plateforme de recrutement moderne. Consultez les offres d'emploi, postulez et gérez vos candidatures.{% endblock %}">
+        <meta name="robots" content="index, follow">
+        <meta name="theme-color" content="#c9a227">
+        <link rel="canonical" href="{% block canonical %}{% endblock %}">
+        <title>{% block title %}TalentFlow - Recrutement Moderne{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>💼</text></svg>">
+
+        {# Google Fonts - Inter #}
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+        {# Font Awesome #}
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+        {# TalentFlow CSS #}
+        <link href="/css/talentflow.css" rel="stylesheet">
+
+        {# SEO - JSON-LD Structured Data #}
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "TalentFlow",
+            "url": "{{ app.request.schemeAndHttpHost }}",
+            "description": "Plateforme de recrutement moderne en Tunisie",
+            "potentialAction": {
+                "@type": "SearchAction",
+                "target": "{{ url('public_offres') }}?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+            }
+        }
+        </script>
+        {% block structured_data %}{% endblock %}
+
+        {# Theme init (avoid flash) #}
+        <script>
+            (function(){
+                var t = localStorage.getItem('tf-theme');
+                if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', t);
+                if (t === 'dark') document.documentElement.classList.add('dark');
+            })();
+        </script>
+
+        {% block stylesheets %}{% endblock %}
+    </head>
+    <body>
+        {# Skip to content (A11y) #}
+        <a href="#main-content" class="tf-skip-link">Aller au contenu principal</a>
+
+        {# ==================== PUBLIC NAVBAR ==================== #}
+        <nav class="tf-pub-navbar" role="navigation" aria-label="Navigation principale">
+            <a href="{{ path('public_home') }}" class="tf-pub-brand" aria-label="TalentFlow - Accueil">
+                <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <rect width="32" height="32" rx="8" fill="currentColor" opacity="0.15"/>
+                    <path d="M9 12h14M9 16h10M9 20h6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                    <circle cx="24" cy="20" r="4" fill="currentColor" opacity="0.6"/>
+                </svg>
+                TalentFlow
+            </a>
+
+            <ul class="tf-pub-nav" role="menubar">
+                <li role="none"><a href="{{ path('public_home') }}" role="menuitem" class="{{ app.request.get('_route') == 'public_home' ? 'active' }}"><i class="fas fa-home" aria-hidden="true"></i> Accueil</a></li>
+                <li role="none"><a href="{{ path('public_offres') }}" role="menuitem" class="{{ app.request.get('_route') starts with 'public_offre' ? 'active' }}"><i class="fas fa-briefcase" aria-hidden="true"></i> Offres d'emploi</a></li>
+                <li role="none"><a href="{{ path('public_forum') }}" role="menuitem" class="{{ app.request.get('_route') starts with 'public_forum' ? 'active' }}"><i class="fas fa-comments" aria-hidden="true"></i> Forum</a></li>
+            </ul>
+
+            <div class="tf-pub-actions">
+                {# Dark mode toggle #}
+                <button class="tf-theme-toggle" type="button" aria-label="Changer le thème">
+                    <i class="fas fa-sun icon-sun" aria-hidden="true"></i>
+                    <i class="fas fa-moon icon-moon" aria-hidden="true"></i>
+                </button>
+
+                {% if app.user %}
+                    <a href="{{ path('app_dashboard') }}" class="tf-btn tf-btn-gold tf-btn-sm">
+                        <i class="fas fa-tachometer-alt" aria-hidden="true"></i> Dashboard
+                    </a>
+                {% else %}
+                    <a href="{{ path('app_login') }}" class="tf-btn tf-btn-outline tf-btn-sm">
+                        <i class="fas fa-sign-in-alt" aria-hidden="true"></i> Connexion
+                    </a>
+                    <a href="{{ path('app_register') }}" class="tf-btn tf-btn-gold tf-btn-sm">
+                        <i class="fas fa-user-plus" aria-hidden="true"></i> S'inscrire
+                    </a>
+                {% endif %}
+            </div>
+        </nav>
+
+        {# ==================== FLASH MESSAGES ==================== #}
+        {% set flash_icons = { success: 'check-circle', error: 'exclamation-circle', warning: 'exclamation-triangle' } %}
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="tf-flash tf-flash-{{ type }}" role="alert" style="max-width:900px;margin:80px auto 0;">
+                    <i class="fas fa-{{ flash_icons[type]|default('info-circle') }}" aria-hidden="true"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        {# ==================== MAIN CONTENT ==================== #}
+        <main id="main-content" role="main" style="margin-top: 72px; min-height: calc(100vh - 72px);">
+            {% block body %}{% endblock %}
+        </main>
+
+        {# ==================== FOOTER ==================== #}
+        <footer class="tf-footer" role="contentinfo">
+            <div class="tf-footer-content">
+                <div>
+                    <span class="tf-footer-brand">💼 TalentFlow</span>
+                    <p class="tf-footer-copy">© {{ "now"|date("Y") }} TalentFlow. Tous droits réservés.</p>
+                </div>
+                <ul class="tf-footer-links" aria-label="Liens utiles">
+                    <li><a href="{{ path('public_offres') }}">Offres d'emploi</a></li>
+                    <li><a href="{{ path('public_forum') }}">Forum</a></li>
+                    <li><a href="{{ path('app_login') }}">Connexion</a></li>
+                </ul>
+            </div>
+        </footer>
+
+        {# ==================== SCRIPTS ==================== #}
+        <script src="/js/theme.js"></script>
+        <script src="/js/predictive-search.js"></script>
+        {% block javascripts %}{% endblock %}
+    </body>
+</html>

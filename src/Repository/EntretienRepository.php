@@ -16,12 +16,17 @@ class EntretienRepository extends ServiceEntityRepository
         parent::__construct($registry, Entretien::class);
     }
 
-    public function search(string $search = '', string $statut = '', string $type = ''): array
+    public function search(string $search = '', string $statut = '', string $type = '', $entreprise = null): array
     {
         $qb = $this->createQueryBuilder('e')
             ->leftJoin('e.decisionFinale', 'd')
             ->addSelect('d')
             ->orderBy('e.dateHeure', 'DESC');
+
+        // Join candidature via candidatureId (pas une relation Doctrine)
+        $qb->leftJoin('App\Entity\Candidature', 'c', 'WITH', 'c.id = e.candidatureId')
+            ->leftJoin('c.offre', 'o')
+            ->leftJoin('o.entreprise', 'ent');
 
         if ($search !== '') {
             if (ctype_digit($search)) {
@@ -38,6 +43,10 @@ class EntretienRepository extends ServiceEntityRepository
 
         if ($type !== '') {
             $qb->andWhere('e.type = :type')->setParameter('type', $type);
+        }
+
+        if ($entreprise !== null) {
+            $qb->andWhere('ent.id = :entrepriseId')->setParameter('entrepriseId', $entreprise->getId());
         }
 
         return $qb->getQuery()->getResult();

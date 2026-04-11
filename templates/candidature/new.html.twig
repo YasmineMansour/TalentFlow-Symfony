@@ -1,13 +1,29 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Nouvelle candidature - TalentFlow{% endblock %}
+{% block title %}Postuler - {{ candidature.titrePoste ?? 'Nouvelle candidature' }} - TalentFlow{% endblock %}
 
 {% block body %}
-<h2 class="tf-title"><i class="fas fa-plus-circle"></i> Nouvelle Candidature</h2>
-
-<div class="tf-card">
-    {{ include('candidature/_form.html.twig', {button_label: 'Créer la candidature'}) }}
+{% if offre is defined and offre %}
+<div class="tf-card mb-4" style="border-left: 4px solid var(--tf-gold);">
+    <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 200px;">
+            <h3 style="color: var(--tf-gold); margin: 0 0 0.3rem 0; font-size: 1.2rem;"><i class="fas fa-briefcase"></i> {{ offre.titre }}</h3>
+            <div style="color: var(--tf-gray); font-size: 0.9rem;">
+                <span><i class="fas fa-building"></i> {{ offre.entreprise ? offre.entreprise.nom : '—' }}</span>
+                <span style="margin-left: 1rem;"><i class="fas fa-map-marker-alt"></i> {{ offre.localisation ?? '—' }}</span>
+                <span style="margin-left: 1rem;"><i class="fas fa-file-contract"></i> {{ offre.typeContrat }}</span>
+                {% if offre.salaireMin and offre.salaireMax %}
+                <span style="margin-left: 1rem;"><i class="fas fa-coins"></i> {{ offre.salaireMin }} - {{ offre.salaireMax }} TND</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
+{% endif %}
+
+<h2 class="tf-title"><i class="fas fa-paper-plane"></i> Postuler</h2>
+
+{{ include('candidature/_form.html.twig', {button_label: 'Envoyer ma candidature', isCandidat: isCandidat|default(false)}) }}
 
 <a href="{{ path('app_candidature_index') }}" class="btn-outline-gold mt-3"><i class="fas fa-arrow-left"></i> Retour à la liste</a>
 {% endblock %}

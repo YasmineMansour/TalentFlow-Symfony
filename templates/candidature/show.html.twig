@@ -105,5 +105,6 @@
 <div class="d-flex gap-2 mt-3">
     <a href="{{ path('app_candidature_index') }}" class="btn-outline-gold"><i class="fas fa-arrow-left"></i> Retour</a>
     <a href="{{ path('app_candidature_edit', {id: candidature.id}) }}" class="btn-gold"><i class="fas fa-edit"></i> Modifier</a>
+    <a href="{{ path('app_entretien_new', {candidature: candidature.id}) }}" class="btn-gold" style="background: var(--tf-dark-blue);"><i class="fas fa-calendar-plus"></i> Planifier un entretien</a>
 </div>
 {% endblock %}

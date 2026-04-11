@@ -2,7 +2,9 @@
 
 namespace App\Form;
 
+use App\Entity\Entreprise;
 use App\Entity\User;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
@@ -52,6 +54,14 @@ class UserType extends AbstractType
                     'placeholder' => '+216XXXXXXXX ou 00216XXXXXXXX',
                     'class' => 'form-control',
                 ],
+            ])
+            ->add('entreprise', EntityType::class, [
+                'class' => Entreprise::class,
+                'choice_label' => 'nom',
+                'label' => 'Entreprise',
+                'required' => false,
+                'placeholder' => '-- Aucune entreprise --',
+                'attr' => ['class' => 'form-control'],
             ])
         ;
 

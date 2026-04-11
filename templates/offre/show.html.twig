@@ -6,6 +6,13 @@
 <h2 class="tf-title"><i class="fas fa-briefcase"></i> {{ offre.titre }}</h2>
 
 <div class="tf-card">
+    {% if is_granted('ROLE_CANDIDAT') %}
+        <div class="mb-3 text-end">
+            <a href="{{ path('app_candidature_new', { offre: offre.id }) }}" class="btn btn-gold">
+                <i class="fas fa-paper-plane"></i> Postuler à cette offre
+            </a>
+        </div>
+    {% endif %}
     <div class="d-flex justify-content-between align-items-center mb-3">
         <span style="color: var(--tf-gray); font-size: 0.85rem;">Offre #{{ offre.id }}</span>
         {% if not complete %}

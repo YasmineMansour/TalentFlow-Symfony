@@ -9,45 +9,47 @@
 </div>
 
 <div class="tf-card mb-4">
-    <form method="get" action="{{ path('avantage_index') }}" class="row g-3 align-items-end">
-        <div class="col-md-3">
-            <input type="text" name="q" value="{{ search }}" class="tf-search" placeholder="Rechercher un avantage...">
-        </div>
-        <div class="col-md-2">
-            <label style="color: var(--tf-gray); font-size: 0.85rem;">Type</label>
-            <select name="type" class="tf-search">
-                <option value="">Tous</option>
-                {% for t in types %}
-                    <option value="{{ t }}" {{ type == t ? 'selected' }}>{{ t }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-2">
-            <label style="color: var(--tf-gray); font-size: 0.85rem;">Offre</label>
-            <select name="offre" class="tf-search">
-                <option value="">Toutes</option>
-                {% for o in offres %}
-                    <option value="{{ o.id }}" {{ offreId == o.id ? 'selected' }}>{{ o.titre }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-2">
-            <label style="color: var(--tf-gray); font-size: 0.85rem;">Trier par</label>
-            <select name="tri" class="tf-search">
-                <option value="id" {{ tri == 'id' ? 'selected' }}>ID</option>
-                <option value="nom" {{ tri == 'nom' ? 'selected' }}>Nom</option>
-                <option value="type" {{ tri == 'type' ? 'selected' }}>Type</option>
-            </select>
-        </div>
-        <div class="col-md-1">
-            <label style="color: var(--tf-gray); font-size: 0.85rem;">Ordre</label>
-            <select name="ordre" class="tf-search">
-                <option value="ASC" {{ ordre == 'ASC' ? 'selected' }}>Asc</option>
-                <option value="DESC" {{ ordre == 'DESC' ? 'selected' }}>Desc</option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <button type="submit" class="btn-gold w-100"><i class="fas fa-search"></i> Filtrer</button>
+    <form method="get" action="{{ path('avantage_index') }}" class="tf-form">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Rechercher un avantage...">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Type</label>
+                <select name="type" class="form-select">
+                    <option value="">Tous</option>
+                    {% for t in types %}
+                        <option value="{{ t }}" {{ type == t ? 'selected' }}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Offre</label>
+                <select name="offre" class="form-select">
+                    <option value="">Toutes</option>
+                    {% for o in offres %}
+                        <option value="{{ o.id }}" {{ offreId == o.id ? 'selected' }}>{{ o.titre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Trier par</label>
+                <select name="tri" class="form-select">
+                    <option value="id" {{ tri == 'id' ? 'selected' }}>ID</option>
+                    <option value="nom" {{ tri == 'nom' ? 'selected' }}>Nom</option>
+                    <option value="type" {{ tri == 'type' ? 'selected' }}>Type</option>
+                </select>
+            </div>
+            <div class="col-md-1">
+                <label class="form-label">Ordre</label>
+                <select name="ordre" class="form-select">
+                    <option value="ASC" {{ ordre == 'ASC' ? 'selected' }}>Asc</option>
+                    <option value="DESC" {{ ordre == 'DESC' ? 'selected' }}>Desc</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn-gold w-100"><i class="fas fa-search"></i> Filtrer</button>
+            </div>
         </div>
     </form>
 </div>

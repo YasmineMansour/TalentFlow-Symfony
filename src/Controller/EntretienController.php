@@ -9,7 +9,6 @@ use App\Repository\DecisionFinaleRepository;
 use App\Repository\EntretienRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -19,21 +18,58 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_RH')]
 class EntretienController extends AbstractController
 {
+    #[Route('/search', name: 'app_entretien_search', methods: ['GET'])]
+    public function search(Request $request, EntretienRepository $entretienRepository, CandidatureRepository $candidatureRepository): Response
+    {
+        $search = trim((string) $request->query->get('search', ''));
+        $statut = trim((string) $request->query->get('statut', ''));
+        $type = trim((string) $request->query->get('type', ''));
+        $entrepriseFilter = null;
+        if ($this->isGranted('ROLE_RH') && !$this->isGranted('ROLE_ADMIN')) {
+            $entrepriseFilter = $this->getUser()->getEntreprise();
+        }
+        $entretiens = $entretienRepository->search($search, $statut, $type, $entrepriseFilter);
+        $candidatureLabels = $candidatureRepository->findEmailsByIds(array_map(
+            static fn ($entretien) => $entretien->getCandidatureId() ?? 0,
+            $entretiens
+        ));
+
+        return $this->render('entretien/_table_body.html.twig', [
+            'entretiens' => $entretiens,
+            'candidatureLabels' => $candidatureLabels,
+        ]);
+    }
+
+    private function getCandidaturesChoices(CandidatureRepository $candidatureRepository): array
+    {
+        $candidatures = $candidatureRepository->findBy([], ['createdAt' => 'DESC']);
+        $choices = [];
+        foreach ($candidatures as $c) {
+            $label = sprintf('#%d — %s (%s)', $c->getId(), $c->getTitrePoste(), $c->getEntreprise());
+            $choices[$label] = $c->getId();
+        }
+        return $choices;
+    }
+
     #[Route('/', name: 'app_entretien_index', methods: ['GET'])]
     public function index(Request $request, EntretienRepository $entretienRepository, DecisionFinaleRepository $decisionFinaleRepository, CandidatureRepository $candidatureRepository): Response
     {
         $search = trim((string) $request->query->get('search', ''));
         $statut = trim((string) $request->query->get('statut', ''));
         $type = trim((string) $request->query->get('type', ''));
-        $entretiens = $entretienRepository->search($search, $statut, $type);
-        $candidatureEmails = $candidatureRepository->findEmailsByIds(array_map(
+        $entrepriseFilter = null;
+        if ($this->isGranted('ROLE_RH') && !$this->isGranted('ROLE_ADMIN')) {
+            $entrepriseFilter = $this->getUser()->getEntreprise();
+        }
+        $entretiens = $entretienRepository->search($search, $statut, $type, $entrepriseFilter);
+        $candidatureLabels = $candidatureRepository->findEmailsByIds(array_map(
             static fn (Entretien $entretien): int => $entretien->getCandidatureId() ?? 0,
             $entretiens
         ));
 
         return $this->render('entretien/index.html.twig', [
             'entretiens' => $entretiens,
-            'candidatureEmails' => $candidatureEmails,
+            'candidatureLabels' => $candidatureLabels,
             'search' => $search,
             'statut' => $statut,
             'type' => $type,
@@ -48,42 +84,19 @@ class EntretienController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager, EntretienRepository $entretienRepository, CandidatureRepository $candidatureRepository): Response
     {
         $entretien = new Entretien();
-        $form = $this->createForm(EntretienType::class, $entretien);
+
+        // Pré-remplir la candidature si passée en query param
+        $candidatureId = $request->query->getInt('candidature');
+        if ($candidatureId > 0) {
+            $entretien->setCandidatureId($candidatureId);
+        }
+
+        $form = $this->createForm(EntretienType::class, $entretien, [
+            'candidatures_choices' => $this->getCandidaturesChoices($candidatureRepository),
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if (!$candidatureRepository->isAvailable()) {
-                $form->get('candidateEmail')->addError(new FormError('La source des candidatures n\'est pas encore disponible dans la base.'));
-
-                return $this->render('entretien/new.html.twig', [
-                    'form' => $form,
-                    'entretien' => $entretien,
-                ]);
-            }
-
-            $candidateEmail = (string) $form->get('candidateEmail')->getData();
-            $candidatureId = $candidatureRepository->findIdByEmail($candidateEmail);
-
-            if ($candidatureId === null) {
-                $form->get('candidateEmail')->addError(new FormError('Aucune candidature trouvée pour cet email.'));
-
-                return $this->render('entretien/new.html.twig', [
-                    'form' => $form,
-                    'entretien' => $entretien,
-                ]);
-            }
-
-            $entretien->setCandidatureId($candidatureId);
-
-            if ($entretien->getCandidatureId() === null || $entretien->getCandidatureId() <= 0) {
-                $form->get('candidateEmail')->addError(new FormError('La candidature liée à cet email est invalide.'));
-
-                return $this->render('entretien/new.html.twig', [
-                    'form' => $form,
-                    'entretien' => $entretien,
-                ]);
-            }
-
             $this->normalizeEntretien($entretien);
 
             if ($entretienRepository->existsConflictAtDateHeure($entretien->getDateHeure())) {
@@ -107,43 +120,11 @@ class EntretienController extends AbstractController
     public function edit(Request $request, Entretien $entretien, EntityManagerInterface $entityManager, EntretienRepository $entretienRepository, CandidatureRepository $candidatureRepository): Response
     {
         $form = $this->createForm(EntretienType::class, $entretien, [
-            'candidate_email' => $candidatureRepository->findEmailById($entretien->getCandidatureId() ?? 0) ?? '',
+            'candidatures_choices' => $this->getCandidaturesChoices($candidatureRepository),
         ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if (!$candidatureRepository->isAvailable()) {
-                $form->get('candidateEmail')->addError(new FormError('La source des candidatures n\'est pas encore disponible dans la base.'));
-
-                return $this->render('entretien/edit.html.twig', [
-                    'form' => $form,
-                    'entretien' => $entretien,
-                ]);
-            }
-
-            $candidateEmail = (string) $form->get('candidateEmail')->getData();
-            $candidatureId = $candidatureRepository->findIdByEmail($candidateEmail);
-
-            if ($candidatureId === null) {
-                $form->get('candidateEmail')->addError(new FormError('Aucune candidature trouvée pour cet email.'));
-
-                return $this->render('entretien/edit.html.twig', [
-                    'form' => $form,
-                    'entretien' => $entretien,
-                ]);
-            }
-
-            $entretien->setCandidatureId($candidatureId);
-
-            if ($entretien->getCandidatureId() === null || $entretien->getCandidatureId() <= 0) {
-                $form->get('candidateEmail')->addError(new FormError('La candidature liée à cet email est invalide.'));
-
-                return $this->render('entretien/edit.html.twig', [
-                    'form' => $form,
-                    'entretien' => $entretien,
-                ]);
-            }
-
             $this->normalizeEntretien($entretien);
 
             if ($entretienRepository->existsConflictAtDateHeure($entretien->getDateHeure(), $entretien->getId())) {

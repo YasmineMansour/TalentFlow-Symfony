@@ -18,6 +18,14 @@ class Candidature
     #[ORM\Column]
     private ?int $id = null;
 
+    #[ORM\ManyToOne(targetEntity: Offre::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Offre $offre = null;
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?User $candidat = null;
+
     #[ORM\Column(length: 150)]
     #[Assert\NotBlank(message: 'Le titre du poste ne peut pas être vide.')]
     #[Assert\Length(
@@ -84,6 +92,31 @@ class Candidature
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(max: 2000, maxMessage: 'Les notes ne peuvent pas dépasser {{ limit }} caractères.')]
     private ?string $notes = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $cvFilename = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $lettreMotivationFilename = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    #[Assert\Regex(pattern: '/^(\+216|00216)?[2459][0-9]{7}$/', message: 'Numéro de téléphone invalide.')]
+    private ?string $telephone = null;
+
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $dateEntretienSouhaitee = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(max: 1000, maxMessage: 'Les compétences ne peuvent pas dépasser {{ limit }} caractères.')]
+    private ?string $competences = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    #[Assert\Choice(choices: ['Bac', 'Bac+2', 'Bac+3', 'Bac+5', 'Doctorat', 'Autre'], message: 'Niveau d\'études invalide.')]
+    private ?string $niveauEtudes = null;
+
+    #[ORM\Column(type: Types::SMALLINT, nullable: true)]
+    #[Assert\PositiveOrZero(message: 'L\'expérience doit être positive.')]
+    private ?int $anneesExperience = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
@@ -171,4 +204,31 @@ class Candidature
         }
         return $this;
     }
+
+    public function getOffre(): ?Offre { return $this->offre; }
+    public function setOffre(?Offre $offre): static { $this->offre = $offre; return $this; }
+
+    public function getCandidat(): ?User { return $this->candidat; }
+    public function setCandidat(?User $candidat): static { $this->candidat = $candidat; return $this; }
+
+    public function getCvFilename(): ?string { return $this->cvFilename; }
+    public function setCvFilename(?string $cvFilename): static { $this->cvFilename = $cvFilename; return $this; }
+
+    public function getLettreMotivationFilename(): ?string { return $this->lettreMotivationFilename; }
+    public function setLettreMotivationFilename(?string $lettreMotivationFilename): static { $this->lettreMotivationFilename = $lettreMotivationFilename; return $this; }
+
+    public function getTelephone(): ?string { return $this->telephone; }
+    public function setTelephone(?string $telephone): static { $this->telephone = $telephone; return $this; }
+
+    public function getDateEntretienSouhaitee(): ?\DateTimeImmutable { return $this->dateEntretienSouhaitee; }
+    public function setDateEntretienSouhaitee(?\DateTimeImmutable $dateEntretienSouhaitee): static { $this->dateEntretienSouhaitee = $dateEntretienSouhaitee; return $this; }
+
+    public function getCompetences(): ?string { return $this->competences; }
+    public function setCompetences(?string $competences): static { $this->competences = $competences; return $this; }
+
+    public function getNiveauEtudes(): ?string { return $this->niveauEtudes; }
+    public function setNiveauEtudes(?string $niveauEtudes): static { $this->niveauEtudes = $niveauEtudes; return $this; }
+
+    public function getAnneesExperience(): ?int { return $this->anneesExperience; }
+    public function setAnneesExperience(?int $anneesExperience): static { $this->anneesExperience = $anneesExperience; return $this; }
 }

@@ -17,7 +17,8 @@ class EntrepriseRepository extends ServiceEntityRepository
         string $search = '',
         ?string $secteur = null,
         string $tri = 'id',
-        string $ordre = 'DESC'
+        string $ordre = 'DESC',
+        $entreprise = null
     ): array {
         $qb = $this->createQueryBuilder('e');
 
@@ -29,6 +30,11 @@ class EntrepriseRepository extends ServiceEntityRepository
         if ($secteur !== null && $secteur !== '') {
             $qb->andWhere('e.secteur = :secteur')
                ->setParameter('secteur', $secteur);
+        }
+
+        if ($entreprise !== null) {
+            $qb->andWhere('e.id = :entrepriseId')
+               ->setParameter('entrepriseId', $entreprise->getId());
         }
 
         $allowedTri = ['id', 'nom', 'secteur'];

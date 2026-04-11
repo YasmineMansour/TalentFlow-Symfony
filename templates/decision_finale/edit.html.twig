@@ -1,4 +1,4 @@
-{% extends 'base_dashboard.html.twig' %}
+{% extends is_granted('ROLE_ADMIN') ? 'base_dashboard.html.twig' : 'base_navbar.html.twig' %}
 
 {% block title %}Modifier Décision Finale - TalentFlow{% endblock %}
 {% block page_title %}Modifier Décision Finale{% endblock %}

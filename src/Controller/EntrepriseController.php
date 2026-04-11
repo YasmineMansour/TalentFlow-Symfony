@@ -25,7 +25,11 @@ class EntrepriseController extends AbstractController
         $tri = $request->query->get('tri', 'id');
         $ordre = $request->query->get('ordre', 'DESC');
 
-        $entreprises = $repo->findByFilters($search, $secteur, $tri, $ordre);
+        $entrepriseFilter = null;
+        if ($this->isGranted('ROLE_RH') && !$this->isGranted('ROLE_ADMIN')) {
+            $entrepriseFilter = $this->getUser()->getEntreprise();
+        }
+        $entreprises = $repo->findByFilters($search, $secteur, $tri, $ordre, $entrepriseFilter);
 
         $entrepriseData = [];
         foreach ($entreprises as $entreprise) {

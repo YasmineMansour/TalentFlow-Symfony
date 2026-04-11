@@ -16,11 +16,14 @@ class DecisionFinaleRepository extends ServiceEntityRepository
         parent::__construct($registry, DecisionFinale::class);
     }
 
-    public function search(string $search = '', string $decision = ''): array
+    public function search(string $search = '', string $decision = '', $entreprise = null): array
     {
         $qb = $this->createQueryBuilder('d')
             ->join('d.entretien', 'e')
             ->addSelect('e')
+            ->leftJoin('App\Entity\Candidature', 'c', 'WITH', 'c.id = e.candidatureId')
+            ->leftJoin('c.offre', 'o')
+            ->leftJoin('o.entreprise', 'ent')
             ->orderBy('d.dateDecision', 'DESC');
 
         if ($search !== '') {
@@ -33,6 +36,10 @@ class DecisionFinaleRepository extends ServiceEntityRepository
 
         if ($decision !== '') {
             $qb->andWhere('d.decision = :decision')->setParameter('decision', $decision);
+        }
+
+        if ($entreprise !== null) {
+            $qb->andWhere('ent.id = :entrepriseId')->setParameter('entrepriseId', $entreprise->getId());
         }
 
         return $qb->getQuery()->getResult();

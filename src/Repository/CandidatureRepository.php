@@ -59,9 +59,13 @@ class CandidatureRepository extends ServiceEntityRepository
         string $typeContrat = '',
         string $statut = '',
         string $sortBy = 'createdAt',
-        string $sortDir = 'DESC'
+        string $sortDir = 'DESC',
+        $entreprise = null,
+        $candidat = null
     ): array {
-        $qb = $this->createQueryBuilder('c');
+        $qb = $this->createQueryBuilder('c')
+            ->leftJoin('c.offre', 'o')
+            ->leftJoin('o.entreprise', 'e');
 
         if (!empty($search)) {
             $qb->andWhere('c.titrePoste LIKE :search OR c.entreprise LIKE :search OR c.lieu LIKE :search')
@@ -76,6 +80,16 @@ class CandidatureRepository extends ServiceEntityRepository
         if (!empty($statut)) {
             $qb->andWhere('c.statut = :statut')
                ->setParameter('statut', $statut);
+        }
+
+        if ($entreprise !== null) {
+            $qb->andWhere('e.id = :entrepriseId')
+               ->setParameter('entrepriseId', $entreprise->getId());
+        }
+
+        if ($candidat !== null) {
+            $qb->andWhere('c.candidat = :candidat')
+               ->setParameter('candidat', $candidat);
         }
 
         $allowed = ['titrePoste', 'entreprise', 'typeContrat', 'statut', 'dateCandidature', 'createdAt'];

@@ -6,31 +6,23 @@ use App\Entity\Entretien;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
-use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\Email;
-use Symfony\Component\Validator\Constraints\NotBlank;
 
 class EntretienType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('candidateEmail', EmailType::class, [
-                'label' => 'Email du candidat',
-                'mapped' => false,
-                'data' => $options['candidate_email'],
-                'constraints' => [
-                    new NotBlank(['message' => 'L\'email du candidat est obligatoire.']),
-                    new Email(['message' => 'Veuillez saisir un email valide.']),
-                ],
+            ->add('candidatureId', ChoiceType::class, [
+                'label' => 'Candidature',
+                'choices' => $options['candidatures_choices'],
+                'placeholder' => '-- Sélectionner une candidature --',
                 'attr' => [
-                    'class' => 'form-control',
-                    'placeholder' => 'Ex: candidat@talentflow.tn',
+                    'class' => 'form-select',
                 ],
             ])
             ->add('dateHeure', DateTimeType::class, [
@@ -107,7 +99,7 @@ class EntretienType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Entretien::class,
-            'candidate_email' => '',
+            'candidatures_choices' => [],
         ]);
     }
 }

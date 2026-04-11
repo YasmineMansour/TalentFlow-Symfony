@@ -114,6 +114,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'author')]
     private Collection $comments;
 
+    #[ORM\ManyToOne(targetEntity: Entreprise::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Entreprise $entreprise = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -372,4 +376,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
 
     /** @return Collection<int, Comment> */
     public function getComments(): Collection { return $this->comments; }
+
+    public function getEntreprise(): ?Entreprise
+    {
+        return $this->entreprise;
+    }
+
+    public function setEntreprise(?Entreprise $entreprise): static
+    {
+        $this->entreprise = $entreprise;
+        return $this;
+    }
 }

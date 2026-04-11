@@ -1,4 +1,4 @@
-{% extends 'base_dashboard.html.twig' %}
+{% extends is_granted('ROLE_ADMIN') ? 'base_dashboard.html.twig' : 'base_navbar.html.twig' %}
 
 {% block title %}Nouveau Commentaire{% endblock %}
 {% block page_title %}Créer un Commentaire{% endblock %}
@@ -14,16 +14,21 @@
                 </a>
             </div>
 
-            {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'onsubmit': "if(!this.dataset.confirmed){event.preventDefault(); confirmFormSubmit(this, 'create', 'ce commentaire');}"}}) }}
+            {{ form_start(form, {'attr': {'onsubmit': "if(!this.dataset.confirmed){event.preventDefault(); confirmFormSubmit(this, 'create', 'ce commentaire');}"}}) }}
                 <div class="tf-form-group">
-                    {{ form_label(form.content, null, {'label_attr': {'class': 'tf-label'}}) }}
-                    {{ form_widget(form.content, {'attr': {'class': 'tf-input', 'rows': '5', 'placeholder': 'Rédigez votre commentaire...'}}) }}
+                    {{ form_label(form.content, null, {'label_attr': {'class': 'tf-label'}}) }} <span style="color: #e74c3c;">*</span>
+                    {{ form_widget(form.content, {'attr': {'class': 'tf-input', 'rows': '5', 'placeholder': 'Rédigez votre commentaire... (min 2 caractères)', 'required': 'required', 'minlength': '2', 'maxlength': '5000', 'oninput': "this.closest('.tf-form-group').querySelector('.char-count').textContent = this.value.length + ' / 5000'"}}) }}
                     {{ form_errors(form.content) }}
+                    <div style="display: flex; justify-content: space-between; margin-top: 0.3rem;">
+                        <small style="color: var(--tf-gray); font-size: 0.78rem;"><i class="fas fa-info-circle"></i> Min 2, max 5 000 caractères</small>
+                        <small class="char-count" style="color: var(--tf-gray); font-size: 0.78rem;">0 / 5000</small>
+                    </div>
                 </div>
                 <div class="tf-form-group">
-                    {{ form_label(form.post, null, {'label_attr': {'class': 'tf-label'}}) }}
-                    {{ form_widget(form.post, {'attr': {'class': 'tf-input'}}) }}
+                    {{ form_label(form.post, null, {'label_attr': {'class': 'tf-label'}}) }} <span style="color: #e74c3c;">*</span>
+                    {{ form_widget(form.post, {'attr': {'class': 'tf-input', 'required': 'required'}}) }}
                     {{ form_errors(form.post) }}
+                    <small style="color: var(--tf-gray); font-size: 0.78rem; margin-top: 0.3rem; display: block;"><i class="fas fa-info-circle"></i> Sélectionnez le post associé</small>
                 </div>
 
                 <div style="display: flex; gap: 0.8rem; margin-top: 1.5rem;">

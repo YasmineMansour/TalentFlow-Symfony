@@ -20,6 +20,30 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 class CandidatureController extends AbstractController
 {
+    #[Route('/search', name: 'app_candidature_search', methods: ['GET'])]
+    public function search(Request $request, CandidatureRepository $repository): Response
+    {
+        $search = $request->query->get('search', '');
+        $typeContrat = $request->query->get('type', '');
+        $statut = $request->query->get('statut', '');
+        $sortBy = $request->query->get('sort', 'createdAt');
+        $sortDir = $request->query->get('dir', 'DESC');
+
+        $entrepriseFilter = null;
+        $candidatFilter = null;
+        if ($this->isGranted('ROLE_RH') && !$this->isGranted('ROLE_ADMIN')) {
+            $entrepriseFilter = $this->getUser()->getEntreprise();
+        }
+        if ($this->isGranted('ROLE_CANDIDAT') && !$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_RH')) {
+            $candidatFilter = $this->getUser();
+        }
+        $candidatures = $repository->findFiltered($search, $typeContrat, $statut, $sortBy, $sortDir, $entrepriseFilter, $candidatFilter);
+
+        return $this->render('candidature/_table_body.html.twig', [
+            'candidatures' => $candidatures,
+        ]);
+    }
+
     #[Route('/', name: 'app_candidature_index', methods: ['GET'])]
     public function index(Request $request, CandidatureRepository $repository): Response
     {
@@ -29,7 +53,15 @@ class CandidatureController extends AbstractController
         $sortBy = $request->query->get('sort', 'createdAt');
         $sortDir = $request->query->get('dir', 'DESC');
 
-        $candidatures = $repository->findFiltered($search, $typeContrat, $statut, $sortBy, $sortDir);
+        $entrepriseFilter = null;
+        $candidatFilter = null;
+        if ($this->isGranted('ROLE_RH') && !$this->isGranted('ROLE_ADMIN')) {
+            $entrepriseFilter = $this->getUser()->getEntreprise();
+        }
+        if ($this->isGranted('ROLE_CANDIDAT') && !$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_RH')) {
+            $candidatFilter = $this->getUser();
+        }
+        $candidatures = $repository->findFiltered($search, $typeContrat, $statut, $sortBy, $sortDir, $entrepriseFilter, $candidatFilter);
 
         return $this->render('candidature/index.html.twig', [
             'candidatures' => $candidatures,
@@ -42,23 +74,98 @@ class CandidatureController extends AbstractController
     }
 
     #[Route('/new', name: 'app_candidature_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $em): Response
+    public function new(Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
+        $offreId = $request->query->get('offre');
+        $user = $this->getUser();
+        $isCandidat = $this->isGranted('ROLE_CANDIDAT') && !$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_RH');
+
+        // Pour les candidats, l'offre est obligatoire
+        if ($isCandidat && !$offreId) {
+            $this->addFlash('warning', 'Vous devez postuler depuis une offre.');
+            return $this->redirectToRoute('offre_index');
+        }
+
         $candidature = new Candidature();
-        $form = $this->createForm(CandidatureType::class, $candidature);
+
+        // Si offre passée, pré-remplir
+        $offre = null;
+        if ($offreId) {
+            $offre = $em->getRepository(\App\Entity\Offre::class)->find($offreId);
+            if ($offre) {
+                $candidature->setOffre($offre);
+                $candidature->setTitrePoste($offre->getTitre());
+                $candidature->setEntreprise($offre->getEntreprise() ? $offre->getEntreprise()->getNom() : '');
+                $candidature->setTypeContrat($offre->getTypeContrat());
+                $candidature->setDescription($offre->getDescription());
+                $candidature->setDateCandidature(new \DateTimeImmutable());
+                if ($isCandidat) {
+                    $candidature->setCandidat($user);
+                    // Pré-remplir le téléphone du candidat
+                    if ($user->getTelephone()) {
+                        $candidature->setTelephone($user->getTelephone());
+                    }
+                }
+            }
+        }
+
+        $form = $this->createForm(CandidatureType::class, $candidature, [
+            'is_candidat' => $isCandidat,
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Sécurise le lien offre/candidat
+            if ($offre) {
+                $candidature->setOffre($offre);
+            }
+            if ($isCandidat) {
+                $candidature->setCandidat($user);
+                $candidature->setStatut('En attente');
+                $candidature->setDateCandidature(new \DateTimeImmutable());
+            }
+
+            // Upload CV
+            $cvFile = $form->get('cvFile')->getData();
+            if ($cvFile) {
+                $newFilename = $this->uploadFile($cvFile, $slugger, 'cv');
+                $candidature->setCvFilename($newFilename);
+            }
+
+            // Upload Lettre de motivation
+            $lettreFile = $form->get('lettreMotivationFile')->getData();
+            if ($lettreFile) {
+                $newFilename = $this->uploadFile($lettreFile, $slugger, 'lettre');
+                $candidature->setLettreMotivationFilename($newFilename);
+            }
+
             $em->persist($candidature);
             $em->flush();
-            $this->addFlash('success', 'Candidature pour "' . $candidature->getTitrePoste() . '" créée avec succès.');
+            $this->addFlash('success', 'Candidature pour "' . $candidature->getTitrePoste() . '" créée avec succès !');
             return $this->redirectToRoute('app_candidature_index', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('candidature/new.html.twig', [
             'candidature' => $candidature,
             'form' => $form,
+            'offre' => $offre,
+            'isCandidat' => $isCandidat,
         ]);
+    }
+
+    private function uploadFile($file, SluggerInterface $slugger, string $prefix): string
+    {
+        $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $safeFilename = $slugger->slug($originalFilename);
+        $newFilename = $prefix . '-' . $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
+
+        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/candidatures';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0775, true);
+        }
+        $file->move($uploadDir, $newFilename);
+
+        return $newFilename;
     }
 
     #[Route('/{id}', name: 'app_candidature_show', methods: ['GET'], requirements: ['id' => '\d+'])]
@@ -100,12 +207,30 @@ class CandidatureController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_candidature_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
-    public function edit(Request $request, Candidature $candidature, EntityManagerInterface $em): Response
+    public function edit(Request $request, Candidature $candidature, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
-        $form = $this->createForm(CandidatureType::class, $candidature);
+        $isCandidat = $this->isGranted('ROLE_CANDIDAT') && !$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_RH');
+
+        $form = $this->createForm(CandidatureType::class, $candidature, [
+            'is_candidat' => $isCandidat,
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Upload CV
+            $cvFile = $form->get('cvFile')->getData();
+            if ($cvFile) {
+                $newFilename = $this->uploadFile($cvFile, $slugger, 'cv');
+                $candidature->setCvFilename($newFilename);
+            }
+
+            // Upload Lettre de motivation
+            $lettreFile = $form->get('lettreMotivationFile')->getData();
+            if ($lettreFile) {
+                $newFilename = $this->uploadFile($lettreFile, $slugger, 'lettre');
+                $candidature->setLettreMotivationFilename($newFilename);
+            }
+
             $candidature->setUpdatedAt(new \DateTimeImmutable());
             $em->flush();
             $this->addFlash('success', 'Candidature modifiée avec succès.');
@@ -115,6 +240,7 @@ class CandidatureController extends AbstractController
         return $this->render('candidature/edit.html.twig', [
             'candidature' => $candidature,
             'form' => $form,
+            'isCandidat' => $isCandidat,
         ]);
     }
 

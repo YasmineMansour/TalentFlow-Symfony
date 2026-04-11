@@ -1,0 +1,61 @@
+{# Partial pour la grille des offres (AJAX) #}
+{% for item in offreData %}
+<div class="offre-card">
+    <div class="offre-card-title">
+        <a href="{{ path('offre_show', {id: item.offre.id}) }}" style="color: var(--tf-gold); text-decoration: none;">{{ item.offre.titre }}</a>
+        {% if not item.complete %}
+            <span class="badge bg-warning text-dark" title="Incomplète" style="font-size:0.65rem;"><i class="fas fa-exclamation-triangle"></i></span>
+        {% endif %}
+    </div>
+    <div class="offre-card-company">
+        <i class="fas fa-building"></i> {{ item.offre.entreprise ? item.offre.entreprise.nom : '—' }}
+    </div>
+    <div class="offre-card-meta">
+        <span><i class="fas fa-map-marker-alt"></i> {{ item.offre.localisation ?? '—' }}</span>
+        <span><i class="fas fa-file-contract"></i> {{ item.offre.typeContrat }}</span>
+        {% if item.offre.salaireMin or item.offre.salaireMax %}
+        <span><i class="fas fa-coins"></i> {{ item.offre.salaireRange }}</span>
+        {% endif %}
+    </div>
+    <div class="offre-card-tags">
+        <span class="offre-tag offre-tag-contrat">{{ item.offre.typeContrat }}</span>
+        {% if item.offre.statut == 'PUBLISHED' %}
+            <span class="offre-tag offre-tag-statut-pub">Publiée</span>
+        {% elseif item.offre.statut == 'DRAFT' %}
+            <span class="offre-tag offre-tag-statut-draft">Brouillon</span>
+        {% else %}
+            <span class="offre-tag offre-tag-statut-closed">Fermée</span>
+        {% endif %}
+        {% if item.classement == 'Or' %}
+            <span class="offre-tag offre-tag-or"><i class="fas fa-trophy"></i> Or</span>
+        {% elseif item.classement == 'Argent' %}
+            <span class="offre-tag offre-tag-argent"><i class="fas fa-trophy"></i> Argent</span>
+        {% elseif item.classement == 'Bronze' %}
+            <span class="offre-tag offre-tag-bronze"><i class="fas fa-trophy"></i> Bronze</span>
+        {% endif %}
+        {% if item.coherence == 'Cohérent' %}
+            <span class="offre-tag offre-tag-coherent"><i class="fas fa-check-circle"></i> Cohérent</span>
+        {% elseif item.coherence == 'Incohérent' %}
+            <span class="offre-tag offre-tag-incoherent"><i class="fas fa-times-circle"></i> Incohérent</span>
+        {% endif %}
+        {% if item.offre.categorie %}
+            <span class="offre-tag" style="background:rgba(255,165,0,0.12); color:#ffa500;">{{ item.offre.categorie.nom }}</span>
+        {% endif %}
+    </div>
+    <div class="offre-card-actions">
+        <a href="{{ path('offre_show', {id: item.offre.id}) }}" class="btn btn-sm btn-outline-light" title="Voir"><i class="fas fa-eye"></i> Voir</a>
+        {% if is_granted('ROLE_RH') %}
+        <a href="{{ path('offre_edit', {id: item.offre.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier"><i class="fas fa-edit"></i> Modifier</a>
+        <form method="post" action="{{ path('offre_delete', {id: item.offre.id}) }}" onsubmit="event.preventDefault(); confirmDelete(this, '{{ item.offre.titre|e('js') }}');" style="display:inline;">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ item.offre.id) }}">
+            <button class="btn btn-sm btn-outline-danger" title="Supprimer"><i class="fas fa-trash"></i></button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<div class="offre-empty">
+    <i class="fas fa-inbox fa-2x" style="opacity:0.4;"></i><br>
+    Aucune offre trouvée.
+</div>
+{% endfor %}

@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\Comment;
 use App\Form\CommentType;
 use App\Repository\CommentRepository;
+use App\Repository\PostRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,10 +19,33 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class CommentController extends AbstractController
 {
     #[Route('/', name: 'comment_index', methods: ['GET'])]
-    public function index(CommentRepository $repo): Response
+    #[Route('/search', name: 'comment_search', methods: ['GET'])]
+    public function index(CommentRepository $repo, PostRepository $postRepo, UserRepository $userRepo, Request $request): Response
     {
+        $search = $request->query->get('q', '');
+        $postId = $request->query->get('post');
+        $auteur = $request->query->get('auteur');
+        $tri = $request->query->get('tri', 'createdAt');
+        $ordre = $request->query->get('ordre', 'DESC');
+
+        $comments = $repo->findByFilters($search, $postId, $auteur, $tri, $ordre);
+
+        // Si AJAX, ne retourner que le partial tbody
+        if ($request->isXmlHttpRequest()) {
+            return $this->render('comment/_table_body.html.twig', [
+                'comments' => $comments
+            ]);
+        }
+
         return $this->render('comment/index.html.twig', [
-            'comments' => $repo->findBy([], ['createdAt' => 'DESC']),
+            'comments' => $comments,
+            'search' => $search,
+            'posts' => $postRepo->findAllOrderedByDate(),
+            'postId' => $postId,
+            'auteurs' => $userRepo->findAll(),
+            'auteur' => $auteur,
+            'tri' => $tri,
+            'ordre' => $ordre,
         ]);
     }
 

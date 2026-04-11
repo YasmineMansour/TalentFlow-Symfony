@@ -1,78 +1,230 @@
-{{ form_start(form, {'attr': {'class': 'tf-form', 'novalidate': 'novalidate', 'onsubmit': "if(!this.dataset.confirmed){event.preventDefault(); confirmFormSubmit(this, '" ~ (form_action|default('create')) ~ "', 'cette candidature');}"}}) }}
-    <div class="row g-3">
-        <div class="col-md-6">
-            <div class="mb-3">
-                {{ form_label(form.titrePoste) }}
-                {{ form_widget(form.titrePoste) }}
-                {{ form_errors(form.titrePoste) }}
+<style>
+    .candidature-section { background: var(--tf-card-bg, #151b2e); border: 1px solid var(--tf-border, rgba(255,255,255,0.06)); border-radius: 14px; padding: 1.5rem; margin-bottom: 1.25rem; }
+    .candidature-section-title { font-size: 1rem; font-weight: 700; color: var(--tf-gold); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--tf-border, rgba(255,255,255,0.06)); }
+    .candidature-section-title i { font-size: 1.1rem; }
+    .file-upload-zone { border: 2px dashed var(--tf-border, rgba(255,255,255,0.15)); border-radius: 12px; padding: 1.5rem; text-align: center; transition: all 0.25s; cursor: pointer; background: transparent; }
+    .file-upload-zone:hover { border-color: var(--tf-gold); background: rgba(212,168,67,0.04); }
+    .file-upload-zone i { font-size: 2rem; color: var(--tf-gold); margin-bottom: 0.5rem; display: block; }
+    .file-upload-zone .file-label { color: var(--tf-gray, #8892b0); font-size: 0.85rem; }
+    .file-upload-zone .file-name { color: var(--tf-gold); font-weight: 600; font-size: 0.9rem; margin-top: 0.4rem; display: none; }
+    .file-upload-zone input[type="file"] { position: absolute; opacity: 0; width: 100%; height: 100%; top: 0; left: 0; cursor: pointer; }
+    .file-upload-wrapper { position: relative; }
+    .step-indicator { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .step-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; border: 2px solid var(--tf-border, rgba(255,255,255,0.1)); color: var(--tf-gray); transition: all 0.3s; }
+    .step-dot.active { border-color: var(--tf-gold); color: var(--tf-gold); background: rgba(212,168,67,0.1); }
+</style>
+
+<div class="step-indicator">
+    <div class="step-dot active" title="Poste"><i class="fas fa-briefcase"></i></div>
+    <div class="step-dot active" title="Profil"><i class="fas fa-user"></i></div>
+    <div class="step-dot active" title="Documents"><i class="fas fa-file-alt"></i></div>
+    <div class="step-dot active" title="Entretien"><i class="fas fa-calendar"></i></div>
+    <div class="step-dot active" title="Notes"><i class="fas fa-sticky-note"></i></div>
+</div>
+
+{{ form_start(form, {'attr': {'class': 'tf-form', 'novalidate': 'novalidate', 'enctype': 'multipart/form-data'}}) }}
+
+    {# ====== SECTION 1: POSTE ====== #}
+    <div class="candidature-section">
+        <div class="candidature-section-title"><i class="fas fa-briefcase"></i> Informations du poste</div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    {{ form_label(form.titrePoste) }}
+                    {{ form_widget(form.titrePoste) }}
+                    {{ form_errors(form.titrePoste) }}
+                </div>
             </div>
-        </div>
-        <div class="col-md-6">
-            <div class="mb-3">
-                {{ form_label(form.entreprise) }}
-                {{ form_widget(form.entreprise) }}
-                {{ form_errors(form.entreprise) }}
+            <div class="col-md-6">
+                <div class="mb-3">
+                    {{ form_label(form.entreprise) }}
+                    {{ form_widget(form.entreprise) }}
+                    {{ form_errors(form.entreprise) }}
+                </div>
             </div>
-        </div>
-        <div class="col-md-6">
-            <div class="mb-3">
-                {{ form_label(form.typeContrat) }}
-                {{ form_widget(form.typeContrat) }}
-                {{ form_errors(form.typeContrat) }}
+            <div class="col-md-6">
+                <div class="mb-3">
+                    {{ form_label(form.typeContrat) }}
+                    {{ form_widget(form.typeContrat) }}
+                    {{ form_errors(form.typeContrat) }}
+                </div>
             </div>
-        </div>
-        <div class="col-md-6">
-            <div class="mb-3">
-                {{ form_label(form.statut) }}
-                {{ form_widget(form.statut) }}
-                {{ form_errors(form.statut) }}
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="mb-3">
-                {{ form_label(form.dateCandidature) }}
-                {{ form_widget(form.dateCandidature) }}
-                {{ form_errors(form.dateCandidature) }}
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="mb-3">
-                {{ form_label(form.dateEntretien) }}
-                {{ form_widget(form.dateEntretien) }}
-                {{ form_errors(form.dateEntretien) }}
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="mb-3">
-                {{ form_label(form.lieu) }}
-                {{ form_widget(form.lieu) }}
-                {{ form_errors(form.lieu) }}
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="mb-3">
-                {{ form_label(form.salaireSouhaite) }}
-                {{ form_widget(form.salaireSouhaite) }}
-                {{ form_errors(form.salaireSouhaite) }}
-            </div>
-        </div>
-        <div class="col-12">
-            <div class="mb-3">
-                {{ form_label(form.description) }}
-                {{ form_widget(form.description) }}
-                {{ form_errors(form.description) }}
-            </div>
-        </div>
-        <div class="col-12">
-            <div class="mb-3">
-                {{ form_label(form.notes) }}
-                {{ form_widget(form.notes) }}
-                {{ form_errors(form.notes) }}
+            <div class="col-md-6">
+                <div class="mb-3">
+                    {{ form_label(form.salaireSouhaite) }}
+                    {{ form_widget(form.salaireSouhaite) }}
+                    {{ form_errors(form.salaireSouhaite) }}
+                </div>
             </div>
         </div>
     </div>
 
-    <button type="submit" class="btn-gold mt-3">
-        <i class="fas fa-save"></i> {{ button_label|default('Enregistrer') }}
-    </button>
+    {# ====== SECTION 2: PROFIL CANDIDAT ====== #}
+    <div class="candidature-section">
+        <div class="candidature-section-title"><i class="fas fa-user-circle"></i> Mon profil</div>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="mb-3">
+                    {{ form_label(form.telephone) }}
+                    {{ form_widget(form.telephone) }}
+                    {{ form_errors(form.telephone) }}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mb-3">
+                    {{ form_label(form.niveauEtudes) }}
+                    {{ form_widget(form.niveauEtudes) }}
+                    {{ form_errors(form.niveauEtudes) }}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mb-3">
+                    {{ form_label(form.anneesExperience) }}
+                    {{ form_widget(form.anneesExperience) }}
+                    {{ form_errors(form.anneesExperience) }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    {{ form_label(form.lieu) }}
+                    {{ form_widget(form.lieu) }}
+                    {{ form_errors(form.lieu) }}
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="mb-3">
+                    {{ form_label(form.competences) }}
+                    {{ form_widget(form.competences) }}
+                    {{ form_errors(form.competences) }}
+                    <small style="color: var(--tf-gray); font-size: 0.78rem;">Séparez vos compétences par des virgules</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ====== SECTION 3: DOCUMENTS ====== #}
+    <div class="candidature-section">
+        <div class="candidature-section-title"><i class="fas fa-file-upload"></i> Documents</div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label style="color: var(--tf-gold); font-weight: 600; font-size: 0.88rem; margin-bottom: 0.5rem; display: block;">CV *</label>
+                <div class="file-upload-wrapper">
+                    <div class="file-upload-zone" id="cv-zone">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <div class="file-label">Glissez ou cliquez pour uploader votre CV<br><small>PDF, DOC, DOCX — Max 5 Mo</small></div>
+                        <div class="file-name" id="cv-name"></div>
+                        {{ form_widget(form.cvFile) }}
+                    </div>
+                </div>
+                {{ form_errors(form.cvFile) }}
+            </div>
+            <div class="col-md-6">
+                <label style="color: var(--tf-gold); font-weight: 600; font-size: 0.88rem; margin-bottom: 0.5rem; display: block;">Lettre de motivation</label>
+                <div class="file-upload-wrapper">
+                    <div class="file-upload-zone" id="lettre-zone">
+                        <i class="fas fa-envelope-open-text"></i>
+                        <div class="file-label">Glissez ou cliquez pour uploader<br><small>PDF, DOC, DOCX — Max 5 Mo</small></div>
+                        <div class="file-name" id="lettre-name"></div>
+                        {{ form_widget(form.lettreMotivationFile) }}
+                    </div>
+                </div>
+                {{ form_errors(form.lettreMotivationFile) }}
+            </div>
+        </div>
+    </div>
+
+    {# ====== SECTION 4: MESSAGE & MOTIVATION ====== #}
+    <div class="candidature-section">
+        <div class="candidature-section-title"><i class="fas fa-comment-alt"></i> Message de motivation</div>
+        <div class="mb-3">
+            {{ form_label(form.description) }}
+            {{ form_widget(form.description) }}
+            {{ form_errors(form.description) }}
+            <small style="color: var(--tf-gray); font-size: 0.78rem;">Présentez-vous brièvement et expliquez pourquoi vous êtes le bon candidat</small>
+        </div>
+    </div>
+
+    {# ====== SECTION 5: ENTRETIEN & NOTES ====== #}
+    <div class="candidature-section">
+        <div class="candidature-section-title"><i class="fas fa-calendar-alt"></i> Disponibilité & Notes</div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    {{ form_label(form.dateEntretienSouhaitee) }}
+                    {{ form_widget(form.dateEntretienSouhaitee) }}
+                    {{ form_errors(form.dateEntretienSouhaitee) }}
+                    <small style="color: var(--tf-gray); font-size: 0.78rem;">Indiquez la date à partir de laquelle vous êtes disponible</small>
+                </div>
+            </div>
+            {% if form.statut is defined %}
+            <div class="col-md-3">
+                <div class="mb-3">
+                    {{ form_label(form.statut) }}
+                    {{ form_widget(form.statut) }}
+                    {{ form_errors(form.statut) }}
+                </div>
+            </div>
+            {% endif %}
+            {% if form.dateCandidature is defined %}
+            <div class="col-md-3">
+                <div class="mb-3">
+                    {{ form_label(form.dateCandidature) }}
+                    {{ form_widget(form.dateCandidature) }}
+                    {{ form_errors(form.dateCandidature) }}
+                </div>
+            </div>
+            {% endif %}
+            {% if form.dateEntretien is defined %}
+            <div class="col-md-6">
+                <div class="mb-3">
+                    {{ form_label(form.dateEntretien) }}
+                    {{ form_widget(form.dateEntretien) }}
+                    {{ form_errors(form.dateEntretien) }}
+                </div>
+            </div>
+            {% endif %}
+            <div class="col-12">
+                <div class="mb-3">
+                    {{ form_label(form.notes) }}
+                    {{ form_widget(form.notes) }}
+                    {{ form_errors(form.notes) }}
+                    <small style="color: var(--tf-gray); font-size: 0.78rem;">Ajoutez toute information utile (disponibilités, contraintes, questions...)</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 1rem; align-items: center; margin-top: 0.5rem;">
+        <button type="submit" class="btn-gold">
+            <i class="fas fa-paper-plane"></i> {{ button_label|default('Enregistrer') }}
+        </button>
+    </div>
 {{ form_end(form) }}
+
+<script>
+// File upload zones
+document.addEventListener('DOMContentLoaded', function() {
+    function setupFileZone(inputField, zoneId, nameId) {
+        const zone = document.getElementById(zoneId);
+        const nameEl = document.getElementById(nameId);
+        if (!zone || !inputField) return;
+
+        const fileInput = zone.querySelector('input[type="file"]');
+        if (!fileInput) return;
+
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                nameEl.textContent = file.name + ' (' + (file.size / 1024 / 1024).toFixed(2) + ' Mo)';
+                nameEl.style.display = 'block';
+                zone.querySelector('.file-label').style.display = 'none';
+                zone.style.borderColor = 'var(--tf-gold)';
+                zone.style.background = 'rgba(212,168,67,0.06)';
+            }
+        });
+    }
+
+    setupFileZone(true, 'cv-zone', 'cv-name');
+    setupFileZone(true, 'lettre-zone', 'lettre-name');
+});
+</script>

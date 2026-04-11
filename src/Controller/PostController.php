@@ -2,11 +2,14 @@
 
 namespace App\Controller;
 
+use App\Entity\Comment;
 use App\Entity\Post;
 use App\Form\PostType;
 use App\Repository\PostRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -17,10 +20,30 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class PostController extends AbstractController
 {
     #[Route('/', name: 'post_index', methods: ['GET'])]
-    public function index(PostRepository $repo): Response
+    #[Route('/search', name: 'post_search', methods: ['GET'])]
+    public function index(PostRepository $repo, UserRepository $userRepo, Request $request): Response
     {
+        $search = $request->query->get('q', '');
+        $auteur = $request->query->get('auteur');
+        $tri = $request->query->get('tri', 'createdAt');
+        $ordre = $request->query->get('ordre', 'DESC');
+
+        $posts = $repo->findByFilters($search, $auteur, $tri, $ordre);
+
+        // Si AJAX, ne retourner que le partial tbody
+        if ($request->isXmlHttpRequest()) {
+            return $this->render('post/_table_body.html.twig', [
+                'posts' => $posts
+            ]);
+        }
+
         return $this->render('post/index.html.twig', [
-            'posts' => $repo->findAllOrderedByDate(),
+            'posts' => $posts,
+            'search' => $search,
+            'auteurs' => $userRepo->findAll(),
+            'auteur' => $auteur,
+            'tri' => $tri,
+            'ordre' => $ordre,
         ]);
     }
 
@@ -46,11 +69,37 @@ class PostController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'post_show', methods: ['GET'])]
-    public function show(Post $post): Response
+    #[Route('/{id}', name: 'post_show', methods: ['GET', 'POST'])]
+    public function show(Request $request, Post $post, EntityManagerInterface $em): Response
     {
+        $comment = new Comment();
+        $comment->setAuthor($this->getUser());
+        $comment->setPost($post);
+
+        $form = $this->createFormBuilder($comment)
+            ->add('content', TextareaType::class, [
+                'label' => false,
+                'attr' => [
+                    'placeholder' => 'Écrire un commentaire...',
+                    'rows' => 3,
+                    'class' => 'form-control',
+                ],
+            ])
+            ->getForm();
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->persist($comment);
+            $em->flush();
+
+            $this->addFlash('success', 'Commentaire ajouté avec succès.');
+            return $this->redirectToRoute('post_show', ['id' => $post->getId()]);
+        }
+
         return $this->render('post/show.html.twig', [
             'post' => $post,
+            'commentForm' => $form,
         ]);
     }
 

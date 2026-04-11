@@ -53,94 +53,135 @@
     </form>
 </div>
 
-{# Table #}
-<div class="tf-card">
-    <div class="table-responsive">
-        <table class="table table-dark table-hover" style="background: transparent;">
-            <thead>
-                <tr style="color: var(--tf-gold);">
-                    <th>#</th>
-                    <th>Titre</th>
-                    <th>Entreprise</th>
-                    <th>Catégorie</th>
-                    <th>Localisation</th>
-                    <th>Contrat</th>
-                    <th>Salaire</th>
-                    <th>Statut</th>
-                    <th>Classement</th>
-                    <th>Cohérence</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in offreData %}
-                <tr>
-                    <td>{{ item.offre.id }}</td>
-                    <td>
-                        <a href="{{ path('offre_show', {id: item.offre.id}) }}" style="color: var(--tf-gold); text-decoration: none; font-weight: 600;">{{ item.offre.titre }}</a>
-                        {% if not item.complete %}
-                            <span class="badge bg-warning text-dark ms-1" title="Incomplète"><i class="fas fa-exclamation-triangle"></i></span>
-                        {% endif %}
-                    </td>
-                    <td>{{ item.offre.entreprise ? item.offre.entreprise.nom : '—' }}</td>
-                    <td>{{ item.offre.categorie ? item.offre.categorie.nom : '—' }}</td>
-                    <td>{{ item.offre.localisation ?? '—' }}</td>
-                    <td><span class="badge" style="background: var(--tf-dark-blue);">{{ item.offre.typeContrat }}</span></td>
-                    <td>{{ item.offre.salaireRange }}</td>
-                    <td>
-                        {% if item.offre.statut == 'PUBLISHED' %}
-                            <span class="badge bg-success">Publiée</span>
-                        {% elseif item.offre.statut == 'DRAFT' %}
-                            <span class="badge bg-secondary">Brouillon</span>
-                        {% else %}
-                            <span class="badge bg-danger">Fermée</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if item.classement == 'Or' %}
-                            <span class="badge bg-warning text-dark"><i class="fas fa-trophy"></i> Or</span>
-                        {% elseif item.classement == 'Argent' %}
-                            <span class="badge bg-secondary"><i class="fas fa-trophy"></i> Argent</span>
-                        {% elseif item.classement == 'Bronze' %}
-                            <span class="badge" style="background:#cd7f32;color:#fff;"><i class="fas fa-trophy"></i> Bronze</span>
-                        {% else %}
-                            <span style="color: var(--tf-gray);">—</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if item.coherence == 'Cohérent' %}
-                            <span style="color: #2ecc71;"><i class="fas fa-check-circle"></i> {{ item.coherence }}</span>
-                        {% elseif item.coherence == 'Incohérent' %}
-                            <span style="color: #e74c3c;"><i class="fas fa-times-circle"></i> {{ item.coherence }}</span>
-                        {% else %}
-                            <span style="color: var(--tf-gray);">{{ item.coherence }}</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <div class="d-flex gap-1">
-                            <a href="{{ path('offre_show', {id: item.offre.id}) }}" class="btn btn-sm btn-outline-light" title="Voir"><i class="fas fa-eye"></i></a>
-                            {% if is_granted('ROLE_RH') %}
-                            <a href="{{ path('offre_edit', {id: item.offre.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier"><i class="fas fa-edit"></i></a>
-                            <form method="post" action="{{ path('offre_delete', {id: item.offre.id}) }}" onsubmit="event.preventDefault(); confirmDelete(this, '{{ item.offre.titre|e('js') }}');" style="display:inline;">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ item.offre.id) }}">
-                                <button class="btn btn-sm btn-outline-danger" title="Supprimer"><i class="fas fa-trash"></i></button>
-                            </form>
-                            {% endif %}
-                        </div>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="11" class="text-center" style="color: var(--tf-gray); padding: 2rem;">
-                        <i class="fas fa-inbox fa-2x"></i><br>Aucune offre trouvée.
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+{# Cards Grid #}
+<style>
+    .offre-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem; }
+    .offre-card { background: var(--tf-card-bg, #151b2e); border: 1px solid var(--tf-border, rgba(255,255,255,0.06)); border-radius: 14px; padding: 1.5rem; transition: transform 0.2s, box-shadow 0.2s; text-decoration: none; display: flex; flex-direction: column; position: relative; }
+    .offre-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.25); border-color: var(--tf-gold); }
+    .offre-card-title { font-size: 1.1rem; font-weight: 700; color: var(--tf-gold); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.5rem; }
+    .offre-card-company { font-size: 0.88rem; color: var(--tf-gray, #8892b0); margin-bottom: 0.75rem; }
+    .offre-card-company i { margin-right: 0.3rem; }
+    .offre-card-meta { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 0.75rem; font-size: 0.82rem; color: var(--tf-gray, #8892b0); }
+    .offre-card-meta i { color: var(--tf-gold); margin-right: 0.25rem; }
+    .offre-card-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.75rem; }
+    .offre-tag { padding: 0.2rem 0.65rem; border-radius: 20px; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.02em; }
+    .offre-tag-contrat { background: rgba(212,168,67,0.15); color: var(--tf-gold); }
+    .offre-tag-statut-pub { background: rgba(46,204,113,0.15); color: #2ecc71; }
+    .offre-tag-statut-draft { background: rgba(149,165,166,0.15); color: #95a5a6; }
+    .offre-tag-statut-closed { background: rgba(231,76,60,0.15); color: #e74c3c; }
+    .offre-tag-or { background: rgba(255,193,7,0.18); color: #ffc107; }
+    .offre-tag-argent { background: rgba(192,192,192,0.18); color: #c0c0c0; }
+    .offre-tag-bronze { background: rgba(205,127,50,0.18); color: #cd7f32; }
+    .offre-tag-coherent { background: rgba(46,204,113,0.12); color: #2ecc71; }
+    .offre-tag-incoherent { background: rgba(231,76,60,0.12); color: #e74c3c; }
+    .offre-card-actions { display: flex; gap: 0.5rem; margin-top: auto; padding-top: 0.75rem; border-top: 1px solid var(--tf-border, rgba(255,255,255,0.06)); }
+    .offre-card-actions .btn { font-size: 0.78rem; padding: 0.3rem 0.7rem; border-radius: 8px; }
+    .offre-empty { grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--tf-gray); }
+    @media (max-width: 768px) { .offre-grid { grid-template-columns: 1fr; } }
+</style>
+
+<div class="offre-grid" id="offre-grid">
+    {% for item in offreData %}
+    <div class="offre-card">
+        <div class="offre-card-title">
+            <a href="{{ path('offre_show', {id: item.offre.id}) }}" style="color: var(--tf-gold); text-decoration: none;">{{ item.offre.titre }}</a>
+            {% if not item.complete %}
+                <span class="badge bg-warning text-dark" title="Incomplète" style="font-size:0.65rem;"><i class="fas fa-exclamation-triangle"></i></span>
+            {% endif %}
+        </div>
+        <div class="offre-card-company">
+            <i class="fas fa-building"></i> {{ item.offre.entreprise ? item.offre.entreprise.nom : '—' }}
+        </div>
+        <div class="offre-card-meta">
+            <span><i class="fas fa-map-marker-alt"></i> {{ item.offre.localisation ?? '—' }}</span>
+            <span><i class="fas fa-file-contract"></i> {{ item.offre.typeContrat }}</span>
+            {% if item.offre.salaireMin or item.offre.salaireMax %}
+            <span><i class="fas fa-coins"></i> {{ item.offre.salaireRange }}</span>
+            {% endif %}
+        </div>
+        <div class="offre-card-tags">
+            <span class="offre-tag offre-tag-contrat">{{ item.offre.typeContrat }}</span>
+            {% if item.offre.statut == 'PUBLISHED' %}
+                <span class="offre-tag offre-tag-statut-pub">Publiée</span>
+            {% elseif item.offre.statut == 'DRAFT' %}
+                <span class="offre-tag offre-tag-statut-draft">Brouillon</span>
+            {% else %}
+                <span class="offre-tag offre-tag-statut-closed">Fermée</span>
+            {% endif %}
+            {% if item.classement == 'Or' %}
+                <span class="offre-tag offre-tag-or"><i class="fas fa-trophy"></i> Or</span>
+            {% elseif item.classement == 'Argent' %}
+                <span class="offre-tag offre-tag-argent"><i class="fas fa-trophy"></i> Argent</span>
+            {% elseif item.classement == 'Bronze' %}
+                <span class="offre-tag offre-tag-bronze"><i class="fas fa-trophy"></i> Bronze</span>
+            {% endif %}
+            {% if item.coherence == 'Cohérent' %}
+                <span class="offre-tag offre-tag-coherent"><i class="fas fa-check-circle"></i> Cohérent</span>
+            {% elseif item.coherence == 'Incohérent' %}
+                <span class="offre-tag offre-tag-incoherent"><i class="fas fa-times-circle"></i> Incohérent</span>
+            {% endif %}
+            {% if item.offre.categorie %}
+                <span class="offre-tag" style="background:rgba(255,165,0,0.12); color:#ffa500;">{{ item.offre.categorie.nom }}</span>
+            {% endif %}
+        </div>
+        {% if item.offre.description is defined and item.offre.description %}
+        <p style="color: var(--tf-gray); font-size: 0.83rem; line-height: 1.5; margin-bottom: 0.75rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+            {{ item.offre.description|striptags|slice(0, 150) }}{{ item.offre.description|length > 150 ? '...' }}
+        </p>
+        {% endif %}
+        <div class="offre-card-actions">
+            <a href="{{ path('offre_show', {id: item.offre.id}) }}" class="btn btn-sm btn-outline-light" title="Voir"><i class="fas fa-eye"></i> Voir</a>
+            {% if is_granted('ROLE_RH') %}
+            <a href="{{ path('offre_edit', {id: item.offre.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier"><i class="fas fa-edit"></i> Modifier</a>
+            <form method="post" action="{{ path('offre_delete', {id: item.offre.id}) }}" onsubmit="event.preventDefault(); confirmDelete(this, '{{ item.offre.titre|e('js') }}');" style="display:inline;">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ item.offre.id) }}">
+                <button class="btn btn-sm btn-outline-danger" title="Supprimer"><i class="fas fa-trash"></i></button>
+            </form>
+            {% endif %}
+        </div>
     </div>
-    <div class="mt-3" style="color: var(--tf-gray);">
-        <small>{{ offreData|length }} offre(s) trouvée(s)</small>
+    {% else %}
+    <div class="offre-empty">
+        <i class="fas fa-inbox fa-2x" style="opacity:0.4;"></i><br>
+        Aucune offre trouvée.
     </div>
+    {% endfor %}
 </div>
+<div class="mt-3" style="color: var(--tf-gray);">
+    <small>{{ offreData|length }} offre(s) trouvée(s)</small>
+</div>
+<script>
+// Recherche AJAX offres
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.tf-form');
+    const grid = document.getElementById('offre-grid');
+    let debounceTimer;
+
+    function fetchOffers() {
+        const params = new URLSearchParams(new FormData(form)).toString();
+        fetch("{{ path('offre_search') }}?" + params, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(r => r.text())
+            .then(html => {
+                grid.innerHTML = html;
+            });
+    }
+
+    // Déclenche sur saisie texte (avec debounce)
+    form.q && form.q.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(fetchOffers, 300);
+    });
+
+    // Déclenche sur changement de select
+    form.querySelectorAll('select').forEach(sel => {
+        sel.addEventListener('change', fetchOffers);
+    });
+
+    // Empêche le submit classique
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        fetchOffers();
+    });
+});
+</script>
 {% endblock %}
