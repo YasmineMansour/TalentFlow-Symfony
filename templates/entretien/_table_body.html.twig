@@ -1,45 +1,48 @@
-{# Partial pour le tbody du tableau des entretiens #}
+{# Partial pour la grille AJAX des entretiens #}
 {% for entretien in entretiens %}
-<tr>
-    <td style="color: var(--tf-gray);">{{ entretien.id }}</td>
-    <td>
-        <strong>Candidature #{{ entretien.candidatureId }}</strong>
-        <div style="color: var(--tf-gray); font-size: 0.75rem;">{{ candidatureLabels[entretien.candidatureId] ?? '—' }}</div>
-    </td>
-    <td>
-        <strong>{{ entretien.dateHeure ? entretien.dateHeure|date('d/m/Y H:i') : '—' }}</strong>
-        <div style="color: var(--tf-gray); font-size: 0.75rem;">{{ entretien.lieu ?: entretien.lien ?: 'Aucun détail' }}</div>
-    </td>
-    <td>{{ entretien.type ?: '—' }}</td>
-    <td>
-        {% set color = entretien.statut == 'REALISE' ? '#27ae60' : (entretien.statut == 'ANNULE' ? '#e74c3c' : '#5dade2') %}
-        <span class="badge-role" style="background: rgba(255,255,255,0.06); color: {{ color }}; border: 1px solid {{ color }};">
-            {{ entretien.statut }}
-        </span>
-    </td>
-    <td>Tech: {{ entretien.noteTechnique ?? '—' }}<br>Com: {{ entretien.noteCommunication ?? '—' }}</td>
-    <td>
-        {% if entretien.scoreFinal is not null %}
-            <strong>{{ entretien.scoreFinal|number_format(2, '.', ' ') }}/20</strong>
-            <div style="color: var(--tf-gray); font-size: 0.75rem;">{{ entretien.niveau }}</div>
-        {% else %}
-            <span style="color: var(--tf-gray);">—</span>
-        {% endif %}
-    </td>
-    <td>
-        <div class="tf-actions">
-            <a href="{{ path('app_entretien_edit', {id: entretien.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier"><i class="fas fa-edit"></i></a>
-            <form method="post" action="{{ path('app_entretien_delete', {id: entretien.id}) }}" onsubmit="event.preventDefault(); confirmDelete(this, 'Entretien #' ~ entretien.id);" style="display:inline;">
-                <input type="hidden" name="_token" value="{{ csrf_token('delete_entretien_' ~ entretien.id) }}">
-                <button class="btn btn-sm btn-outline-danger" title="Supprimer"><i class="fas fa-trash"></i></button>
-            </form>
+<div class="tf-item-card">
+    <div class="tf-item-card-header">
+        <div>
+            <div class="tf-item-card-title">Entretien #{{ entretien.id }}</div>
+            <div class="tf-item-card-subtitle">
+                <i class="fas fa-file-alt"></i> Candidature #{{ entretien.candidatureId }}
+                <span style="display:block; font-size:0.78rem;">{{ candidatureLabels[entretien.candidatureId] ?? '—' }}</span>
+            </div>
         </div>
-    </td>
-</tr>
+        {% if entretien.scoreFinal is not null %}
+        <div class="tf-score-circle {{ entretien.scoreFinal >= 14 ? 'tf-score-high' : (entretien.scoreFinal >= 10 ? 'tf-score-mid' : 'tf-score-low') }}">
+            {{ entretien.scoreFinal|number_format(1) }}
+        </div>
+        {% endif %}
+    </div>
+    <div class="tf-item-card-meta">
+        <span><i class="fas fa-calendar"></i> {{ entretien.dateHeure ? entretien.dateHeure|date('d/m/Y H:i') : '—' }}</span>
+        {% if entretien.lieu %}<span><i class="fas fa-map-marker-alt"></i> {{ entretien.lieu }}</span>{% endif %}
+        {% if entretien.lien %}<span><i class="fas fa-link"></i> {{ entretien.lien }}</span>{% endif %}
+    </div>
+    <div class="tf-item-card-tags">
+        {% if entretien.type %}<span class="tf-tag-sm tf-tag-blue">{{ entretien.type }}</span>{% endif %}
+        {% set sColor = entretien.statut == 'REALISE' ? 'green' : (entretien.statut == 'ANNULE' ? 'red' : 'blue') %}
+        <span class="tf-tag-sm tf-tag-{{ sColor }}">{{ entretien.statut }}</span>
+        {% if entretien.niveau %}<span class="tf-tag-sm tf-tag-gray">{{ entretien.niveau }}</span>{% endif %}
+    </div>
+    {% if entretien.noteTechnique is not null or entretien.noteCommunication is not null %}
+    <div class="tf-item-card-body">
+        {% if entretien.noteTechnique is not null %}Tech: {{ entretien.noteTechnique }}/20{% endif %}
+        {% if entretien.noteCommunication is not null %} &bull; Com: {{ entretien.noteCommunication }}/20{% endif %}
+    </div>
+    {% endif %}
+    <div class="tf-item-card-actions">
+        <a href="{{ path('app_entretien_edit', {id: entretien.id}) }}" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i></a>
+        <form method="post" action="{{ path('app_entretien_delete', {id: entretien.id}) }}" onsubmit="event.preventDefault(); confirmDelete(this, 'Entretien #' ~ entretien.id);" style="display:inline;">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete_entretien_' ~ entretien.id) }}">
+            <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+        </form>
+    </div>
+</div>
 {% else %}
-<tr>
-    <td colspan="8" class="text-center" style="color: var(--tf-gray); padding: 2rem;">
-        <i class="fas fa-inbox fa-2x"></i><br>Aucun entretien trouvé.
-    </td>
-</tr>
+<div class="tf-card-empty">
+    <i class="fas fa-inbox"></i>
+    <p>Aucun entretien trouvé.</p>
+</div>
 {% endfor %}

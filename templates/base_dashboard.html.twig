@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="light">
+<html lang="{{ app.request.locale }}" data-theme="light">
     <head>
         <script>(function(){var t=localStorage.getItem('tf-theme');if(!t)t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');})()</script>
         <meta charset="UTF-8">
@@ -744,7 +744,19 @@
 
             .tf-theme-btn { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--tf-border); background: transparent; color: var(--tf-gray); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: all 0.2s; }
             .tf-theme-btn:hover { background: rgba(212,168,67,0.1); color: var(--tf-gold); border-color: var(--tf-gold); transform: rotate(15deg); }
+
+            /* ==================== LANGUAGE SWITCHER ==================== */
+            .tf-lang-switcher { position: relative; display: inline-flex; }
+            .tf-lang-btn { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--tf-border); background: transparent; color: var(--tf-gray); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; transition: all 0.2s; text-transform: uppercase; }
+            .tf-lang-btn:hover { background: rgba(212,168,67,0.1); color: var(--tf-gold); border-color: var(--tf-gold); }
+            .tf-lang-dropdown { position: absolute; top: calc(100% + 8px); right: 0; background: var(--tf-card-bg); border: 1px solid var(--tf-border); border-radius: 10px; padding: 0.4rem; min-width: 140px; box-shadow: 0 8px 25px rgba(0,0,0,0.3); display: none; z-index: 9999; }
+            .tf-lang-dropdown.show { display: block; }
+            .tf-lang-dropdown a { display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 0.8rem; color: var(--tf-gray); text-decoration: none; border-radius: 6px; font-size: 0.85rem; transition: all 0.15s; }
+            .tf-lang-dropdown a:hover { background: rgba(212,168,67,0.08); color: var(--tf-gold); }
+            .tf-lang-dropdown a.active { color: var(--tf-gold); font-weight: 600; background: rgba(212,168,67,0.12); }
+            .tf-lang-dropdown a .flag-icon { font-size: 1.1rem; }
         </style>
+        <link rel="stylesheet" href="/css/cards.css">
         {% block stylesheets %}{% endblock %}
     </head>
     <body>
@@ -754,112 +766,112 @@
                 <a href="{{ path('app_dashboard') }}">
                     <i class="fas fa-briefcase"></i> TalentFlow
                 </a>
-                <small>{{ app.user ? app.user.prenom ~ ' ' ~ app.user.nom ~ ' • ' ~ app.user.roleLabel : 'Gestion RH' }}</small>
+                <small>{{ app.user ? app.user.prenom ~ ' ' ~ app.user.nom ~ ' • ' ~ app.user.roleLabel : 'common.hr_management'|trans }}</small>
             </div>
 
             {# ── Principal ── #}
-            <div class="tf-sidebar-section">Principal</div>
+            <div class="tf-sidebar-section">{{ 'section.main'|trans }}</div>
             <ul class="tf-sidebar-nav">
                 <li>
                     <a href="{{ path('app_dashboard') }}" class="{% if app.request.attributes.get('_route') == 'app_dashboard' %}active{% endif %}">
-                        <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                        <i class="fas fa-tachometer-alt"></i> {{ 'nav.dashboard'|trans }}
                     </a>
                 </li>
 
                 {# ── 👥 Utilisateurs (ADMIN uniquement) ── #}
                 {% if is_granted('ROLE_ADMIN') %}
-                <div class="tf-sidebar-section">👥 Utilisateurs</div>
+                <div class="tf-sidebar-section">👥 {{ 'section.users'|trans }}</div>
                 <li>
                     <a href="{{ path('app_user_index') }}" class="{% if 'app_user' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-users-cog"></i> Liste des utilisateurs
+                        <i class="fas fa-users-cog"></i> {{ 'nav.users'|trans }}
                     </a>
                 </li>
                 <li>
                     <a href="{{ path('app_user_new') }}">
-                        <i class="fas fa-user-plus"></i> Nouvel utilisateur
+                        <i class="fas fa-user-plus"></i> {{ 'nav.new_user'|trans }}
                     </a>
                 </li>
                 {% endif %}
 
                 {# ── 💼 Offres d'emploi (ADMIN + RH : gestion / CANDIDAT : consultation) ── #}
-                <div class="tf-sidebar-section">💼 Offres d'emploi</div>
+                <div class="tf-sidebar-section">💼 {{ 'section.offers'|trans }}</div>
                 {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_RH') %}
                 <li>
                     <a href="{{ path('offre_index') }}" class="{% if 'offre' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-clipboard-list"></i> Gestion des offres
+                        <i class="fas fa-clipboard-list"></i> {{ 'nav.offers'|trans }}
                     </a>
                 </li>
                 <li>
                     <a href="{{ path('entreprise_index') }}" class="{% if 'entreprise' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-building"></i> Entreprises
+                        <i class="fas fa-building"></i> {{ 'nav.companies'|trans }}
                     </a>
                 </li>
                 <li>
                     <a href="{{ path('categorie_index') }}" class="{% if 'categorie' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-tags"></i> Catégories
+                        <i class="fas fa-tags"></i> {{ 'nav.categories'|trans }}
                     </a>
                 </li>
                 <li>
                     <a href="{{ path('avantage_index') }}" class="{% if 'avantage' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-gift"></i> Avantages
+                        <i class="fas fa-gift"></i> {{ 'nav.benefits'|trans }}
                     </a>
                 </li>
                 {% endif %}
                 {% if is_granted('ROLE_CANDIDAT') and not is_granted('ROLE_ADMIN') and not is_granted('ROLE_RH') %}
                 <li>
                     <a href="{{ path('offre_index') }}" class="{% if 'offre' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-search"></i> Consulter les offres
+                        <i class="fas fa-search"></i> {{ 'nav.browse_offers'|trans }}
                     </a>
                 </li>
                 {% endif %}
 
                 {# ── 📄 Candidatures (tous, vue différente par rôle) ── #}
-                <div class="tf-sidebar-section">📄 Candidatures</div>
+                <div class="tf-sidebar-section">📄 {{ 'section.applications'|trans }}</div>
                 {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_RH') %}
                 <li>
                     <a href="{{ path('app_candidature_index') }}" class="{% if 'app_candidature' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-folder-open"></i> Gestion des candidatures
+                        <i class="fas fa-folder-open"></i> {{ 'nav.applications'|trans }}
                     </a>
                 </li>
                 {% endif %}
                 {% if is_granted('ROLE_CANDIDAT') and not is_granted('ROLE_ADMIN') and not is_granted('ROLE_RH') %}
                 <li>
                     <a href="{{ path('app_candidature_index') }}" class="{% if 'app_candidature' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-paper-plane"></i> Mes candidatures
+                        <i class="fas fa-paper-plane"></i> {{ 'nav.my_applications'|trans }}
                     </a>
                 </li>
                 <li>
                     <a href="{{ path('app_candidature_new') }}">
-                        <i class="fas fa-plus-circle"></i> Nouvelle candidature
+                        <i class="fas fa-plus-circle"></i> {{ 'nav.new_application'|trans }}
                     </a>
                 </li>
                 {% endif %}
 
                 {# ── 📅 Entretiens (ADMIN + RH uniquement) ── #}
                 {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_RH') %}
-                <div class="tf-sidebar-section">📅 Entretiens</div>
+                <div class="tf-sidebar-section">📅 {{ 'section.interviews'|trans }}</div>
                 <li>
                     <a href="{{ path('app_entretien_index') }}" class="{% if 'app_entretien' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-calendar-check"></i> Gestion des entretiens
+                        <i class="fas fa-calendar-check"></i> {{ 'nav.interviews'|trans }}
                     </a>
                 </li>
                 <li>
                     <a href="{{ path('app_decision_finale_index') }}" class="{% if 'app_decision_finale' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-scale-balanced"></i> Décisions finales
+                        <i class="fas fa-scale-balanced"></i> {{ 'nav.decisions'|trans }}
                     </a>
                 </li>
                 {% endif %}
 
                 {# ── 💬 Forum (tous les rôles) ── #}
-                <div class="tf-sidebar-section">💬 Forum</div>
+                <div class="tf-sidebar-section">💬 {{ 'section.forum'|trans }}</div>
                 <li>
                     <a href="{{ path('post_index') }}" class="{% if 'post' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-newspaper"></i> Posts
+                        <i class="fas fa-newspaper"></i> {{ 'nav.posts'|trans }}
                     </a>
                 </li>
                 <li>
                     <a href="{{ path('comment_index') }}" class="{% if 'comment' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-comments"></i> Commentaires
+                        <i class="fas fa-comments"></i> {{ 'nav.comments'|trans }}
                     </a>
                 </li>
             </ul>
@@ -877,7 +889,7 @@
                     </div>
                 </div>
                 <a href="{{ path('app_logout') }}" class="btn-gold w-100 mt-2 justify-content-center" style="font-size:0.8rem;">
-                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    <i class="fas fa-sign-out-alt"></i> {{ 'nav.logout'|trans }}
                 </a>
             </div>
             {% endif %}
@@ -886,10 +898,24 @@
         {# ==================== TOPBAR ==================== #}
         <header class="tf-topbar">
             <div class="tf-topbar-left">
-                <h1>{% block page_title %}Tableau de bord{% endblock %}</h1>
+                <h1>{% block page_title %}{{ 'nav.dashboard'|trans }}{% endblock %}</h1>
             </div>
             <div class="tf-topbar-right">
-                <button class="tf-theme-btn" onclick="TFTheme.toggle()" aria-label="Changer le thème" title="Mode clair/sombre">
+                {# Language switcher #}
+                <div class="tf-lang-switcher">
+                    <button class="tf-lang-btn" onclick="this.nextElementSibling.classList.toggle('show')" title="{{ 'language.switch'|trans }}">
+                        {{ app.request.locale|upper }}
+                    </button>
+                    <div class="tf-lang-dropdown" id="langDropdown">
+                        <a href="{{ path('app_switch_locale', {locale: 'fr'}) }}" class="{{ app.request.locale == 'fr' ? 'active' : '' }}">
+                            <span class="flag-icon">🇫🇷</span> {{ 'language.fr'|trans }}
+                        </a>
+                        <a href="{{ path('app_switch_locale', {locale: 'en'}) }}" class="{{ app.request.locale == 'en' ? 'active' : '' }}">
+                            <span class="flag-icon">🇬🇧</span> {{ 'language.en'|trans }}
+                        </a>
+                    </div>
+                </div>
+                <button class="tf-theme-btn" onclick="TFTheme.toggle()" aria-label="{{ 'theme.change'|trans }}" title="{{ 'theme.toggle'|trans }}">
                     <i class="fas fa-sun" id="theme-icon-sun"></i>
                     <i class="fas fa-moon" id="theme-icon-moon" style="display:none;"></i>
                 </button>
@@ -901,7 +927,7 @@
                     <span>{{ app.user.fullName }}</span>
                 </div>
                 <a href="{{ path('app_logout') }}">
-                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    <i class="fas fa-sign-out-alt"></i> {{ 'nav.logout'|trans }}
                 </a>
                 {% endif %}
             </div>
@@ -947,7 +973,7 @@
                     <div class="tf-modal-text">${options.message}</div>
                     <div class="tf-modal-actions">
                         <button class="btn-cancel" onclick="closeConfirmModal()">  
-                            <i class="fas fa-times"></i> Annuler
+                            <i class="fas fa-times"></i> {{ 'action.cancel'|trans }}
                         </button>
                         <button class="${btnClass}" id="tfConfirmBtn">
                             <i class="fas ${options.confirmIcon || icon}"></i> ${options.confirmText || 'Confirmer'}
@@ -982,36 +1008,36 @@
         // Delete confirmation
         function confirmDelete(formEl, userName) {
             showConfirmModal({
-                title: 'Confirmer la suppression',
-                message: `Êtes-vous sûr de vouloir supprimer <strong style="color:#e74c3c">${userName}</strong> ?<br><small style="color:#a0a0b0">Cette action est irréversible.</small>`,
+                title: TFi18n.modal_delete_title,
+                message: `${TFi18n.modal_delete_msg} <strong style="color:#e74c3c">${userName}</strong> ?<br><small style="color:#a0a0b0">${TFi18n.modal_delete_warning}</small>`,
                 icon: 'fa-trash-alt',
                 iconClass: 'danger',
                 btnClass: 'btn-confirm-danger',
                 confirmIcon: 'fa-trash',
-                confirmText: 'Oui, supprimer',
+                confirmText: TFi18n.yes_delete,
                 onConfirm: function() { formEl.submit(); }
             });
         }
 
         // Submit form confirmation (create / edit)
         function confirmFormSubmit(formEl, actionType, entityName) {
-            entityName = entityName || 'cet élément';
+            entityName = entityName || '';
             const configs = {
                 create: {
-                    title: 'Confirmer la création',
-                    message: `Êtes-vous sûr de vouloir créer ${entityName} ?<br><small style="color:#a0a0b0">Vérifiez bien les informations saisies.</small>`,
+                    title: TFi18n.modal_create_title,
+                    message: `${TFi18n.modal_create_msg} ${entityName} ?<br><small style="color:#a0a0b0">${TFi18n.modal_create_warning}</small>`,
                     icon: 'fa-plus-circle',
                     iconClass: 'success',
                     confirmIcon: 'fa-check',
-                    confirmText: 'Oui, créer'
+                    confirmText: TFi18n.yes_create
                 },
                 edit: {
-                    title: 'Confirmer la modification',
-                    message: `Êtes-vous sûr de vouloir modifier ${entityName} ?<br><small style="color:#a0a0b0">Les données précédentes seront écrasées.</small>`,
+                    title: TFi18n.modal_edit_title,
+                    message: `${TFi18n.modal_edit_msg} ${entityName} ?<br><small style="color:#a0a0b0">${TFi18n.modal_edit_warning}</small>`,
                     icon: 'fa-save',
                     iconClass: 'warning',
                     confirmIcon: 'fa-check',
-                    confirmText: 'Oui, enregistrer'
+                    confirmText: TFi18n.yes_save
                 }
             };
             const cfg = configs[actionType];
@@ -1029,6 +1055,30 @@
                 }
             });
         }
+        </script>
+        <script>
+        // ==================== I18N JS VARIABLES ====================
+        var TFi18n = {
+            cancel: "{{ 'action.cancel'|trans|e('js') }}",
+            confirm: "{{ 'action.confirm'|trans|e('js') }}",
+            yes_delete: "{{ 'action.yes_delete'|trans|e('js') }}",
+            yes_create: "{{ 'action.yes_create'|trans|e('js') }}",
+            yes_save: "{{ 'action.yes_save'|trans|e('js') }}",
+            modal_delete_title: "{{ 'modal.confirm_delete_title'|trans|e('js') }}",
+            modal_delete_msg: "{{ 'modal.confirm_delete_msg'|trans|e('js') }}",
+            modal_delete_warning: "{{ 'modal.confirm_delete_warning'|trans|e('js') }}",
+            modal_create_title: "{{ 'modal.confirm_create_title'|trans|e('js') }}",
+            modal_create_msg: "{{ 'modal.confirm_create_msg'|trans|e('js') }}",
+            modal_create_warning: "{{ 'modal.confirm_create_warning'|trans|e('js') }}",
+            modal_edit_title: "{{ 'modal.confirm_edit_title'|trans|e('js') }}",
+            modal_edit_msg: "{{ 'modal.confirm_edit_msg'|trans|e('js') }}",
+            modal_edit_warning: "{{ 'modal.confirm_edit_warning'|trans|e('js') }}"
+        };
+        // Close lang dropdown on outside click
+        document.addEventListener('click', function(e) {
+            var d = document.getElementById('langDropdown');
+            if (d && !e.target.closest('.tf-lang-switcher')) d.classList.remove('show');
+        });
         </script>
         <script>
         var TFTheme={toggle:function(){var c=document.documentElement.getAttribute('data-theme')||'dark';var n=c==='dark'?'light':'dark';localStorage.setItem('tf-theme',n);document.documentElement.setAttribute('data-theme',n);document.documentElement.classList.toggle('dark',n==='dark');TFTheme._icons();},_icons:function(){var t=document.documentElement.getAttribute('data-theme');var s=document.getElementById('theme-icon-sun');var m=document.getElementById('theme-icon-moon');if(s&&m){s.style.display=t==='dark'?'':'none';m.style.display=t==='dark'?'none':'';}}};document.addEventListener('DOMContentLoaded',function(){TFTheme._icons();});

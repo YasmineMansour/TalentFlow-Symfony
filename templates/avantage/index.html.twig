@@ -59,89 +59,74 @@
 {% endfor %}
 
 <div class="tf-card">
-    <div class="table-responsive">
-        <table class="table table-dark table-hover" style="background: transparent;">
-            <thead>
-                <tr style="color: var(--tf-gold);">
-                    <th>#</th>
-                    <th>Nom</th>
-                    <th>Type</th>
-                    <th>Offre</th>
-                    <th>Importance</th>
-                    <th>Qualité desc.</th>
-                    <th>Statut</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in avantageData %}
-                <tr>
-                    <td>{{ item.avantage.id }}</td>
-                    <td style="color: var(--tf-gold); font-weight: 600;">{{ item.avantage.nom }}</td>
-                    <td>
-                        {% if item.avantage.type == 'Financier' %}
-                            <span class="badge bg-success"><i class="fas fa-euro-sign"></i> {{ item.avantage.type }}</span>
-                        {% elseif item.avantage.type == 'Bien-être' %}
-                            <span class="badge" style="background: #8e44ad;"><i class="fas fa-heart"></i> {{ item.avantage.type }}</span>
-                        {% elseif item.avantage.type == 'Matériel' %}
-                            <span class="badge" style="background: var(--tf-dark-blue);"><i class="fas fa-laptop"></i> {{ item.avantage.type }}</span>
-                        {% else %}
-                            <span class="badge bg-secondary"><i class="fas fa-question"></i> {{ item.avantage.type }}</span>
-                        {% endif %}
-                    </td>
-                    <td>
+    {% if avantageData|length > 0 %}
+    <div class="tf-grid-cards">
+        {% for item in avantageData %}
+        <div class="tf-item-card">
+            <div class="tf-item-card-header">
+                <div>
+                    <div class="tf-item-card-title">{{ item.avantage.nom }}</div>
+                    <div class="tf-item-card-subtitle">
                         {% if item.avantage.offre %}
-                            <a href="{{ path('offre_show', {id: item.avantage.offre.id}) }}" style="color: var(--tf-gold);">{{ item.avantage.offre.titre }}</a>
+                            <i class="fas fa-briefcase"></i> <a href="{{ path('offre_show', {id: item.avantage.offre.id}) }}" style="color: var(--tf-gold);">{{ item.avantage.offre.titre }}</a>
                         {% else %}
-                            <span style="color: var(--tf-gray);">—</span>
+                            <i class="fas fa-briefcase"></i> Aucune offre
                         {% endif %}
-                    </td>
-                    <td>
-                        {% if item.importance == 'Élevée' %}
-                            <span class="badge bg-success"><i class="fas fa-arrow-up"></i> {{ item.importance }}</span>
-                        {% elseif item.importance == 'Moyenne' %}
-                            <span class="badge" style="background: var(--tf-dark-blue);"><i class="fas fa-minus"></i> {{ item.importance }}</span>
-                        {% else %}
-                            <span class="badge bg-secondary"><i class="fas fa-arrow-down"></i> {{ item.importance }}</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if item.qualiteDescription == 'Bonne' %}
-                            <span style="color: #2ecc71;"><i class="fas fa-check"></i> {{ item.qualiteDescription }}</span>
-                        {% elseif item.qualiteDescription == 'Moyenne' %}
-                            <span style="color: var(--tf-gold);"><i class="fas fa-minus"></i> {{ item.qualiteDescription }}</span>
-                        {% else %}
-                            <span style="color: #e74c3c;"><i class="fas fa-times"></i> {{ item.qualiteDescription }}</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if item.complete %}
-                            <span class="badge bg-success"><i class="fas fa-check-circle"></i> Complet</span>
-                        {% else %}
-                            <span class="badge bg-warning text-dark"><i class="fas fa-exclamation-triangle"></i> Incomplet</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <div class="d-flex gap-1">
-                            <a href="{{ path('avantage_show', {id: item.avantage.id}) }}" class="btn-outline-gold" style="padding: 4px 10px; font-size: 0.8rem;"><i class="fas fa-eye"></i></a>
-                            <a href="{{ path('avantage_edit', {id: item.avantage.id}) }}" class="btn-gold" style="padding: 4px 10px; font-size: 0.8rem;"><i class="fas fa-edit"></i></a>
-                            <form method="post" action="{{ path('avantage_delete', {id: item.avantage.id}) }}" style="display:inline;" onsubmit="event.preventDefault(); confirmDelete(this, '{{ item.avantage.nom|e('js') }}');">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ item.avantage.id) }}">
-                                <button class="btn-danger-tf" style="padding: 4px 10px; font-size: 0.8rem;"><i class="fas fa-trash"></i></button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
+                    </div>
+                </div>
+            </div>
+            <div class="tf-item-card-tags">
+                {% if item.avantage.type == 'Financier' %}
+                    <span class="tf-tag-sm tf-tag-green"><i class="fas fa-euro-sign"></i> {{ item.avantage.type }}</span>
+                {% elseif item.avantage.type == 'Bien-être' %}
+                    <span class="tf-tag-sm tf-tag-purple"><i class="fas fa-heart"></i> {{ item.avantage.type }}</span>
+                {% elseif item.avantage.type == 'Matériel' %}
+                    <span class="tf-tag-sm tf-tag-blue"><i class="fas fa-laptop"></i> {{ item.avantage.type }}</span>
                 {% else %}
-                <tr>
-                    <td colspan="8" class="text-center" style="color: var(--tf-gray); padding: 2rem;">
-                        <i class="fas fa-folder-open fa-2x mb-2" style="display: block;"></i>
-                        Aucun avantage trouvé.
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                    <span class="tf-tag-sm tf-tag-gray"><i class="fas fa-question"></i> {{ item.avantage.type }}</span>
+                {% endif %}
+
+                {% if item.importance == 'Élevée' %}
+                    <span class="tf-tag-sm tf-tag-gold"><i class="fas fa-arrow-up"></i> {{ item.importance }}</span>
+                {% elseif item.importance == 'Moyenne' %}
+                    <span class="tf-tag-sm tf-tag-orange"><i class="fas fa-minus"></i> {{ item.importance }}</span>
+                {% else %}
+                    <span class="tf-tag-sm tf-tag-gray"><i class="fas fa-arrow-down"></i> {{ item.importance }}</span>
+                {% endif %}
+
+                {% if item.complete %}
+                    <span class="tf-tag-sm tf-tag-green"><i class="fas fa-check-circle"></i> Complet</span>
+                {% else %}
+                    <span class="tf-tag-sm tf-tag-yellow"><i class="fas fa-exclamation-triangle"></i> Incomplet</span>
+                {% endif %}
+            </div>
+            <div class="tf-item-card-meta">
+                <span>
+                    {% if item.qualiteDescription == 'Bonne' %}
+                        <span style="color: #2ecc71;"><i class="fas fa-check"></i> Qualité: {{ item.qualiteDescription }}</span>
+                    {% elseif item.qualiteDescription == 'Moyenne' %}
+                        <span style="color: var(--tf-gold);"><i class="fas fa-minus"></i> Qualité: {{ item.qualiteDescription }}</span>
+                    {% else %}
+                        <span style="color: #e74c3c;"><i class="fas fa-times"></i> Qualité: {{ item.qualiteDescription }}</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="tf-item-card-actions">
+                <a href="{{ path('avantage_show', {id: item.avantage.id}) }}" class="btn btn-sm btn-outline-light"><i class="fas fa-eye"></i></a>
+                <a href="{{ path('avantage_edit', {id: item.avantage.id}) }}" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i></a>
+                <form method="post" action="{{ path('avantage_delete', {id: item.avantage.id}) }}" style="display:inline;" onsubmit="event.preventDefault(); confirmDelete(this, '{{ item.avantage.nom|e('js') }}');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ item.avantage.id) }}">
+                    <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
     </div>
+    {% else %}
+    <div class="tf-card-empty">
+        <i class="fas fa-gift"></i>
+        <p>Aucun avantage trouvé.</p>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

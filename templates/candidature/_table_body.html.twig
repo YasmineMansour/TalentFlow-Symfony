@@ -1,38 +1,36 @@
-{# Partial pour le tbody du tableau des candidatures #}
+{# Partial pour la grille AJAX des candidatures #}
 {% for c in candidatures %}
-<tr>
-    <td><strong>{{ c.titrePoste }}</strong></td>
-    <td>{{ c.entreprise }}</td>
-    <td><span class="badge" style="background: var(--tf-dark-blue);">{{ c.typeContrat }}</span></td>
-    <td>
-        <span class="badge bg-{{ c.statutBadgeClass }}">{{ c.statut }}</span>
-    </td>
-    <td>{{ c.dateCandidature|date('d/m/Y') }}</td>
-    <td>{{ c.lieu ?? '—' }}</td>
-    <td>
-        {% if c.piecesJointes|length > 0 %}
-            <span class="badge" style="background: var(--tf-gold); color: var(--tf-midnight);">
-                <i class="fas fa-paperclip"></i> {{ c.piecesJointes|length }}
-            </span>
-        {% else %}
-            <span style="color: var(--tf-gray);">—</span>
-        {% endif %}
-    </td>
-    <td>
-        <div class="d-flex gap-1">
-            <a href="{{ path('app_candidature_show', {id: c.id}) }}" class="btn btn-sm btn-outline-light" title="Voir"><i class="fas fa-eye"></i></a>
-            <a href="{{ path('app_candidature_edit', {id: c.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier"><i class="fas fa-edit"></i></a>
-            <form method="post" action="{{ path('app_candidature_delete', {id: c.id}) }}" onsubmit="event.preventDefault(); confirmDelete(this, '{{ c.titrePoste|e('js') }}');" style="display:inline;">
-                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ c.id) }}">
-                <button class="btn btn-sm btn-outline-danger" title="Supprimer"><i class="fas fa-trash"></i></button>
-            </form>
+<div class="tf-item-card">
+    <div class="tf-item-card-header">
+        <div>
+            <div class="tf-item-card-title">{{ c.titrePoste }}</div>
+            <div class="tf-item-card-subtitle"><i class="fas fa-building"></i> {{ c.entreprise }}</div>
         </div>
-    </td>
-</tr>
+        <span class="badge bg-{{ c.statutBadgeClass }}">{{ c.statut }}</span>
+    </div>
+    <div class="tf-item-card-meta">
+        <span><i class="fas fa-file-contract"></i> {{ c.typeContrat }}</span>
+        <span><i class="fas fa-calendar"></i> {{ c.dateCandidature|date('d/m/Y') }}</span>
+        {% if c.lieu %}<span><i class="fas fa-map-marker-alt"></i> {{ c.lieu }}</span>{% endif %}
+    </div>
+    <div class="tf-item-card-tags">
+        <span class="tf-tag-sm tf-tag-blue">{{ c.typeContrat }}</span>
+        {% if c.piecesJointes|length > 0 %}
+            <span class="tf-tag-sm tf-tag-gold"><i class="fas fa-paperclip"></i> {{ c.piecesJointes|length }} PJ</span>
+        {% endif %}
+    </div>
+    <div class="tf-item-card-actions">
+        <a href="{{ path('app_candidature_show', {id: c.id}) }}" class="btn btn-sm btn-outline-light"><i class="fas fa-eye"></i></a>
+        <a href="{{ path('app_candidature_edit', {id: c.id}) }}" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i></a>
+        <form method="post" action="{{ path('app_candidature_delete', {id: c.id}) }}" onsubmit="event.preventDefault(); confirmDelete(this, '{{ c.titrePoste|e('js') }}');" style="display:inline;">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ c.id) }}">
+            <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+        </form>
+    </div>
+</div>
 {% else %}
-<tr>
-    <td colspan="8" class="text-center" style="color: var(--tf-gray); padding: 2rem;">
-        <i class="fas fa-inbox fa-2x"></i><br>Aucune candidature trouvée.
-    </td>
-</tr>
+<div class="tf-card-empty">
+    <i class="fas fa-inbox"></i>
+    <p>Aucune candidature trouvée.</p>
+</div>
 {% endfor %}

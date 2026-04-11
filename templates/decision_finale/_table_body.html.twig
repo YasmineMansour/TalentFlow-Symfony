@@ -1,40 +1,57 @@
-{# Partial pour le tbody du tableau des décisions finales #}
+{# Partial pour la grille AJAX des décisions finales #}
 {% for item in decisions %}
-<tr>
-    <td style="color: var(--tf-gray);">{{ item.id }}</td>
-    <td>ID entretien: {{ item.entretien.id }}</td>
-    <td>
-        <strong>ID candidature: {{ item.entretien.candidatureId }}</strong>
-        <div style="color: var(--tf-gray); font-size: 0.75rem;">{{ candidatureEmails[item.entretien.candidatureId] ?? 'Email indisponible' }}</div>
-    </td>
-    <td>
-        {% set color = item.decision == 'ACCEPTE' ? '#2ecc71' : (item.decision == 'REFUSE' ? '#e74c3c' : '#f1c40f') %}
-        <span class="badge-role" style="background: rgba(255,255,255,0.06); color: {{ color }}; border: 1px solid {{ color }};">{{ item.decision }}</span>
-    </td>
-    <td>{{ item.score is not null ? item.score|number_format(2, '.', ' ') ~ '/20' : '—' }}</td>
-    <td>{{ item.dateDecision ? item.dateDecision|date('d/m/Y H:i') : '—' }}</td>
-    <td>{{ item.motif ?: '—' }}</td>
-    <td>
-        <div class="tf-actions">
-            {% if item.decision == 'EN_ATTENTE' %}
-                <form method="post" action="{{ path('app_decision_finale_update_status', {'id': item.id}) }}" style="display:inline;">
-                    <input type="hidden" name="_token" value="{{ csrf_token('update_status_decision_' ~ item.id) }}">
-                    <input type="hidden" name="decision" value="ACCEPTE">
-                    <button type="submit" class="btn-gold" title="Accepter"><i class="fas fa-check"></i></button>
-                </form>
-                <form method="post" action="{{ path('app_decision_finale_update_status', {'id': item.id}) }}" style="display:inline;">
-                    <input type="hidden" name="_token" value="{{ csrf_token('update_status_decision_' ~ item.id) }}">
-                    <input type="hidden" name="decision" value="REFUSE">
-                    <button type="submit" class="btn-danger-tf" title="Refuser"><i class="fas fa-times"></i></button>
-                </form>
-            {% endif %}
+<div class="tf-item-card">
+    <div class="tf-item-card-header">
+        <div>
+            <div class="tf-item-card-title">Décision #{{ item.id }}</div>
+            <div class="tf-item-card-subtitle">
+                <i class="fas fa-calendar-check"></i> Entretien #{{ item.entretien.id }}
+                <span style="display:block;"><i class="fas fa-file-alt"></i> Candidature #{{ item.entretien.candidatureId }}</span>
+                <span style="display:block; font-size:0.78rem;">{{ candidatureEmails[item.entretien.candidatureId] ?? 'Email indisponible' }}</span>
+            </div>
         </div>
-    </td>
-</tr>
+        {% if item.score is not null %}
+        <div class="tf-score-circle {{ item.score >= 14 ? 'tf-score-high' : (item.score >= 10 ? 'tf-score-mid' : 'tf-score-low') }}">
+            {{ item.score|number_format(1) }}
+        </div>
+        {% endif %}
+    </div>
+    <div class="tf-item-card-tags">
+        {% set decColor = item.decision == 'ACCEPTE' ? 'green' : (item.decision == 'REFUSE' ? 'red' : 'yellow') %}
+        <span class="tf-tag-sm tf-tag-{{ decColor }}">
+            <i class="fas {{ item.decision == 'ACCEPTE' ? 'fa-check' : (item.decision == 'REFUSE' ? 'fa-times' : 'fa-hourglass-half') }}"></i>
+            {{ item.decision }}
+        </span>
+        {% if item.score is not null %}
+            <span class="tf-tag-sm tf-tag-gray">{{ item.score|number_format(2) }}/20</span>
+        {% endif %}
+    </div>
+    <div class="tf-item-card-meta">
+        <span><i class="fas fa-calendar"></i> {{ item.dateDecision ? item.dateDecision|date('d/m/Y H:i') : '—' }}</span>
+    </div>
+    {% if item.motif %}
+    <div class="tf-item-card-body" style="display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+        <i class="fas fa-quote-left" style="opacity:0.3; margin-right:0.3rem;"></i> {{ item.motif }}
+    </div>
+    {% endif %}
+    <div class="tf-item-card-actions">
+        {% if item.decision == 'EN_ATTENTE' %}
+            <form method="post" action="{{ path('app_decision_finale_update_status', {'id': item.id}) }}" style="display:inline;">
+                <input type="hidden" name="_token" value="{{ csrf_token('update_status_decision_' ~ item.id) }}">
+                <input type="hidden" name="decision" value="ACCEPTE">
+                <button type="submit" class="btn btn-sm btn-outline-success"><i class="fas fa-check"></i> Accepter</button>
+            </form>
+            <form method="post" action="{{ path('app_decision_finale_update_status', {'id': item.id}) }}" style="display:inline;">
+                <input type="hidden" name="_token" value="{{ csrf_token('update_status_decision_' ~ item.id) }}">
+                <input type="hidden" name="decision" value="REFUSE">
+                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-times"></i> Refuser</button>
+            </form>
+        {% endif %}
+    </div>
+</div>
 {% else %}
-<tr>
-    <td colspan="8" class="text-center" style="color: var(--tf-gray); padding: 2rem;">
-        <i class="fas fa-inbox fa-2x"></i><br>Aucune décision trouvée.
-    </td>
-</tr>
+<div class="tf-card-empty">
+    <i class="fas fa-scale-balanced"></i>
+    <p>Aucune décision trouvée.</p>
+</div>
 {% endfor %}

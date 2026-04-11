@@ -40,85 +40,53 @@
     </p>
 
     {% if users|length > 0 %}
-        <div class="table-responsive">
-            <table class="tf-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Utilisateur</th>
-                        <th>Email</th>
-                        <th>Téléphone</th>
-                        <th>Rôle</th>
-                        <th>Créé le</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for user in users %}
-                        <tr>
-                            <td style="color: var(--tf-gray);">{{ user.id }}</td>
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="tf-avatar">
-                                        {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
-                                    </span>
-                                    <div>
-                                        <strong>{{ user.fullName }}</strong>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <i class="fas fa-envelope" style="color: var(--tf-gold); font-size: 0.8rem;"></i>
-                                {{ user.email }}
-                            </td>
-                            <td>
-                                {% if user.telephone %}
-                                    <i class="fas fa-phone" style="color: var(--tf-gold); font-size: 0.8rem;"></i>
-                                    {{ user.telephone }}
-                                {% else %}
-                                    <span style="color: var(--tf-gray);">—</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if 'ROLE_ADMIN' in user.roles %}
-                                    <span class="badge-role badge-admin"><i class="fas fa-crown"></i> Admin</span>
-                                {% elseif 'ROLE_RH' in user.roles %}
-                                    <span class="badge-role badge-rh"><i class="fas fa-user-tie"></i> RH</span>
-                                {% elseif 'ROLE_CANDIDAT' in user.roles %}
-                                    <span class="badge-role badge-candidat"><i class="fas fa-user"></i> Candidat</span>
-                                {% else %}
-                                    <span class="badge-role" style="background: var(--tf-gray); color: var(--tf-midnight);">Utilisateur</span>
-                                {% endif %}
-                            </td>
-                            <td style="color: var(--tf-gray);">
-                                {{ user.createdAt ? user.createdAt|date('d/m/Y') : '—' }}
-                            </td>
-                            <td>
-                                <div class="tf-actions">
-                                    <a href="{{ path('app_user_show', {'id': user.id}) }}" class="btn-outline-gold" title="Voir">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn-gold" title="Modifier">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form method="post" action="{{ path('app_user_delete', {'id': user.id}) }}" 
-                                          onsubmit="event.preventDefault(); confirmDelete(this, '{{ user.fullName|e('js') }}');"
-                                          style="display: inline;">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
-                                        <button type="submit" class="btn-danger-tf" title="Supprimer">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="tf-grid-cards">
+            {% for user in users %}
+            <div class="tf-item-card">
+                <div class="tf-item-card-header">
+                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                        <span class="tf-card-avatar">{{ user.prenom|first|upper }}{{ user.nom|first|upper }}</span>
+                        <div>
+                            <div class="tf-item-card-title">{{ user.fullName }}</div>
+                            <div class="tf-item-card-subtitle">
+                                <i class="fas fa-envelope"></i> {{ user.email }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tf-item-card-tags">
+                    {% if 'ROLE_ADMIN' in user.roles %}
+                        <span class="tf-tag-sm tf-tag-red"><i class="fas fa-crown"></i> Admin</span>
+                    {% elseif 'ROLE_RH' in user.roles %}
+                        <span class="tf-tag-sm tf-tag-gold"><i class="fas fa-user-tie"></i> RH</span>
+                    {% elseif 'ROLE_CANDIDAT' in user.roles %}
+                        <span class="tf-tag-sm tf-tag-blue"><i class="fas fa-user"></i> Candidat</span>
+                    {% else %}
+                        <span class="tf-tag-sm tf-tag-gray">Utilisateur</span>
+                    {% endif %}
+                </div>
+                <div class="tf-item-card-meta">
+                    {% if user.telephone %}
+                        <span><i class="fas fa-phone"></i> {{ user.telephone }}</span>
+                    {% endif %}
+                    <span><i class="fas fa-calendar"></i> {{ user.createdAt ? user.createdAt|date('d/m/Y') : '—' }}</span>
+                </div>
+                <div class="tf-item-card-actions">
+                    <a href="{{ path('app_user_show', {'id': user.id}) }}" class="btn btn-sm btn-outline-light"><i class="fas fa-eye"></i></a>
+                    <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i></a>
+                    <form method="post" action="{{ path('app_user_delete', {'id': user.id}) }}" 
+                          onsubmit="event.preventDefault(); confirmDelete(this, '{{ user.fullName|e('js') }}');"
+                          style="display: inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
         </div>
     {% else %}
-        <div style="text-align: center; padding: 3rem; color: var(--tf-gray);">
-            <i class="fas fa-users-slash" style="font-size: 3rem; color: var(--tf-border); margin-bottom: 1rem; display: block;"></i>
+        <div class="tf-card-empty">
+            <i class="fas fa-users-slash"></i>
             <p>Aucun utilisateur trouvé.</p>
             <a href="{{ path('app_user_new') }}" class="btn-gold mt-2">
                 <i class="fas fa-user-plus"></i> Créer le premier utilisateur

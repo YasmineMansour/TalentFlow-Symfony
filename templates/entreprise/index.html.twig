@@ -52,71 +52,70 @@
 </div>
 
 {% if entrepriseData is empty %}
-    <div class="tf-flash tf-flash-info"><i class="fas fa-info-circle"></i> Aucune entreprise trouvée.</div>
+    <div class="tf-card">
+        <div class="tf-card-empty">
+            <i class="fas fa-building"></i>
+            <p>Aucune entreprise trouvée.</p>
+        </div>
+    </div>
 {% else %}
 <div class="tf-card">
-    <div class="table-responsive">
-        <table class="table table-dark table-hover" style="background: transparent;">
-            <thead>
-                <tr style="color: var(--tf-gold);">
-                    <th>#</th>
-                    <th>Nom</th>
-                    <th>Secteur</th>
-                    <th>Email</th>
-                    <th>Téléphone</th>
-                    <th>Offres</th>
-                    <th>Taille</th>
-                    <th>Activité</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in entrepriseData %}
-                <tr>
-                    <td>{{ item.entreprise.id }}</td>
-                    <td>
-                        <a href="{{ path('entreprise_show', {id: item.entreprise.id}) }}" style="color: var(--tf-gold);">{{ item.entreprise.nom }}</a>
+    <div class="tf-grid-cards">
+        {% for item in entrepriseData %}
+        <div class="tf-item-card">
+            <div class="tf-item-card-header">
+                <div>
+                    <div class="tf-item-card-title">
+                        <a href="{{ path('entreprise_show', {id: item.entreprise.id}) }}" style="color: var(--tf-gold); text-decoration:none;">{{ item.entreprise.nom }}</a>
                         {% if not item.complete %}
-                            <span class="badge bg-warning text-dark" title="Profil incomplet"><i class="fas fa-exclamation-triangle"></i></span>
+                            <span class="tf-tag-sm tf-tag-yellow" style="margin-left:0.3rem;"><i class="fas fa-exclamation-triangle"></i></span>
                         {% endif %}
-                    </td>
-                    <td style="color: var(--tf-gray);">{{ item.entreprise.secteur ?? '-' }}</td>
-                    <td style="color: var(--tf-gray);">{{ item.entreprise.email ?? '-' }}</td>
-                    <td style="color: var(--tf-gray);">{{ item.entreprise.telephone ?? '-' }}</td>
-                    <td><span class="badge" style="background: var(--tf-dark-blue);">{{ item.entreprise.offres|length }}</span></td>
-                    <td>
-                        {% if item.taille == 'Grande' %}
-                            <span class="badge bg-success"><i class="fas fa-building"></i> {{ item.taille }}</span>
-                        {% elseif item.taille == 'Moyenne' %}
-                            <span class="badge" style="background: var(--tf-dark-blue);"><i class="fas fa-building"></i> {{ item.taille }}</span>
-                        {% elseif item.taille == 'Petite' %}
-                            <span class="badge bg-secondary"><i class="fas fa-building"></i> {{ item.taille }}</span>
-                        {% else %}
-                            <span style="color: var(--tf-gray);">{{ item.taille }}</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if item.activite == 'Très active' %}
-                            <span style="color: #2ecc71;"><i class="fas fa-bolt"></i> {{ item.activite }}</span>
-                        {% elseif item.activite == 'Active' %}
-                            <span style="color: var(--tf-gold);"><i class="fas fa-bolt"></i> {{ item.activite }}</span>
-                        {% elseif item.activite == 'Peu active' %}
-                            <span style="color: #e67e22;"><i class="fas fa-bolt"></i> {{ item.activite }}</span>
-                        {% else %}
-                            <span style="color: var(--tf-gray);"><i class="fas fa-moon"></i> {{ item.activite }}</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{{ path('entreprise_edit', {id: item.entreprise.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier"><i class="fas fa-edit"></i></a>
-                        <form method="post" action="{{ path('entreprise_delete', {id: item.entreprise.id}) }}" class="d-inline" onsubmit="event.preventDefault(); confirmDelete(this, '{{ item.entreprise.nom|e('js') }}');">
-                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ item.entreprise.id) }}">
-                            <button class="btn btn-sm btn-outline-danger" title="Supprimer"><i class="fas fa-trash"></i></button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                    </div>
+                    <div class="tf-item-card-subtitle">
+                        <i class="fas fa-briefcase"></i> {{ item.entreprise.secteur ?? 'Secteur non défini' }}
+                    </div>
+                </div>
+            </div>
+            <div class="tf-item-card-meta">
+                {% if item.entreprise.email %}
+                    <span><i class="fas fa-envelope"></i> {{ item.entreprise.email }}</span>
+                {% endif %}
+                {% if item.entreprise.telephone %}
+                    <span><i class="fas fa-phone"></i> {{ item.entreprise.telephone }}</span>
+                {% endif %}
+            </div>
+            <div class="tf-item-card-tags">
+                <span class="tf-tag-sm tf-tag-blue"><i class="fas fa-file-alt"></i> {{ item.entreprise.offres|length }} offre{{ item.entreprise.offres|length > 1 ? 's' : '' }}</span>
+
+                {% if item.taille == 'Grande' %}
+                    <span class="tf-tag-sm tf-tag-green"><i class="fas fa-building"></i> {{ item.taille }}</span>
+                {% elseif item.taille == 'Moyenne' %}
+                    <span class="tf-tag-sm tf-tag-orange"><i class="fas fa-building"></i> {{ item.taille }}</span>
+                {% elseif item.taille == 'Petite' %}
+                    <span class="tf-tag-sm tf-tag-gray"><i class="fas fa-building"></i> {{ item.taille }}</span>
+                {% else %}
+                    <span class="tf-tag-sm tf-tag-gray">{{ item.taille }}</span>
+                {% endif %}
+
+                {% if item.activite == 'Très active' %}
+                    <span class="tf-tag-sm tf-tag-green"><i class="fas fa-bolt"></i> {{ item.activite }}</span>
+                {% elseif item.activite == 'Active' %}
+                    <span class="tf-tag-sm tf-tag-gold"><i class="fas fa-bolt"></i> {{ item.activite }}</span>
+                {% elseif item.activite == 'Peu active' %}
+                    <span class="tf-tag-sm tf-tag-orange"><i class="fas fa-bolt"></i> {{ item.activite }}</span>
+                {% else %}
+                    <span class="tf-tag-sm tf-tag-gray"><i class="fas fa-moon"></i> {{ item.activite }}</span>
+                {% endif %}
+            </div>
+            <div class="tf-item-card-actions">
+                <a href="{{ path('entreprise_edit', {id: item.entreprise.id}) }}" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i></a>
+                <form method="post" action="{{ path('entreprise_delete', {id: item.entreprise.id}) }}" class="d-inline" onsubmit="event.preventDefault(); confirmDelete(this, '{{ item.entreprise.nom|e('js') }}');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ item.entreprise.id) }}">
+                    <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
     </div>
 </div>
 {% endif %}

@@ -54,27 +54,13 @@
     </form>
 
     {% if posts|length > 0 %}
-    <div class="table-responsive">
-        <table class="tf-table">
-            <thead>
-                <tr>
-                    <th>Titre</th>
-                    <th>Auteur</th>
-                    <th><i class="fas fa-thumbs-up"></i> Votes</th>
-                    <th><i class="fas fa-comments"></i> Commentaires</th>
-                    <th>Créé le</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% include 'post/_table_body.html.twig' with { posts: posts } %}
-            </tbody>
-        </table>
+    <div class="tf-grid-cards" id="post-grid">
+        {% include 'post/_table_body.html.twig' with { posts: posts } %}
     </div>
     {% else %}
-    <div style="text-align: center; padding: 3rem; color: var(--tf-gray);">
-        <i class="fas fa-newspaper" style="font-size: 3rem; color: var(--tf-border); margin-bottom: 1rem; display: block;"></i>
-        <p style="font-size: 1.1rem;">Aucun post pour le moment</p>
+    <div class="tf-card-empty">
+        <i class="fas fa-newspaper"></i>
+        <p>Aucun post pour le moment</p>
         <a href="{{ path('post_new') }}" class="btn-gold" style="margin-top: 0.5rem;">
             <i class="fas fa-plus"></i> Créer le premier post
         </a>
@@ -88,15 +74,15 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('form');
-    const tableBody = document.querySelector('table tbody');
-    if (!form || !tableBody) return;
+    const grid = document.getElementById('post-grid');
+    if (!form || !grid) return;
     let debounceTimer;
 
     function fetchPosts() {
         const params = new URLSearchParams(new FormData(form)).toString();
         fetch("{{ path('post_search') }}?" + params, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then(r => r.text())
-            .then(html => { tableBody.innerHTML = html; });
+            .then(html => { grid.innerHTML = html; });
     }
 
     form.querySelectorAll('input.tf-search').forEach(input => {

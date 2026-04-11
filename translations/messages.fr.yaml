@@ -1,0 +1,165 @@
+# ==================== NAVIGATION ====================
+nav:
+    dashboard: "Tableau de bord"
+    users: "Liste des utilisateurs"
+    new_user: "Nouvel utilisateur"
+    offers: "Gestion des offres"
+    browse_offers: "Consulter les offres"
+    offers_short: "Offres"
+    companies: "Entreprises"
+    categories: "Catégories"
+    benefits: "Avantages"
+    applications: "Gestion des candidatures"
+    my_applications: "Mes candidatures"
+    new_application: "Nouvelle candidature"
+    applications_short: "Candidatures"
+    interviews: "Gestion des entretiens"
+    interviews_short: "Entretiens"
+    decisions: "Décisions finales"
+    decisions_short: "Décisions"
+    forum: "Forum"
+    posts: "Posts"
+    comments: "Commentaires"
+    logout: "Déconnexion"
+
+# ==================== SECTIONS ====================
+section:
+    main: "Principal"
+    users: "Utilisateurs"
+    offers: "Offres d'emploi"
+    applications: "Candidatures"
+    interviews: "Entretiens"
+    forum: "Forum"
+
+# ==================== ACTIONS ====================
+action:
+    create: "Créer"
+    edit: "Modifier"
+    delete: "Supprimer"
+    save: "Enregistrer"
+    cancel: "Annuler"
+    confirm: "Confirmer"
+    search: "Rechercher"
+    filter: "Filtrer"
+    reset: "Réinitialiser"
+    back: "Retour"
+    view: "Voir"
+    close: "Fermer"
+    yes_delete: "Oui, supprimer"
+    yes_create: "Oui, créer"
+    yes_save: "Oui, enregistrer"
+    new: "Nouveau"
+
+# ==================== THEME ====================
+theme:
+    toggle: "Mode clair/sombre"
+    change: "Changer le thème"
+    light: "Mode clair"
+    dark: "Mode sombre"
+
+# ==================== LANGUAGE ====================
+language:
+    switch: "Langue"
+    fr: "Français"
+    en: "English"
+
+# ==================== MODALS ====================
+modal:
+    confirm_delete_title: "Confirmer la suppression"
+    confirm_delete_msg: "Êtes-vous sûr de vouloir supprimer"
+    confirm_delete_warning: "Cette action est irréversible."
+    confirm_create_title: "Confirmer la création"
+    confirm_create_msg: "Êtes-vous sûr de vouloir créer"
+    confirm_create_warning: "Vérifiez bien les informations saisies."
+    confirm_edit_title: "Confirmer la modification"
+    confirm_edit_msg: "Êtes-vous sûr de vouloir modifier"
+    confirm_edit_warning: "Les données précédentes seront écrasées."
+
+# ==================== COMMON ====================
+common:
+    hr_management: "Gestion RH"
+    no_results: "Aucun résultat trouvé."
+    loading: "Chargement..."
+    all: "Tous"
+    yes: "Oui"
+    no: "Non"
+    or: "ou"
+    of: "de"
+    user_count: "{0} Aucun utilisateur trouvé|{1} %count% utilisateur trouvé|]1,Inf[ %count% utilisateurs trouvés"
+    created_at: "Créé le"
+    date: "Date"
+    status: "Statut"
+    type: "Type"
+    name: "Nom"
+    email: "Email"
+    phone: "Téléphone"
+    role: "Rôle"
+    description: "Description"
+    actions: "Actions"
+    sort_by: "Trier par"
+    order: "Ordre"
+    ascending: "Ascendant"
+    descending: "Descendant"
+    author: "Auteur"
+    content: "Contenu"
+    title: "Titre"
+
+# ==================== ROLES ====================
+role:
+    admin: "Administrateur"
+    rh: "Recruteur RH"
+    candidat: "Candidat"
+    user: "Utilisateur"
+
+# ==================== PAGES ====================
+page:
+    user:
+        title: "Gestion des Utilisateurs"
+        search_placeholder: "Rechercher par nom, prénom ou email..."
+        all_roles: "Tous les rôles"
+        found: "utilisateur(s) trouvé(s)"
+        no_users: "Aucun utilisateur trouvé."
+        create_first: "Créer le premier utilisateur"
+    offer:
+        title: "Offres d'emploi"
+        new: "Nouvelle offre"
+    application:
+        title: "Candidatures"
+        new: "Nouvelle candidature"
+        no_results: "Aucune candidature trouvée."
+    interview:
+        title: "Entretiens"
+        new: "Nouvel entretien"
+        no_results: "Aucun entretien trouvé."
+    decision:
+        title: "Décisions finales"
+        no_results: "Aucune décision finale trouvée."
+    post:
+        title: "Forum - Posts"
+        new: "Nouveau Post"
+        no_results: "Aucun post pour le moment"
+        create_first: "Créer le premier post"
+    comment:
+        title: "Forum - Commentaires"
+        new: "Nouveau Commentaire"
+        no_results: "Aucun commentaire pour le moment"
+        add_first: "Ajouter un commentaire"
+    company:
+        title: "Liste des Entreprises"
+        new: "Nouvelle Entreprise"
+        no_results: "Aucune entreprise trouvée."
+    category:
+        title: "Catégories"
+        new: "Nouvelle catégorie"
+        no_results: "Aucune catégorie trouvée."
+    benefit:
+        title: "Avantages"
+        new: "Nouvel avantage"
+        no_results: "Aucun avantage trouvé."
+    login:
+        title: "Connexion"
+        email: "Adresse email"
+        password: "Mot de passe"
+        remember_me: "Se souvenir de moi"
+        submit: "Se connecter"
+        forgot_password: "Mot de passe oublié ?"

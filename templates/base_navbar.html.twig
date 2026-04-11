@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="light">
+<html lang="{{ app.request.locale }}" data-theme="light">
     <head>
         <script>(function(){var t=localStorage.getItem('tf-theme');if(!t)t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');})()</script>
         <meta charset="UTF-8">
@@ -373,7 +373,19 @@
 
             .tf-theme-btn { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--tf-border); background: transparent; color: var(--tf-gray); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: all 0.2s; }
             .tf-theme-btn:hover { background: rgba(212,168,67,0.1); color: var(--tf-gold); border-color: var(--tf-gold); transform: rotate(15deg); }
+
+            /* ==================== LANGUAGE SWITCHER ==================== */
+            .tf-lang-switcher { position: relative; display: inline-flex; }
+            .tf-lang-btn { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--tf-border); background: transparent; color: var(--tf-gray); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; transition: all 0.2s; text-transform: uppercase; }
+            .tf-lang-btn:hover { background: rgba(212,168,67,0.1); color: var(--tf-gold); border-color: var(--tf-gold); }
+            .tf-lang-dropdown { position: absolute; top: calc(100% + 8px); right: 0; background: var(--tf-card-bg); border: 1px solid var(--tf-border); border-radius: 10px; padding: 0.4rem; min-width: 140px; box-shadow: 0 8px 25px rgba(0,0,0,0.3); display: none; z-index: 9999; }
+            .tf-lang-dropdown.show { display: block; }
+            .tf-lang-dropdown a { display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 0.8rem; color: var(--tf-gray); text-decoration: none; border-radius: 6px; font-size: 0.85rem; transition: all 0.15s; }
+            .tf-lang-dropdown a:hover { background: rgba(212,168,67,0.08); color: var(--tf-gold); }
+            .tf-lang-dropdown a.active { color: var(--tf-gold); font-weight: 600; background: rgba(212,168,67,0.12); }
+            .tf-lang-dropdown a .flag-icon { font-size: 1.1rem; }
         </style>
+        <link rel="stylesheet" href="/css/cards.css">
         {% block stylesheets %}{% endblock %}
     </head>
     <body>
@@ -386,7 +398,7 @@
             <ul class="tf-navbar-nav">
                 <li>
                     <a href="{{ path('app_dashboard') }}" class="{% if app.request.attributes.get('_route') == 'app_dashboard' %}active{% endif %}">
-                        <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                        <i class="fas fa-tachometer-alt"></i> {{ 'nav.dashboard'|trans }}
                     </a>
                 </li>
 
@@ -394,22 +406,22 @@
                 <div class="tf-navbar-sep"></div>
                 <li>
                     <a href="{{ path('offre_index') }}" class="{% if 'offre' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-clipboard-list"></i> Offres
+                        <i class="fas fa-clipboard-list"></i> {{ 'nav.offers_short'|trans }}
                     </a>
                 </li>
                 <li>
                     <a href="{{ path('app_candidature_index') }}" class="{% if 'app_candidature' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-folder-open"></i> Candidatures
+                        <i class="fas fa-folder-open"></i> {{ 'nav.applications_short'|trans }}
                     </a>
                 </li>
                 <li>
                     <a href="{{ path('app_entretien_index') }}" class="{% if 'app_entretien' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-calendar-check"></i> Entretiens
+                        <i class="fas fa-calendar-check"></i> {{ 'nav.interviews_short'|trans }}
                     </a>
                 </li>
                 <li>
                     <a href="{{ path('app_decision_finale_index') }}" class="{% if 'app_decision_finale' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-scale-balanced"></i> Décisions
+                        <i class="fas fa-scale-balanced"></i> {{ 'nav.decisions_short'|trans }}
                     </a>
                 </li>
                 {% endif %}
@@ -418,12 +430,12 @@
                 <div class="tf-navbar-sep"></div>
                 <li>
                     <a href="{{ path('offre_index') }}" class="{% if 'offre' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-search"></i> Offres
+                        <i class="fas fa-search"></i> {{ 'nav.offers_short'|trans }}
                     </a>
                 </li>
                 <li>
                     <a href="{{ path('app_candidature_index') }}" class="{% if 'app_candidature' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-paper-plane"></i> Mes candidatures
+                        <i class="fas fa-paper-plane"></i> {{ 'nav.my_applications'|trans }}
                     </a>
                 </li>
                 {% endif %}
@@ -431,13 +443,27 @@
                 <div class="tf-navbar-sep"></div>
                 <li>
                     <a href="{{ path('post_index') }}" class="{% if 'post' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-newspaper"></i> Forum
+                        <i class="fas fa-newspaper"></i> {{ 'nav.forum'|trans }}
                     </a>
                 </li>
             </ul>
 
             <div class="tf-navbar-right">
-                <button class="tf-theme-btn" onclick="TFTheme.toggle()" aria-label="Changer le thème" title="Mode clair/sombre">
+                {# Language switcher #}
+                <div class="tf-lang-switcher">
+                    <button class="tf-lang-btn" onclick="this.nextElementSibling.classList.toggle('show')" title="{{ 'language.switch'|trans }}">
+                        {{ app.request.locale|upper }}
+                    </button>
+                    <div class="tf-lang-dropdown" id="langDropdownNb">
+                        <a href="{{ path('app_switch_locale', {locale: 'fr'}) }}" class="{{ app.request.locale == 'fr' ? 'active' : '' }}">
+                            <span class="flag-icon">🇫🇷</span> {{ 'language.fr'|trans }}
+                        </a>
+                        <a href="{{ path('app_switch_locale', {locale: 'en'}) }}" class="{{ app.request.locale == 'en' ? 'active' : '' }}">
+                            <span class="flag-icon">🇬🇧</span> {{ 'language.en'|trans }}
+                        </a>
+                    </div>
+                </div>
+                <button class="tf-theme-btn" onclick="TFTheme.toggle()" aria-label="{{ 'theme.change'|trans }}" title="{{ 'theme.toggle'|trans }}">
                     <i class="fas fa-sun" id="theme-icon-sun"></i>
                     <i class="fas fa-moon" id="theme-icon-moon" style="display:none;"></i>
                 </button>
@@ -452,7 +478,7 @@
                     {% endif %}
                 </div>
                 <a href="{{ path('app_logout') }}" class="nav-logout">
-                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    <i class="fas fa-sign-out-alt"></i> {{ 'nav.logout'|trans }}
                 </a>
                 {% endif %}
             </div>
@@ -493,8 +519,8 @@
                     <div class="tf-modal-title">${options.title}</div>
                     <div class="tf-modal-text">${options.message}</div>
                     <div class="tf-modal-actions">
-                        <button class="btn-cancel" onclick="closeConfirmModal()"><i class="fas fa-times"></i> Annuler</button>
-                        <button class="${btnClass}" id="tfConfirmBtn"><i class="fas ${options.confirmIcon || icon}"></i> ${options.confirmText || 'Confirmer'}</button>
+                        <button class="btn-cancel" onclick="closeConfirmModal()"><i class="fas fa-times"></i> {{ 'action.cancel'|trans }}</button>
+                        <button class="${btnClass}" id="tfConfirmBtn"><i class="fas ${options.confirmIcon || icon}"></i> ${options.confirmText || '{{ 'action.confirm'|trans }}'}</button>
                     </div>
                 </div>`;
             document.body.appendChild(modal);
@@ -505,24 +531,48 @@
         function closeConfirmModal() { const m = document.getElementById('tfConfirmModal'); if (m) m.remove(); }
         function confirmDelete(formEl, name) {
             showConfirmModal({
-                title: 'Confirmer la suppression',
-                message: `Êtes-vous sûr de vouloir supprimer <strong style="color:#e74c3c">${name}</strong> ?<br><small style="color:#a0a0b0">Cette action est irréversible.</small>`,
+                title: TFi18n.modal_delete_title,
+                message: `${TFi18n.modal_delete_msg} <strong style="color:#e74c3c">${name}</strong> ?<br><small style="color:#a0a0b0">${TFi18n.modal_delete_warning}</small>`,
                 icon: 'fa-trash-alt', iconClass: 'danger', btnClass: 'btn-confirm-danger',
-                confirmIcon: 'fa-trash', confirmText: 'Oui, supprimer',
+                confirmIcon: 'fa-trash', confirmText: TFi18n.yes_delete,
                 onConfirm: function() { formEl.submit(); }
             });
         }
         function confirmFormSubmit(formEl, actionType, entityName) {
-            entityName = entityName || 'cet élément';
+            entityName = entityName || '';
             const configs = {
-                create: { title: 'Confirmer la création', message: `Êtes-vous sûr de vouloir créer ${entityName} ?`, icon: 'fa-plus-circle', iconClass: 'success', confirmIcon: 'fa-check', confirmText: 'Oui, créer' },
-                edit: { title: 'Confirmer la modification', message: `Êtes-vous sûr de vouloir modifier ${entityName} ?`, icon: 'fa-save', iconClass: 'warning', confirmIcon: 'fa-check', confirmText: 'Oui, enregistrer' }
+                create: { title: TFi18n.modal_create_title, message: `${TFi18n.modal_create_msg} ${entityName} ?`, icon: 'fa-plus-circle', iconClass: 'success', confirmIcon: 'fa-check', confirmText: TFi18n.yes_create },
+                edit: { title: TFi18n.modal_edit_title, message: `${TFi18n.modal_edit_msg} ${entityName} ?`, icon: 'fa-save', iconClass: 'warning', confirmIcon: 'fa-check', confirmText: TFi18n.yes_save }
             };
             const cfg = configs[actionType];
             showConfirmModal({ title: cfg.title, message: cfg.message, icon: cfg.icon, iconClass: cfg.iconClass, btnClass: 'btn-confirm-gold', confirmIcon: cfg.confirmIcon, confirmText: cfg.confirmText,
                 onConfirm: function() { formEl.setAttribute('data-confirmed', 'true'); formEl.submit(); }
             });
         }
+        </script>
+        <script>
+        // ==================== I18N JS VARIABLES ====================
+        var TFi18n = {
+            cancel: "{{ 'action.cancel'|trans|e('js') }}",
+            confirm: "{{ 'action.confirm'|trans|e('js') }}",
+            yes_delete: "{{ 'action.yes_delete'|trans|e('js') }}",
+            yes_create: "{{ 'action.yes_create'|trans|e('js') }}",
+            yes_save: "{{ 'action.yes_save'|trans|e('js') }}",
+            modal_delete_title: "{{ 'modal.confirm_delete_title'|trans|e('js') }}",
+            modal_delete_msg: "{{ 'modal.confirm_delete_msg'|trans|e('js') }}",
+            modal_delete_warning: "{{ 'modal.confirm_delete_warning'|trans|e('js') }}",
+            modal_create_title: "{{ 'modal.confirm_create_title'|trans|e('js') }}",
+            modal_create_msg: "{{ 'modal.confirm_create_msg'|trans|e('js') }}",
+            modal_create_warning: "{{ 'modal.confirm_create_warning'|trans|e('js') }}",
+            modal_edit_title: "{{ 'modal.confirm_edit_title'|trans|e('js') }}",
+            modal_edit_msg: "{{ 'modal.confirm_edit_msg'|trans|e('js') }}",
+            modal_edit_warning: "{{ 'modal.confirm_edit_warning'|trans|e('js') }}"
+        };
+        // Close lang dropdown on outside click
+        document.addEventListener('click', function(e) {
+            var d = document.getElementById('langDropdownNb');
+            if (d && !e.target.closest('.tf-lang-switcher')) d.classList.remove('show');
+        });
         </script>
         <script>
         var TFTheme={toggle:function(){var c=document.documentElement.getAttribute('data-theme')||'dark';var n=c==='dark'?'light':'dark';localStorage.setItem('tf-theme',n);document.documentElement.setAttribute('data-theme',n);document.documentElement.classList.toggle('dark',n==='dark');TFTheme._icons();},_icons:function(){var t=document.documentElement.getAttribute('data-theme');var s=document.getElementById('theme-icon-sun');var m=document.getElementById('theme-icon-moon');if(s&&m){s.style.display=t==='dark'?'':'none';m.style.display=t==='dark'?'none':'';}}};document.addEventListener('DOMContentLoaded',function(){TFTheme._icons();});

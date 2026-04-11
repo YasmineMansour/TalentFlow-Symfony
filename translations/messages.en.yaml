@@ -1,0 +1,165 @@
+# ==================== NAVIGATION ====================
+nav:
+    dashboard: "Dashboard"
+    users: "User List"
+    new_user: "New User"
+    offers: "Manage Offers"
+    browse_offers: "Browse Offers"
+    offers_short: "Offers"
+    companies: "Companies"
+    categories: "Categories"
+    benefits: "Benefits"
+    applications: "Manage Applications"
+    my_applications: "My Applications"
+    new_application: "New Application"
+    applications_short: "Applications"
+    interviews: "Manage Interviews"
+    interviews_short: "Interviews"
+    decisions: "Final Decisions"
+    decisions_short: "Decisions"
+    forum: "Forum"
+    posts: "Posts"
+    comments: "Comments"
+    logout: "Logout"
+
+# ==================== SECTIONS ====================
+section:
+    main: "Main"
+    users: "Users"
+    offers: "Job Offers"
+    applications: "Applications"
+    interviews: "Interviews"
+    forum: "Forum"
+
+# ==================== ACTIONS ====================
+action:
+    create: "Create"
+    edit: "Edit"
+    delete: "Delete"
+    save: "Save"
+    cancel: "Cancel"
+    confirm: "Confirm"
+    search: "Search"
+    filter: "Filter"
+    reset: "Reset"
+    back: "Back"
+    view: "View"
+    close: "Close"
+    yes_delete: "Yes, delete"
+    yes_create: "Yes, create"
+    yes_save: "Yes, save"
+    new: "New"
+
+# ==================== THEME ====================
+theme:
+    toggle: "Light/Dark mode"
+    change: "Change theme"
+    light: "Light mode"
+    dark: "Dark mode"
+
+# ==================== LANGUAGE ====================
+language:
+    switch: "Language"
+    fr: "Français"
+    en: "English"
+
+# ==================== MODALS ====================
+modal:
+    confirm_delete_title: "Confirm Deletion"
+    confirm_delete_msg: "Are you sure you want to delete"
+    confirm_delete_warning: "This action cannot be undone."
+    confirm_create_title: "Confirm Creation"
+    confirm_create_msg: "Are you sure you want to create"
+    confirm_create_warning: "Please verify the information entered."
+    confirm_edit_title: "Confirm Edit"
+    confirm_edit_msg: "Are you sure you want to edit"
+    confirm_edit_warning: "Previous data will be overwritten."
+
+# ==================== COMMON ====================
+common:
+    hr_management: "HR Management"
+    no_results: "No results found."
+    loading: "Loading..."
+    all: "All"
+    yes: "Yes"
+    no: "No"
+    or: "or"
+    of: "of"
+    user_count: "{0} No users found|{1} %count% user found|]1,Inf[ %count% users found"
+    created_at: "Created on"
+    date: "Date"
+    status: "Status"
+    type: "Type"
+    name: "Name"
+    email: "Email"
+    phone: "Phone"
+    role: "Role"
+    description: "Description"
+    actions: "Actions"
+    sort_by: "Sort by"
+    order: "Order"
+    ascending: "Ascending"
+    descending: "Descending"
+    author: "Author"
+    content: "Content"
+    title: "Title"
+
+# ==================== ROLES ====================
+role:
+    admin: "Administrator"
+    rh: "HR Recruiter"
+    candidat: "Candidate"
+    user: "User"
+
+# ==================== PAGES ====================
+page:
+    user:
+        title: "User Management"
+        search_placeholder: "Search by name or email..."
+        all_roles: "All roles"
+        found: "user(s) found"
+        no_users: "No users found."
+        create_first: "Create the first user"
+    offer:
+        title: "Job Offers"
+        new: "New Offer"
+    application:
+        title: "Applications"
+        new: "New Application"
+        no_results: "No applications found."
+    interview:
+        title: "Interviews"
+        new: "New Interview"
+        no_results: "No interviews found."
+    decision:
+        title: "Final Decisions"
+        no_results: "No final decisions found."
+    post:
+        title: "Forum - Posts"
+        new: "New Post"
+        no_results: "No posts yet"
+        create_first: "Create the first post"
+    comment:
+        title: "Forum - Comments"
+        new: "New Comment"
+        no_results: "No comments yet"
+        add_first: "Add a comment"
+    company:
+        title: "Company List"
+        new: "New Company"
+        no_results: "No companies found."
+    category:
+        title: "Categories"
+        new: "New Category"
+        no_results: "No categories found."
+    benefit:
+        title: "Benefits"
+        new: "New Benefit"
+        no_results: "No benefits found."
+    login:
+        title: "Login"
+        email: "Email address"
+        password: "Password"
+        remember_me: "Remember me"
+        submit: "Log in"
+        forgot_password: "Forgot password?"
