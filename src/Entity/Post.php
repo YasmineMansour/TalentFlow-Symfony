@@ -25,9 +25,7 @@ class Post
     #[Assert\Length(min: 3, max: 255, minMessage: 'Le titre doit contenir au moins {{ limit }} caractères')]
     private ?string $title = null;
 
-    #[ORM\Column(type: Types::TEXT)]
-    #[Assert\NotBlank(message: 'Le contenu ne peut pas être vide')]
-    #[Assert\Length(min: 10, minMessage: 'Le contenu doit contenir au moins {{ limit }} caractères')]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $content = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
@@ -42,6 +40,9 @@ class Post
 
     #[ORM\Column(length: 500, nullable: true)]
     private ?string $imagePath = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $audioPath = null;
 
     /** @var Collection<int, Comment> */
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'post', cascade: ['remove'], orphanRemoval: true)]
@@ -73,13 +74,16 @@ class Post
     public function getUpvotes(): int { return $this->upvotes; }
     public function setUpvotes(int $upvotes): static { $this->upvotes = $upvotes; return $this; }
     public function incrementUpvotes(): static { $this->upvotes++; return $this; }
-    public function decrementUpvotes(): static { $this->upvotes = max(0, $this->upvotes - 1); return $this; }
+    public function decrementUpvotes(): static { $this->upvotes--; return $this; }
 
     public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
     public function setCreatedAt(\DateTimeImmutable $createdAt): static { $this->createdAt = $createdAt; return $this; }
 
     public function getImagePath(): ?string { return $this->imagePath; }
     public function setImagePath(?string $imagePath): static { $this->imagePath = $imagePath; return $this; }
+
+    public function getAudioPath(): ?string { return $this->audioPath; }
+    public function setAudioPath(?string $audioPath): static { $this->audioPath = $audioPath; return $this; }
 
     /** @return Collection<int, Comment> */
     public function getComments(): Collection { return $this->comments; }

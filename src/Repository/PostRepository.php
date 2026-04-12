@@ -39,4 +39,34 @@ class PostRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return Post[]
+     */
+    public function searchAndFilter(string $query = '', string $sort = 'recent', string $author = ''): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->leftJoin('p.author', 'a');
+
+        if ($query !== '') {
+            $qb->andWhere('p.title LIKE :q OR p.content LIKE :q OR a.nom LIKE :q OR a.prenom LIKE :q')
+               ->setParameter('q', '%' . $query . '%');
+        }
+
+        if ($author !== '') {
+            $qb->andWhere('CONCAT(a.prenom, \' \', a.nom) LIKE :author')
+               ->setParameter('author', '%' . $author . '%');
+        }
+
+        match ($sort) {
+            'top' => $qb->orderBy('p.upvotes', 'DESC'),
+            'oldest' => $qb->orderBy('p.createdAt', 'ASC'),
+            'comments' => $qb->leftJoin('p.comments', 'c')
+                             ->groupBy('p.id')
+                             ->orderBy('COUNT(c.id)', 'DESC'),
+            default => $qb->orderBy('p.createdAt', 'DESC'),
+        };
+
+        return $qb->getQuery()->getResult();
+    }
 }

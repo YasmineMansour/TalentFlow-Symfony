@@ -1,84 +1,2596 @@
 {% extends 'base_dashboard.html.twig' %}
 
-{% block title %}Forum - Posts{% endblock %}
-{% block page_title %}Gestion des Posts{% endblock %}
+{% block title %}Forum - Feed{% endblock %}
+{% block page_title %}Feed{% endblock %}
+
+{% block stylesheets %}
+<style>
+    /* ── LinkedIn-style Feed Layout (3 columns) ── */
+    .ln-feed-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    .ln-feed-left {
+        width: 220px;
+        flex-shrink: 0;
+        position: sticky;
+        top: 76px;
+    }
+    .ln-feed-main {
+        flex: 1;
+        min-width: 0;
+        max-width: 620px;
+    }
+    .ln-feed-sidebar {
+        width: 280px;
+        flex-shrink: 0;
+        position: sticky;
+        top: 76px;
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+    @media (max-width: 1100px) {
+        .ln-feed-left { display: none; }
+    }
+    @media (max-width: 960px) {
+        .ln-feed-sidebar { display: none; }
+        .ln-feed-main { max-width: 100%; }
+    }
+
+    /* ── Forum Rules Card (left sidebar) ── */
+    .ln-rules-card {
+        background: var(--tf-card-bg);
+        border: 1px solid var(--tf-border);
+        border-radius: 12px;
+        padding: 0.8rem 0.9rem;
+    }
+    .ln-rules-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        cursor: pointer;
+        user-select: none;
+    }
+    .ln-rules-header i.fa-shield-alt {
+        color: var(--tf-gold);
+        font-size: 1rem;
+    }
+    .ln-rules-header h3 {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--tf-text);
+        margin: 0;
+        flex: 1;
+    }
+    .ln-rules-header .ln-rules-toggle {
+        color: var(--tf-gray);
+        font-size: 0.65rem;
+        transition: transform 0.25s;
+    }
+    .ln-rules-header .ln-rules-toggle.collapsed {
+        transform: rotate(-90deg);
+    }
+    .ln-rules-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+    .ln-rules-list.hidden {
+        max-height: 0 !important;
+    }
+    .ln-rules-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.4rem;
+        padding: 0.22rem 0;
+        font-size: 0.72rem;
+        color: var(--tf-text-muted);
+        line-height: 1.35;
+    }
+    .ln-rules-list li i {
+        color: var(--tf-gold);
+        font-size: 0.55rem;
+        margin-top: 0.2rem;
+        flex-shrink: 0;
+    }
+    .ln-rules-list li strong {
+        color: var(--tf-text);
+        font-weight: 600;
+    }
+    .ln-rules-footer {
+        margin-top: 0.45rem;
+        padding-top: 0.4rem;
+        border-top: 1px solid var(--tf-border);
+        font-size: 0.65rem;
+        color: var(--tf-gray);
+        text-align: center;
+        font-style: italic;
+    }
+
+    /* ── Start a Post Card ── */
+    .ln-start-post {
+        background: var(--tf-card-bg);
+        border: 1px solid var(--tf-border);
+        border-radius: 12px;
+        padding: 1rem 1.2rem;
+        margin-bottom: 1rem;
+    }
+    .ln-start-post-top {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    .ln-start-post-top .ln-avatar {
+        width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+        background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
+        color: var(--tf-midnight); display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 1rem;
+    }
+    .ln-start-post-btn {
+        flex: 1; padding: 0.7rem 1.2rem; border-radius: 35px;
+        border: 1px solid var(--tf-border); background: transparent;
+        color: var(--tf-gray); font-size: 0.9rem; text-align: left;
+        cursor: pointer; transition: background 0.2s, border-color 0.2s;
+        text-decoration: none; display: block;
+    }
+    .ln-start-post-btn:hover {
+        background: rgba(212, 168, 67, 0.06); border-color: var(--tf-gold);
+        color: var(--tf-white);
+    }
+
+    /* ── Search & Filters in Topbar (expanded) ── */
+    .topbar-search-input {
+        flex: 1; min-width: 100px; padding: 0.4rem 0.6rem; border: none;
+        background: transparent; color: var(--tf-white); font-size: 0.85rem;
+        outline: none;
+    }
+    .topbar-search-input::placeholder { color: var(--tf-gray); }
+    body.light-mode .topbar-search-input { color: #1c1e21; }
+    body.light-mode .topbar-search-input::placeholder { color: #65676b; }
+    .topbar-filter-chips {
+        display: flex; gap: 0.3rem; align-items: center; flex-shrink: 0;
+    }
+    .ln-filter-chip {
+        padding: 0.28rem 0.65rem; border-radius: 20px; font-size: 0.72rem;
+        font-weight: 600; border: 1px solid var(--tf-border); background: transparent;
+        color: var(--tf-gray); cursor: pointer; transition: all 0.2s;
+        white-space: nowrap;
+    }
+    .ln-filter-chip:hover { border-color: var(--tf-gold); color: var(--tf-white); }
+    .ln-filter-chip.active {
+        background: var(--tf-gold); color: var(--tf-midnight);
+        border-color: var(--tf-gold);
+    }
+    body.light-mode .ln-filter-chip { border-color: #dddfe2; color: #65676b; }
+    body.light-mode .ln-filter-chip:hover { border-color: var(--tf-gold); color: #1c1e21; }
+    body.light-mode .ln-filter-chip.active { background: var(--tf-gold); color: #1a1a2e; border-color: var(--tf-gold); }
+    .ln-result-count {
+        font-size: 0.72rem; color: var(--tf-gray); white-space: nowrap; flex-shrink: 0;
+    }
+
+    /* ── Sort bar ── */
+    .ln-sort-bar {
+        display: flex; align-items: center; gap: 0.5rem;
+        margin-bottom: 0.8rem; padding: 0 0.2rem;
+    }
+    .ln-sort-bar hr { flex: 1; border: none; border-top: 1px solid var(--tf-border); }
+
+    /* ── Post Card ── */
+    .ln-post-card {
+        background: var(--tf-card-bg);
+        border: 1px solid var(--tf-border);
+        border-radius: 12px;
+        margin-bottom: 0.8rem;
+        overflow: hidden;
+        transition: box-shadow 0.2s;
+    }
+    .ln-post-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.25); }
+
+    .ln-post-header {
+        display: flex; align-items: flex-start; gap: 0.8rem;
+        padding: 1rem 1.2rem 0;
+    }
+    .ln-post-header .ln-avatar {
+        width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+        background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
+        color: var(--tf-midnight); display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 1rem;
+    }
+    .ln-post-author-info { flex: 1; min-width: 0; }
+    .ln-post-author-name {
+        font-weight: 700; font-size: 0.92rem; color: var(--tf-white);
+        text-decoration: none; display: block;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .ln-post-author-name:hover { color: var(--tf-gold); text-decoration: underline; }
+    .ln-post-author-role {
+        font-size: 0.78rem; color: var(--tf-gray); margin-top: 0.1rem;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .ln-post-time {
+        font-size: 0.72rem; color: var(--tf-gray); display: flex;
+        align-items: center; gap: 0.3rem; margin-top: 0.15rem;
+    }
+    .ln-post-time i { font-size: 0.6rem; }
+    .ln-post-menu { flex-shrink: 0; display: flex; gap: 0.3rem; }
+    .ln-post-menu-btn {
+        background: none; border: none; color: var(--tf-gray);
+        padding: 0.3rem 0.5rem; border-radius: 50%; cursor: pointer;
+        transition: background 0.2s, color 0.2s; font-size: 0.95rem;
+    }
+    .ln-post-menu-btn:hover { background: rgba(255,255,255,0.08); color: var(--tf-white); }
+
+    /* Post body */
+    .ln-post-title {
+        padding: 0.6rem 1.2rem 0;
+        font-size: 1rem; font-weight: 700; color: var(--tf-gold);
+    }
+    .ln-post-title a { color: var(--tf-gold); text-decoration: none; }
+    .ln-post-title a:hover { text-decoration: underline; }
+    .ln-post-content {
+        padding: 0.4rem 1.2rem 0.8rem;
+        font-size: 0.88rem; color: var(--tf-light, #ccc); line-height: 1.6;
+    }
+    .ln-post-content-text {
+        overflow: hidden; display: -webkit-box;
+        -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+    }
+    .ln-see-more {
+        color: var(--tf-gray); font-weight: 600; font-size: 0.82rem;
+        cursor: pointer; text-decoration: none; margin-left: 0.2rem;
+    }
+    .ln-see-more:hover { color: var(--tf-gold); text-decoration: underline; }
+
+    /* Stats row */
+    .ln-post-stats {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 0.4rem 1.2rem; font-size: 0.78rem; color: var(--tf-gray);
+    }
+    .ln-post-stats-left { display: flex; align-items: center; gap: 0.4rem; }
+    .ln-post-stats-left .ln-reaction-icons { display: flex; }
+    .ln-post-stats-left .ln-reaction-icon {
+        width: 18px; height: 18px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.6rem; border: 1.5px solid var(--tf-card-bg);
+        margin-right: -4px;
+    }
+    .ln-reaction-icon.up { background: #0a66c2; color: white; }
+    .ln-reaction-icon.down { background: #e74c3c; color: white; }
+    .ln-post-stats-right a, .ln-post-stats-right button {
+        color: var(--tf-gray); text-decoration: none; background: none;
+        border: none; cursor: pointer; font-size: 0.78rem; padding: 0;
+    }
+    .ln-post-stats-right a:hover, .ln-post-stats-right button:hover {
+        color: var(--tf-gold); text-decoration: underline;
+    }
+
+    /* Action buttons row */
+    .ln-post-actions {
+        display: flex; border-top: 1px solid var(--tf-border);
+        padding: 0.2rem 0.5rem;
+    }
+    .ln-action-btn {
+        flex: 1; display: flex; align-items: center; justify-content: center;
+        gap: 0.5rem; padding: 0.7rem 0; border: none; background: none;
+        color: var(--tf-gray); font-size: 0.82rem; font-weight: 600;
+        cursor: pointer; border-radius: 8px; transition: background 0.2s, color 0.2s;
+        text-decoration: none;
+    }
+    .ln-action-btn:hover { background: rgba(255,255,255,0.06); color: var(--tf-white); }
+    .ln-action-btn i { font-size: 1.05rem; }
+
+    /* Vote buttons */
+    .ln-vote-group {
+        display: flex; align-items: center; gap: 0;
+        border-right: 1px solid var(--tf-border);
+        margin-right: 0.2rem;
+    }
+    .ln-vote-btn {
+        display: flex; align-items: center; justify-content: center;
+        gap: 0.35rem; padding: 0.7rem 0.8rem; border: none; background: none;
+        color: var(--tf-gray); font-size: 0.82rem; font-weight: 600;
+        cursor: pointer; border-radius: 8px; transition: background 0.15s, color 0.15s;
+    }
+    .ln-vote-btn:hover { background: rgba(255,255,255,0.06); }
+    .ln-vote-btn.upvote:hover { color: #0a66c2; }
+    .ln-vote-btn.downvote:hover { color: #e74c3c; }
+    .ln-vote-btn.upvote.voted { color: #0a66c2; }
+    .ln-vote-btn.downvote.voted { color: #e74c3c; }
+    .ln-vote-btn i { font-size: 1.1rem; }
+    .ln-vote-count {
+        font-size: 0.82rem; font-weight: 700; color: var(--tf-white);
+        min-width: 20px; text-align: center; padding: 0 0.1rem;
+    }
+
+    /* Admin dropdown */
+    .ln-dropdown { position: relative; display: inline-block; }
+    .ln-dropdown-menu {
+        display: none; position: absolute; right: 0; top: 110%;
+        background: var(--tf-navy); border: 1px solid var(--tf-border);
+        border-radius: 10px; min-width: 180px; z-index: 50;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.4); overflow: hidden;
+    }
+    .ln-dropdown:hover .ln-dropdown-menu,
+    .ln-dropdown:focus-within .ln-dropdown-menu { display: block; }
+    .ln-dropdown-item {
+        display: flex; align-items: center; gap: 0.6rem;
+        padding: 0.65rem 1rem; color: var(--tf-white); text-decoration: none;
+        font-size: 0.82rem; transition: background 0.15s; border: none;
+        background: none; width: 100%; cursor: pointer;
+    }
+    .ln-dropdown-item:hover { background: rgba(212, 168, 67, 0.1); color: var(--tf-gold); }
+    .ln-dropdown-item.danger { color: #e74c3c; }
+    .ln-dropdown-item.danger:hover { background: rgba(231, 76, 60, 0.12); }
+    .ln-dropdown-sep { border-top: 1px solid var(--tf-border); margin: 0; }
+
+    /* Empty state */
+    .ln-empty {
+        text-align: center; padding: 4rem 2rem; color: var(--tf-gray);
+    }
+    .ln-empty i { font-size: 3.5rem; color: var(--tf-border); margin-bottom: 1rem; display: block; }
+    .ln-empty p { font-size: 1rem; margin-bottom: 1rem; }
+
+    /* No results */
+    .ln-no-results {
+        text-align: center; padding: 2.5rem 1.5rem; color: var(--tf-gray);
+        display: none;
+    }
+    .ln-no-results i { font-size: 2.5rem; color: var(--tf-border); margin-bottom: 0.8rem; display: block; }
+
+    /* Loading spinner */
+    .ln-loading {
+        text-align: center; padding: 2rem; display: none;
+    }
+    .ln-loading .spinner {
+        display: inline-block; width: 28px; height: 28px;
+        border: 3px solid var(--tf-border); border-top-color: var(--tf-gold);
+        border-radius: 50%; animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ══════════════════════════════════════════
+       MODAL OVERLAY & SHARED
+       ══════════════════════════════════════════ */
+    .modal-overlay {
+        display: none; position: fixed; inset: 0; z-index: 9000;
+        background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);
+        align-items: center; justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-box {
+        background: var(--tf-card-bg); border: 1px solid var(--tf-border);
+        border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        max-height: 90vh; overflow: hidden; position: relative;
+        animation: modalIn 0.2s ease-out;
+    }
+    @keyframes modalIn {
+        from { opacity: 0; transform: translateY(20px) scale(0.97); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .modal-close {
+        position: absolute; top: 0.8rem; right: 0.8rem; z-index: 10;
+        background: none; border: none; color: var(--tf-gray);
+        font-size: 1.3rem; cursor: pointer; padding: 0.3rem;
+        border-radius: 50%; transition: background 0.2s, color 0.2s;
+        line-height: 1; width: 32px; height: 32px;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.1); color: var(--tf-white); }
+
+    /* ── New Post Modal ── */
+    .modal-new-post { width: 540px; max-width: 95vw; }
+    .modal-new-post-header {
+        padding: 1.2rem 1.5rem 0.8rem;
+        border-bottom: 1px solid var(--tf-border);
+        display: flex; align-items: center; gap: 0.8rem;
+    }
+    .modal-new-post-header .ln-avatar {
+        width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+        background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
+        color: var(--tf-midnight); display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 0.95rem;
+    }
+    .modal-new-post-header h3 {
+        margin: 0; font-size: 1.05rem; color: var(--tf-white); font-weight: 700;
+    }
+    .modal-new-post-body {
+        padding: 1.2rem 1.5rem; max-height: 60vh; overflow-y: auto;
+    }
+    .modal-field { margin-bottom: 1rem; }
+    .modal-field label {
+        display: block; font-size: 0.82rem; font-weight: 600;
+        color: var(--tf-gray); margin-bottom: 0.35rem;
+    }
+    .modal-field input,
+    .modal-field textarea,
+    .modal-field select {
+        width: 100%; padding: 0.65rem 0.9rem; border-radius: 10px;
+        border: 1px solid var(--tf-border); background: var(--tf-navy);
+        color: var(--tf-white); font-size: 0.88rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        font-family: inherit;
+    }
+    .modal-field input:focus,
+    .modal-field textarea:focus,
+    .modal-field select:focus {
+        outline: none; border-color: var(--tf-gold);
+        box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.15);
+    }
+    .modal-field textarea { min-height: 120px; resize: vertical; }
+    .modal-field select option { background: var(--tf-navy); color: var(--tf-white); }
+    .modal-new-post-footer {
+        padding: 0.8rem 1.5rem 1.2rem;
+        border-top: 1px solid var(--tf-border);
+        display: flex; justify-content: flex-end; gap: 0.6rem;
+    }
+    .modal-btn {
+        padding: 0.55rem 1.4rem; border-radius: 25px; font-size: 0.85rem;
+        font-weight: 600; border: none; cursor: pointer; transition: all 0.2s;
+    }
+    .modal-btn-cancel {
+        background: transparent; color: var(--tf-gray);
+        border: 1px solid var(--tf-border);
+    }
+    .modal-btn-cancel:hover { border-color: var(--tf-white); color: var(--tf-white); }
+    .modal-btn-submit {
+        background: var(--tf-gold); color: var(--tf-midnight);
+    }
+    .modal-btn-submit:hover { background: var(--tf-gold-dark); }
+    .modal-btn-submit:disabled {
+        opacity: 0.5; cursor: not-allowed;
+    }
+    .modal-errors {
+        list-style: none; padding: 0; margin: 0 0 0.8rem;
+    }
+    .modal-errors li {
+        background: rgba(231,76,60,0.12); color: #e74c3c;
+        padding: 0.45rem 0.8rem; border-radius: 8px; font-size: 0.82rem;
+        margin-bottom: 0.3rem;
+    }
+
+    /* ── Detail / Comment Modal (split view) ── */
+    .modal-detail { width: 900px; max-width: 95vw; display: flex; flex-direction: column; }
+    .modal-detail-body {
+        display: flex; flex: 1; min-height: 0; max-height: 80vh;
+    }
+    /* Left: post details */
+    .modal-detail-left {
+        flex: 1; padding: 1.5rem; overflow-y: auto;
+        border-right: 1px solid var(--tf-border);
+    }
+    .mdl-author-row {
+        display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem;
+    }
+    .mdl-author-row .ln-avatar {
+        width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+        background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
+        color: var(--tf-midnight); display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 1rem;
+    }
+    .mdl-author-name { font-weight: 700; color: var(--tf-white); font-size: 0.95rem; }
+    .mdl-author-role { font-size: 0.78rem; color: var(--tf-gray); }
+    .mdl-author-time { font-size: 0.72rem; color: var(--tf-gray); margin-top: 0.1rem; }
+    .mdl-post-title {
+        font-size: 1.15rem; font-weight: 700; color: var(--tf-gold);
+        margin-bottom: 0.8rem; line-height: 1.4;
+    }
+    .mdl-post-content {
+        font-size: 0.9rem; color: var(--tf-light, #ccc); line-height: 1.7;
+        white-space: pre-wrap; margin-bottom: 1.2rem;
+    }
+    .mdl-post-meta {
+        display: flex; gap: 1.2rem; font-size: 0.8rem; color: var(--tf-gray);
+        padding-top: 0.8rem; border-top: 1px solid var(--tf-border);
+    }
+    .mdl-post-meta span { display: flex; align-items: center; gap: 0.4rem; }
+    .mdl-post-meta i { font-size: 0.85rem; }
+
+    /* Right: comments panel */
+    .modal-detail-right {
+        flex: 1; display: flex; flex-direction: column;
+        min-width: 0;
+    }
+    .mdl-comments-header {
+        padding: 1rem 1.2rem; border-bottom: 1px solid var(--tf-border);
+        font-weight: 700; font-size: 0.95rem; color: var(--tf-white);
+        flex-shrink: 0;
+    }
+    .mdl-comments-list {
+        flex: 1; overflow-y: auto; padding: 0.8rem 1.2rem;
+    }
+    .mdl-comment {
+        display: flex; gap: 0.6rem; margin-bottom: 0.9rem;
+    }
+    .mdl-comment .ln-avatar {
+        width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+        background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
+        color: var(--tf-midnight); display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 0.75rem;
+    }
+    .mdl-comment-bubble {
+        background: var(--tf-navy); border-radius: 10px; padding: 0.6rem 0.9rem;
+        flex: 1; min-width: 0;
+    }
+    .mdl-comment-author {
+        font-weight: 700; font-size: 0.82rem; color: var(--tf-white);
+        margin-bottom: 0.15rem;
+    }
+    .mdl-comment-text {
+        font-size: 0.85rem; color: var(--tf-light, #ccc); line-height: 1.5;
+    }
+    .mdl-comment-time {
+        font-size: 0.7rem; color: var(--tf-gray); margin-top: 0.25rem;
+    }
+
+    /* Comment 3-dot dropdown */
+    .mdl-comment-header {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 0.15rem;
+    }
+    .mdl-comment-menu { position: relative; display: inline-block; flex-shrink: 0; }
+    .mdl-comment-menu-btn {
+        background: none; border: none; color: var(--tf-gray);
+        padding: 0.15rem 0.35rem; border-radius: 50%; cursor: pointer;
+        transition: background 0.2s, color 0.2s; font-size: 0.78rem; line-height: 1;
+    }
+    .mdl-comment-menu-btn:hover { background: rgba(255,255,255,0.1); color: var(--tf-white); }
+    .mdl-comment-dropdown {
+        display: none; position: absolute; right: 0; top: 110%;
+        background: var(--tf-navy); border: 1px solid var(--tf-border);
+        border-radius: 8px; min-width: 140px; z-index: 60;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.4); overflow: hidden;
+    }
+    .mdl-comment-menu:hover .mdl-comment-dropdown,
+    .mdl-comment-menu:focus-within .mdl-comment-dropdown { display: block; }
+    .mdl-comment-dropdown-item {
+        display: flex; align-items: center; gap: 0.5rem;
+        padding: 0.5rem 0.8rem; color: var(--tf-white); text-decoration: none;
+        font-size: 0.78rem; transition: background 0.15s; border: none;
+        background: none; width: 100%; cursor: pointer;
+    }
+    .mdl-comment-dropdown-item:hover { background: rgba(212,168,67,0.1); color: var(--tf-gold); }
+    .mdl-comment-dropdown-item.danger { color: #e74c3c; }
+    .mdl-comment-dropdown-item.danger:hover { background: rgba(231,76,60,0.12); }
+
+    /* Inline edit mode */
+    .mdl-comment-edit-area {
+        width: 100%; padding: 0.45rem 0.7rem; border-radius: 8px;
+        border: 1px solid var(--tf-gold); background: var(--tf-midnight);
+        color: var(--tf-white); font-size: 0.85rem; resize: none;
+        font-family: inherit; min-height: 40px; margin-top: 0.3rem;
+    }
+    .mdl-comment-edit-actions {
+        display: flex; gap: 0.4rem; margin-top: 0.35rem; justify-content: flex-end;
+    }
+    .mdl-comment-edit-actions button {
+        padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.75rem;
+        font-weight: 600; border: none; cursor: pointer; transition: all 0.2s;
+    }
+    .mdl-edit-save { background: var(--tf-gold); color: var(--tf-midnight); }
+    .mdl-edit-save:hover { background: var(--tf-gold-dark); }
+    .mdl-edit-cancel { background: transparent; color: var(--tf-gray); border: 1px solid var(--tf-border) !important; }
+    .mdl-edit-cancel:hover { border-color: var(--tf-white) !important; color: var(--tf-white); }
+
+    .mdl-no-comments {
+        text-align: center; padding: 2rem 1rem; color: var(--tf-gray);
+        font-size: 0.88rem;
+    }
+    .mdl-no-comments i {
+        display: block; font-size: 2rem; color: var(--tf-border);
+        margin-bottom: 0.6rem;
+    }
+
+    /* Comment input area */
+    .mdl-comment-form {
+        padding: 0.8rem 1.2rem; border-top: 1px solid var(--tf-border);
+        flex-shrink: 0;
+    }
+    .mdl-comment-form-row {
+        display: flex; gap: 0.5rem; align-items: flex-end;
+    }
+    .mdl-comment-form select {
+        width: 100%; padding: 0.5rem 0.7rem; border-radius: 8px;
+        border: 1px solid var(--tf-border); background: var(--tf-navy);
+        color: var(--tf-white); font-size: 0.82rem; margin-bottom: 0.5rem;
+        font-family: inherit;
+    }
+    .mdl-comment-form select:focus {
+        outline: none; border-color: var(--tf-gold);
+    }
+    .mdl-comment-form textarea {
+        flex: 1; padding: 0.55rem 0.8rem; border-radius: 20px;
+        border: 1px solid var(--tf-border); background: var(--tf-navy);
+        color: var(--tf-white); font-size: 0.85rem; resize: none;
+        min-height: 38px; max-height: 100px; font-family: inherit;
+        transition: border-color 0.2s;
+    }
+    .mdl-comment-form textarea:focus {
+        outline: none; border-color: var(--tf-gold);
+    }
+    .mdl-comment-send {
+        width: 38px; height: 38px; border-radius: 50%; border: none;
+        background: var(--tf-gold); color: var(--tf-midnight);
+        cursor: pointer; display: flex; align-items: center; justify-content: center;
+        font-size: 0.9rem; flex-shrink: 0; transition: background 0.2s;
+    }
+    .mdl-comment-send:hover { background: var(--tf-gold-dark); }
+    .mdl-comment-send:disabled { opacity: 0.4; cursor: not-allowed; }
+    .mdl-comment-errors {
+        list-style: none; padding: 0; margin: 0 0 0.5rem;
+    }
+    .mdl-comment-errors li {
+        background: rgba(231,76,60,0.12); color: #e74c3c;
+        padding: 0.35rem 0.7rem; border-radius: 6px; font-size: 0.78rem;
+        margin-bottom: 0.25rem;
+    }
+
+    /* Responsive: stack on mobile */
+    @media (max-width: 700px) {
+        .modal-detail-body { flex-direction: column; }
+        .modal-detail-left { border-right: none; border-bottom: 1px solid var(--tf-border); }
+        .modal-detail { max-height: 95vh; }
+    }
+    @media (max-width: 992px) {
+        .topbar-filter-chips { display: none; }
+    }
+
+    /* ── Light mode overrides for feed ── */
+    body.light-mode .ln-post-card,
+    body.light-mode .ln-start-post {
+        background: #ffffff; border-color: #dddfe2;
+    }
+    body.light-mode .ln-post-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+    body.light-mode .ln-post-author-name { color: #1c1e21; }
+    body.light-mode .ln-post-author-name:hover { color: var(--tf-gold-dark); }
+    body.light-mode .ln-post-title a { color: var(--tf-gold-dark); }
+    body.light-mode .ln-post-content { color: #333; }
+    body.light-mode .ln-post-actions { border-color: #dddfe2; }
+    body.light-mode .ln-vote-btn { color: #65676b; }
+    body.light-mode .ln-vote-btn:hover { background: rgba(0,0,0,0.04); }
+    body.light-mode .ln-vote-count { color: #1c1e21; }
+    body.light-mode .ln-action-btn { color: #65676b; }
+    body.light-mode .ln-action-btn:hover { background: rgba(0,0,0,0.04); color: #1c1e21; }
+    body.light-mode .ln-start-post-btn { border-color: #dddfe2; color: #65676b; }
+    body.light-mode .ln-start-post-btn:hover { background: #f0f2f5; border-color: var(--tf-gold); color: #1c1e21; }
+    body.light-mode .ln-sort-bar hr { border-color: #dddfe2; }
+    body.light-mode .ln-dropdown-menu { background: #fff; border-color: #dddfe2; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+    body.light-mode .ln-dropdown-item { color: #1c1e21; }
+    body.light-mode .ln-dropdown-item:hover { background: #f0f2f5; color: var(--tf-gold-dark); }
+    body.light-mode .ln-dropdown-item.danger { color: #e74c3c; }
+    body.light-mode .ln-post-stats { color: #65676b; }
+    body.light-mode .ln-post-stats-right button { color: #65676b; }
+    body.light-mode .ln-post-stats-right button:hover { color: var(--tf-gold-dark); }
+    body.light-mode .ln-empty { color: #65676b; }
+    body.light-mode .ln-empty i { color: #ccc; }
+
+    /* Light mode: modals */
+    body.light-mode .modal-overlay { background: rgba(0,0,0,0.35); }
+    body.light-mode .modal-box { background: #fff; border-color: #dddfe2; }
+    body.light-mode .modal-new-post-header { border-color: #dddfe2; }
+    body.light-mode .modal-new-post-header h3 { color: #1c1e21; }
+    body.light-mode .modal-field label { color: #65676b; }
+    body.light-mode .modal-field input,
+    body.light-mode .modal-field textarea,
+    body.light-mode .modal-field select { background: #f0f2f5; border-color: #dddfe2; color: #1c1e21; }
+    body.light-mode .modal-field input:focus,
+    body.light-mode .modal-field textarea:focus,
+    body.light-mode .modal-field select:focus { border-color: var(--tf-gold); }
+    body.light-mode .modal-new-post-footer { border-color: #dddfe2; }
+    body.light-mode .modal-btn-cancel { color: #65676b; border-color: #dddfe2; }
+    body.light-mode .modal-close { color: #65676b; }
+    body.light-mode .modal-close:hover { background: rgba(0,0,0,0.06); color: #1c1e21; }
+
+    /* Light mode: detail modal */
+    body.light-mode .modal-detail-left { border-color: #dddfe2; }
+    body.light-mode .mdl-author-name { color: #1c1e21; }
+    body.light-mode .mdl-post-title { color: var(--tf-gold-dark); }
+    body.light-mode .mdl-post-content { color: #333; }
+    body.light-mode .mdl-post-meta { border-color: #dddfe2; color: #65676b; }
+    body.light-mode .mdl-comments-header { color: #1c1e21; border-color: #dddfe2; }
+    body.light-mode .mdl-comment-bubble { background: #f0f2f5; }
+    body.light-mode .mdl-comment-author { color: #1c1e21; }
+    body.light-mode .mdl-comment-text { color: #333; }
+    body.light-mode .mdl-comment-form { border-color: #dddfe2; }
+    body.light-mode .mdl-comment-form textarea { background: #f0f2f5; border-color: #dddfe2; color: #1c1e21; }
+    body.light-mode .mdl-comment-form textarea:focus { border-color: var(--tf-gold); }
+    body.light-mode .mdl-comment-edit-area { background: #fff; border-color: var(--tf-gold); color: #1c1e21; }
+    body.light-mode .mdl-comment-dropdown { background: #fff; border-color: #dddfe2; }
+    body.light-mode .mdl-comment-dropdown-item { color: #1c1e21; }
+    body.light-mode .mdl-comment-dropdown-item:hover { background: #f0f2f5; }
+
+    /* ── Sidebar Widgets ── */
+    .sidebar-widget {
+        background: var(--tf-card-bg);
+        border: 1px solid var(--tf-border);
+        border-radius: 10px;
+        padding: 0.65rem 0.7rem;
+    }
+    .sidebar-widget-title {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--tf-white);
+        margin: 0 0 0.45rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+    .sidebar-widget-title i {
+        color: var(--tf-gold);
+        font-size: 0.7rem;
+    }
+    .sidebar-stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.35rem;
+    }
+    .sidebar-stat-card {
+        background: rgba(212, 168, 67, 0.06);
+        border: 1px solid rgba(212, 168, 67, 0.15);
+        border-radius: 8px;
+        padding: 0.4rem 0.3rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.1rem;
+        transition: transform 0.2s, border-color 0.2s;
+    }
+    .sidebar-stat-card:hover {
+        transform: translateY(-2px);
+        border-color: var(--tf-gold);
+    }
+    .sidebar-stat-card i {
+        font-size: 0.8rem;
+        color: var(--tf-gold);
+    }
+    .sidebar-stat-value {
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--tf-white);
+        line-height: 1.1;
+    }
+    .sidebar-stat-label {
+        font-size: 0.6rem;
+        color: var(--tf-gray);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+    .sidebar-chart-container {
+        position: relative;
+        width: 100%;
+        height: 130px;
+    }
+    .sidebar-chart-container canvas {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    /* Ad Placeholder */
+    .sidebar-ad {
+        background: linear-gradient(135deg, rgba(212,168,67,0.08), rgba(212,168,67,0.02));
+        border: 1px dashed rgba(212,168,67,0.35);
+    }
+    .sidebar-ad-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0.7rem 0.4rem;
+        gap: 0.25rem;
+    }
+    .sidebar-ad-inner i {
+        font-size: 1.1rem;
+        color: var(--tf-gold);
+        opacity: 0.5;
+    }
+    .sidebar-ad-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--tf-gold);
+        opacity: 0.7;
+    }
+    .sidebar-ad-sub {
+        font-size: 0.62rem;
+        color: var(--tf-gray);
+    }
+
+    /* Light mode sidebar overrides */
+    body.light-mode .sidebar-widget { background: #fff; border-color: #dddfe2; }
+    body.light-mode .sidebar-widget-title { color: #1c1e21; }
+    body.light-mode .sidebar-stat-card { background: rgba(212,168,67,0.08); border-color: rgba(212,168,67,0.2); }
+    body.light-mode .sidebar-stat-value { color: #1c1e21; }
+    body.light-mode .sidebar-stat-label { color: #65676b; }
+    body.light-mode .sidebar-ad { background: linear-gradient(135deg, rgba(212,168,67,0.06), rgba(212,168,67,0.02)); border-color: rgba(212,168,67,0.3); }
+
+    /* ── Media Toolbar (Create/Edit modals) ── */
+    .modal-media-toolbar {
+        display: flex; gap: 0.4rem; padding: 0.4rem 0; border-top: 1px solid var(--tf-border);
+    }
+    .media-tool-btn {
+        display: flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.7rem;
+        border-radius: 20px; border: 1px solid var(--tf-border); background: transparent;
+        color: var(--tf-gray); font-size: 0.78rem; cursor: pointer; transition: all 0.2s;
+    }
+    .media-tool-btn:hover { border-color: var(--tf-gold); color: var(--tf-gold); }
+    .media-tool-btn.active { border-color: var(--tf-gold); color: var(--tf-gold); background: rgba(212,168,67,0.1); }
+    .media-tool-btn i { font-size: 0.9rem; }
+
+    /* Media previews in modals */
+    .modal-media-preview {
+        margin-top: 0.5rem; display: none; position: relative;
+    }
+    .modal-media-preview.visible { display: block; }
+    .modal-media-preview img {
+        max-width: 100%; max-height: 220px; border-radius: 8px; object-fit: cover;
+        border: 1px solid var(--tf-border);
+    }
+    .media-remove-btn {
+        position: absolute; top: 4px; right: 4px; width: 24px; height: 24px;
+        border-radius: 50%; background: rgba(0,0,0,0.7); color: #fff; border: none;
+        cursor: pointer; font-size: 0.75rem; display: flex; align-items: center;
+        justify-content: center; z-index: 2;
+    }
+    .media-remove-btn:hover { background: #e74c3c; }
+    .media-uploading {
+        display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem;
+        font-size: 0.8rem; color: var(--tf-gold);
+    }
+    .media-uploading .spinner { width: 16px; height: 16px; border-width: 2px; }
+
+    /* ── Post media in feed cards ── */
+    .ln-post-media { margin: 0.6rem 0 0; }
+    .ln-post-media img {
+        width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px;
+        border: 1px solid var(--tf-border); cursor: pointer;
+    }
+
+    /* ── Light mode media overrides ── */
+    body.light-mode .media-tool-btn { color: #65676b; border-color: #dddfe2; }
+    body.light-mode .media-tool-btn:hover { color: var(--tf-gold-dark); border-color: var(--tf-gold-dark); }
+    body.light-mode .media-tool-btn.active { color: var(--tf-gold-dark); border-color: var(--tf-gold-dark); background: rgba(212,168,67,0.1); }
+
+    /* ── Language Badge on Posts ── */
+    .ln-lang-badge {
+        display: inline-flex; align-items: center; gap: 0.3rem;
+        font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+        padding: 0.15rem 0.45rem; border-radius: 10px;
+        background: rgba(212, 168, 67, 0.1); color: var(--tf-gold);
+        border: 1px solid rgba(212, 168, 67, 0.25);
+        letter-spacing: 0.5px; line-height: 1;
+    }
+    .ln-lang-badge i { font-size: 0.55rem; }
+    body.light-mode .ln-lang-badge {
+        background: rgba(212, 168, 67, 0.08); border-color: rgba(212, 168, 67, 0.3);
+        color: var(--tf-gold-dark);
+    }
+
+    /* ── Floating Language Picker ── */
+    .lang-picker {
+        position: fixed; bottom: 1.5rem; left: 1.5rem; z-index: 8000;
+    }
+    .lang-picker-btn {
+        width: 48px; height: 48px; border-radius: 50%;
+        background: var(--tf-gold); color: var(--tf-midnight);
+        border: none; cursor: pointer; font-size: 1.1rem;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .lang-picker-btn:hover { transform: scale(1.1); box-shadow: 0 6px 24px rgba(0,0,0,0.4); }
+    .lang-picker-btn .lang-picker-current {
+        font-size: 0.6rem; font-weight: 800; position: absolute;
+        bottom: -2px; right: -2px; background: var(--tf-midnight);
+        color: var(--tf-gold); padding: 0.1rem 0.3rem; border-radius: 6px;
+        line-height: 1; border: 1.5px solid var(--tf-gold);
+    }
+    body.light-mode .lang-picker-btn .lang-picker-current {
+        background: #fff; color: var(--tf-gold-dark); border-color: var(--tf-gold-dark);
+    }
+    .lang-picker-menu {
+        display: none; position: absolute; bottom: 56px; left: 0;
+        background: var(--tf-card-bg); border: 1px solid var(--tf-border);
+        border-radius: 12px; overflow: hidden; min-width: 170px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+        animation: modalIn 0.15s ease-out;
+    }
+    .lang-picker-menu.open { display: block; }
+    .lang-picker-menu-title {
+        padding: 0.6rem 0.9rem 0.4rem; font-size: 0.7rem; font-weight: 700;
+        color: var(--tf-gray); text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .lang-picker-option {
+        display: flex; align-items: center; gap: 0.6rem;
+        padding: 0.55rem 0.9rem; cursor: pointer; transition: background 0.15s;
+        border: none; background: none; width: 100%; color: var(--tf-white);
+        font-size: 0.85rem; text-align: left;
+    }
+    .lang-picker-option:hover { background: rgba(212, 168, 67, 0.1); }
+    .lang-picker-option.active { color: var(--tf-gold); font-weight: 700; }
+    .lang-picker-option .lang-flag { font-size: 1.1rem; }
+    .lang-picker-option .lang-name { flex: 1; }
+    .lang-picker-option .lang-check { font-size: 0.7rem; color: var(--tf-gold); }
+    .lang-picker-sep { border-top: 1px solid var(--tf-border); margin: 0.2rem 0; }
+    .lang-picker-option.original-btn {
+        font-size: 0.78rem; color: var(--tf-gray); justify-content: center; gap: 0.4rem;
+    }
+    .lang-picker-option.original-btn:hover { color: var(--tf-white); }
+    body.light-mode .lang-picker-menu { background: #fff; border-color: #dddfe2; }
+    body.light-mode .lang-picker-option { color: #1c1e21; }
+    body.light-mode .lang-picker-option:hover { background: #f0f2f5; }
+    body.light-mode .lang-picker-option.active { color: var(--tf-gold-dark); }
+
+    /* Translation loading state */
+    .ln-post-card.translating { opacity: 0.6; pointer-events: none; }
+    .ln-post-card.translating::after {
+        content: ''; position: absolute; inset: 0; z-index: 2;
+        background: rgba(0,0,0,0.03);
+    }
+    /* RTL support for Arabic */
+    .ln-post-card[data-display-lang="ar"] .ln-post-title,
+    .ln-post-card[data-display-lang="ar"] .ln-post-content-text,
+    .ln-post-card[data-display-lang="ar"] .mdl-post-title,
+    .ln-post-card[data-display-lang="ar"] .mdl-post-content {
+        direction: rtl; text-align: right;
+    }
+
+    /* ── Voice Memo Recorder ── */
+    .voice-recorder-wrap {
+        display: flex; align-items: center; gap: 0.5rem;
+        padding: 0.5rem 0; margin-top: 0.3rem;
+    }
+    .voice-recorder-wrap.hidden { display: none; }
+    .voice-rec-btn {
+        width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        background: var(--tf-border); color: var(--tf-text); font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+    .voice-rec-btn.recording {
+        background: #e74c3c; color: #fff;
+        animation: pulse-rec 1s ease-in-out infinite;
+    }
+    @keyframes pulse-rec { 0%,100%{transform:scale(1)} 50%{transform:scale(1.12)} }
+    .voice-rec-timer { font-size: 0.78rem; color: var(--tf-gray); font-variant-numeric: tabular-nums; min-width: 38px; }
+    .voice-rec-preview {
+        flex: 1; display: flex; align-items: center; gap: 0.4rem;
+    }
+    .voice-rec-preview audio { height: 32px; flex: 1; max-width: 220px; }
+    .voice-rec-remove {
+        background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 0.85rem;
+        padding: 0.2rem; border-radius: 4px;
+    }
+    .voice-rec-remove:hover { background: rgba(231,76,60,0.1); }
+
+    /* ── Audio player in post card ── */
+    .ln-post-audio {
+        margin: 0.5rem 0 0.2rem;
+        padding: 0.5rem 0.7rem;
+        background: var(--tf-border);
+        border-radius: 10px;
+        display: flex; align-items: center; gap: 0.5rem;
+    }
+    .ln-post-audio i { color: var(--tf-gold); font-size: 0.95rem; flex-shrink: 0; }
+    .ln-post-audio audio { height: 32px; flex: 1; }
+    .ln-post-audio .audio-label { font-size: 0.72rem; color: var(--tf-gray); white-space: nowrap; }
+</style>
+{% endblock %}
+
+{% block topbar_center %}
+<button class="topbar-search-toggle" id="searchToggle" title="Rechercher">
+    <i class="fas fa-search"></i>
+</button>
+<div class="topbar-search-expanded" id="searchExpanded">
+    <i class="fas fa-search" style="color:var(--tf-gray); font-size:0.85rem; flex-shrink:0;"></i>
+    <input type="text" class="topbar-search-input" id="feedSearch"
+           placeholder="Rechercher un post, un auteur..." autocomplete="off">
+    <div class="topbar-filter-chips">
+        <button class="ln-filter-chip active" data-sort="recent"><i class="fas fa-clock"></i> Récents</button>
+        <button class="ln-filter-chip" data-sort="top"><i class="fas fa-fire"></i> Top</button>
+        <button class="ln-filter-chip" data-sort="oldest"><i class="fas fa-history"></i> Anciens</button>
+        <button class="ln-filter-chip" data-sort="comments"><i class="fas fa-comments"></i> Commentés</button>
+    </div>
+    <span class="ln-result-count" id="resultCount"></span>
+</div>
+{% endblock %}
 
 {% block body %}
-<div class="tf-card">
-    <div class="tf-card-header">
-        <h3><i class="fas fa-newspaper"></i> Liste des Posts <span style="color: var(--tf-gray); font-weight: 400; font-size: 0.9rem;">({{ posts|length }})</span></h3>
-        <a href="{{ path('post_new') }}" class="btn-gold">
-            <i class="fas fa-plus"></i> Nouveau Post
-        </a>
+<div class="ln-feed-wrapper">
+
+{# ── Left Sidebar: Rules ── #}
+<div class="ln-feed-left">
+    <div class="ln-rules-card">
+        <div class="ln-rules-header" id="rulesToggle">
+            <i class="fas fa-shield-alt"></i>
+            <h3>Règles du Forum</h3>
+            <i class="fas fa-chevron-down ln-rules-toggle" id="rulesChevron"></i>
+        </div>
+        <ul class="ln-rules-list" id="rulesList">
+            <li><i class="fas fa-check-circle"></i> <span><strong>Respect</strong> — Restez courtois.</span></li>
+            <li><i class="fas fa-check-circle"></i> <span><strong>Pas d'insultes</strong> — Langage poli exigé.</span></li>
+            <li><i class="fas fa-check-circle"></i> <span><strong>Pas de spam</strong> — Pas de doublons.</span></li>
+            <li><i class="fas fa-check-circle"></i> <span><strong>Pro uniquement</strong> — Contenu RH/emploi.</span></li>
+            <li><i class="fas fa-check-circle"></i> <span><strong>0 discrimination</strong> — Tolérance zéro.</span></li>
+            <li><i class="fas fa-check-circle"></i> <span><strong>Données privées</strong> — Rien de sensible.</span></li>
+            <li><i class="fas fa-check-circle"></i> <span><strong>Qualité</strong> — Titres clairs, contenu utile.</span></li>
+            <li><i class="fas fa-check-circle"></i> <span><strong>Signaler</strong> — Alertez un admin.</span></li>
+        </ul>
+        <div class="ln-rules-footer">
+            <i class="fas fa-info-circle"></i> Tout abus sera sanctionné.
+        </div>
     </div>
 
-    {% if posts|length > 0 %}
-    <div class="table-responsive">
-        <table class="tf-table">
-            <thead>
-                <tr>
-                    <th>Titre</th>
-                    <th>Auteur</th>
-                    <th><i class="fas fa-thumbs-up"></i> Votes</th>
-                    <th><i class="fas fa-comments"></i> Commentaires</th>
-                    <th>Créé le</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for post in posts %}
-                <tr>
-                    <td>
-                        <a href="{{ path('post_show', {id: post.id}) }}" style="color: var(--tf-gold); text-decoration: none; font-weight: 600;">
-                            {{ post.title }}
-                        </a>
-                    </td>
-                    <td>
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="tf-avatar" style="width: 30px; height: 30px; font-size: 0.65rem;">
-                                {{ post.authorName|first|upper }}
-                            </span>
-                            <span>{{ post.authorName }}</span>
+    {# Ad Placeholder #}
+    <div class="sidebar-widget sidebar-ad" style="margin-top:0.8rem;">
+        <div class="sidebar-ad-inner">
+            <i class="fas fa-bullhorn"></i>
+            <span class="sidebar-ad-label">Espace publicitaire</span>
+            <span class="sidebar-ad-sub">Votre annonce ici</span>
+        </div>
+    </div>
+</div>
+
+<div class="ln-feed-main">
+
+    {# ── Start a Post (opens modal) ── #}
+    <div class="ln-start-post">
+        <div class="ln-start-post-top">
+            <span class="ln-avatar">
+                {% if app.user %}
+                    {{ app.user.prenom|default('U')|first|upper }}
+                {% else %}
+                    <i class="fas fa-user" style="font-size: 0.9rem;"></i>
+                {% endif %}
+            </span>
+            <button type="button" class="ln-start-post-btn" id="openNewPostModal">
+                Commencer un post...
+            </button>
+        </div>
+    </div>
+
+    {# ── Sort Bar ── #}
+    <div class="ln-sort-bar">
+        <hr>
+    </div>
+
+    {# ── Loading ── #}
+    <div class="ln-loading" id="feedLoading">
+        <span class="spinner"></span>
+    </div>
+
+    {# ── Posts container ── #}
+    <div id="feedContainer">
+        {% if posts|length > 0 %}
+            {% for post in posts %}
+            <div class="ln-post-card" data-post-id="{{ post.id }}" data-original-lang="{{ postLangs[post.id]|default('fr') }}" data-display-lang="{{ postLangs[post.id]|default('fr') }}" data-original-title="{{ post.title }}" data-original-content="{{ post.content|default('') }}">
+                <div class="ln-post-header">
+                    <span class="ln-avatar">{{ post.authorName|first|upper }}</span>
+                    <div class="ln-post-author-info">
+                        <span class="ln-post-author-name">{{ post.authorName }}</span>
+                        <div class="ln-post-author-role">{{ post.authorRole }}</div>
+                        <div class="ln-post-time">
+                            {% if post.createdAt %}
+                                {% set diff = date().timestamp - post.createdAt.timestamp %}
+                                {% if diff < 60 %}à l'instant
+                                {% elseif diff < 3600 %}il y a {{ (diff / 60)|round(0, 'floor') }} min
+                                {% elseif diff < 86400 %}il y a {{ (diff / 3600)|round(0, 'floor') }} h
+                                {% elseif diff < 604800 %}il y a {{ (diff / 86400)|round(0, 'floor') }} j
+                                {% else %}{{ post.createdAt|date('d/m/Y') }}
+                                {% endif %}
+                            {% endif %}
+                            &bull; <i class="fas fa-globe-americas"></i>
+                            <span class="ln-lang-badge" title="Langue originale"><i class="fas fa-language"></i> {{ postLangs[post.id]|default('fr')|upper }}</span>
                         </div>
-                    </td>
-                    <td>
-                        <span style="color: var(--tf-gold); font-weight: 600;">
-                            <i class="fas fa-arrow-up" style="font-size: 0.75rem;"></i> {{ post.upvotes }}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="badge-role badge-rh" style="font-size: 0.75rem;">{{ post.commentCount }}</span>
-                    </td>
-                    <td style="color: var(--tf-gray);">{{ post.createdAt ? post.createdAt|date('d/m/Y H:i') : '—' }}</td>
-                    <td>
-                        <div class="tf-actions">
-                            <a href="{{ path('post_show', {id: post.id}) }}" class="btn-outline-gold btn-sm-tf" title="Voir">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="{{ path('post_edit', {id: post.id}) }}" class="btn-gold btn-sm-tf" title="Modifier">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <form method="post" action="{{ path('post_delete', {id: post.id}) }}" style="display:inline" onsubmit="return confirm('Supprimer ce post et tous ses commentaires ?')">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ post.id) }}">
-                                <button type="submit" class="btn-danger-tf btn-sm-tf" title="Supprimer">
-                                    <i class="fas fa-trash"></i>
+                    </div>
+                    <div class="ln-post-menu">
+                        {% if is_granted('ROLE_ADMIN') or (app.user and post.author is same as(app.user)) %}
+                        <div class="ln-dropdown">
+                            <button class="ln-post-menu-btn" title="Plus d'options">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                            <div class="ln-dropdown-menu">
+                                <button class="ln-dropdown-item open-edit-modal" data-id="{{ post.id }}">
+                                    <i class="fas fa-pen"></i> Modifier
+                                </button>
+                                <div class="ln-dropdown-sep"></div>
+                                <form method="post" action="{{ path('post_delete', {id: post.id}) }}" onsubmit="return confirm('Supprimer ce post ?')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ post.id) }}">
+                                    <button type="submit" class="ln-dropdown-item danger">
+                                        <i class="fas fa-trash-alt"></i> Supprimer
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="ln-post-title">
+                    <a href="#" class="open-detail-modal" data-id="{{ post.id }}">{{ post.title }}</a>
+                </div>
+                <div class="ln-post-content">
+                    {% if post.content %}
+                    <div class="ln-post-content-text">{{ post.content }}</div>
+                    {% if post.content|length > 200 %}
+                        <a href="#" class="ln-see-more open-detail-modal" data-id="{{ post.id }}">...voir plus</a>
+                    {% endif %}
+                    {% endif %}
+                </div>
+                {% if post.imagePath %}
+                <div class="ln-post-media">
+                    <img src="{{ post.imagePath }}" alt="Post image" loading="lazy">
+                </div>
+                {% endif %}
+                {% if post.audioPath %}
+                <div class="ln-post-audio">
+                    <i class="fas fa-microphone"></i>
+                    <audio controls preload="metadata" src="{{ post.audioPath }}"></audio>
+                    <span class="audio-label">Mémo vocal</span>
+                </div>
+                {% endif %}
+
+                {% if post.upvotes != 0 or post.commentCount > 0 %}
+                <div class="ln-post-stats">
+                    <div class="ln-post-stats-left">
+                        {% if post.upvotes != 0 %}
+                            <span class="ln-reaction-icons">
+                                <span class="ln-reaction-icon {{ post.upvotes > 0 ? 'up' : 'down' }}"><i class="fas fa-arrow-{{ post.upvotes > 0 ? 'up' : 'down' }}"></i></span>
+                            </span>
+                            <span>{{ post.upvotes }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="ln-post-stats-right">
+                        {% if post.commentCount > 0 %}
+                            <button class="open-detail-modal" data-id="{{ post.id }}">{{ post.commentCount }} commentaire{{ post.commentCount > 1 ? 's' : '' }}</button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="ln-post-actions">
+                    <div class="ln-vote-group">
+                        <button class="ln-vote-btn upvote{{ userVotes[post.id] is defined and userVotes[post.id] == 'up' ? ' voted' : '' }}" data-id="{{ post.id }}" title="Upvote">
+                            <i class="fas fa-arrow-up"></i>
+                        </button>
+                        <span class="ln-vote-count" data-vote-count="{{ post.id }}">{{ post.upvotes }}</span>
+                        <button class="ln-vote-btn downvote{{ userVotes[post.id] is defined and userVotes[post.id] == 'down' ? ' voted' : '' }}" data-id="{{ post.id }}" title="Downvote">
+                            <i class="fas fa-arrow-down"></i>
+                        </button>
+                    </div>
+                    <button class="ln-action-btn open-detail-modal" data-id="{{ post.id }}" title="Commenter">
+                        <i class="far fa-comment-dots"></i> <span>Commenter</span>
+                    </button>
+                    {% if app.user and post.author and post.author.id != app.user.id %}
+                    <a href="{{ path('message_start', {id: post.author.id}) }}" class="ln-action-btn" title="Envoyer un message">
+                        <i class="far fa-paper-plane"></i> <span>Message</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="ln-post-card">
+                <div class="ln-empty">
+                    <i class="fas fa-newspaper"></i>
+                    <p>Aucun post pour le moment</p>
+                    <button type="button" class="btn-gold" id="openNewPostModalEmpty">
+                        <i class="fas fa-plus"></i> Créer le premier post
+                    </button>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    {# ── No results ── #}
+    <div class="ln-post-card ln-no-results" id="noResults">
+        <i class="fas fa-search"></i>
+        <p>Aucun post ne correspond à votre recherche</p>
+    </div>
+</div><!-- /ln-feed-main -->
+
+{# ── Right Sidebar ── #}
+<div class="ln-feed-sidebar">
+    {# Mini Stat Cards #}
+    <div class="sidebar-widget">
+        <h4 class="sidebar-widget-title"><i class="fas fa-chart-pie"></i> Statistiques</h4>
+        <div class="sidebar-stats-grid">
+            <div class="sidebar-stat-card">
+                <i class="fas fa-file-alt"></i>
+                <span class="sidebar-stat-value">{{ totalPosts }}</span>
+                <span class="sidebar-stat-label">Posts</span>
+            </div>
+            <div class="sidebar-stat-card">
+                <i class="fas fa-comments"></i>
+                <span class="sidebar-stat-value">{{ totalComments }}</span>
+                <span class="sidebar-stat-label">Commentaires</span>
+            </div>
+            <div class="sidebar-stat-card">
+                <i class="fas fa-users"></i>
+                <span class="sidebar-stat-value">{{ totalUsers }}</span>
+                <span class="sidebar-stat-label">Membres</span>
+            </div>
+            <div class="sidebar-stat-card">
+                <i class="fas fa-thumbs-up"></i>
+                <span class="sidebar-stat-value">{{ totalVotes }}</span>
+                <span class="sidebar-stat-label">Votes</span>
+            </div>
+        </div>
+    </div>
+
+    {# Activity Chart #}
+    <div class="sidebar-widget">
+        <h4 class="sidebar-widget-title"><i class="fas fa-chart-bar"></i> Activité (7 jours)</h4>
+        <div class="sidebar-chart-container">
+            <canvas id="activityChart"></canvas>
+        </div>
+    </div>
+
+    {# Top Authors Chart #}
+    <div class="sidebar-widget">
+        <h4 class="sidebar-widget-title"><i class="fas fa-trophy"></i> Top contributeurs</h4>
+        <div class="sidebar-chart-container">
+            <canvas id="authorsChart"></canvas>
+        </div>
+    </div>
+
+</div><!-- /ln-feed-sidebar -->
+</div><!-- /ln-feed-wrapper -->
+
+{# ══════════════════════════════════════════════════
+   MODAL: New Post
+   ══════════════════════════════════════════════════ #}
+<div class="modal-overlay" id="newPostOverlay">
+    <div class="modal-box modal-new-post">
+        <button class="modal-close" id="closeNewPost">&times;</button>
+        <div class="modal-new-post-header">
+            <span class="ln-avatar">
+                {% if app.user %}
+                    {{ app.user.prenom|default('U')|first|upper }}
+                {% else %}
+                    <i class="fas fa-user" style="font-size: 0.85rem;"></i>
+                {% endif %}
+            </span>
+            <h3>Créer un post</h3>
+        </div>
+        <div class="modal-new-post-body">
+            <ul class="modal-errors" id="newPostErrors"></ul>
+            {% if is_granted('ROLE_ADMIN') %}
+            <div class="modal-field">
+                <label for="newPostAuthor"><i class="fas fa-user-tag"></i> Auteur</label>
+                <select id="newPostAuthor">
+                    <option value="">-- Sélectionner un auteur --</option>
+                    {% for user in users %}
+                        <option value="{{ user.id }}"
+                            {% if app.user and app.user.id == user.id %} selected{% endif %}>
+                            {{ user.fullName }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+            <div class="modal-field">
+                <label for="newPostTitle"><i class="fas fa-heading"></i> Titre</label>
+                <input type="text" id="newPostTitle" placeholder="De quoi voulez-vous parler ?" maxlength="255">
+            </div>
+            <div class="modal-field">
+                <label for="newPostContent"><i class="fas fa-align-left"></i> Contenu</label>
+                <textarea id="newPostContent" placeholder="Partagez vos idées, expériences ou questions..."></textarea>
+            </div>
+            <div class="modal-media-preview" id="newPostImagePreview"></div>
+            <div class="modal-media-toolbar">
+                <button type="button" class="media-tool-btn" id="newPostImageBtn" title="Ajouter une image">
+                    <i class="fas fa-image"></i> Photo
+                </button>
+                <input type="file" id="newPostImageFile" accept="image/*" style="display:none;">
+                <button type="button" class="media-tool-btn" id="newPostVoiceBtn" title="Mémo vocal">
+                    <i class="fas fa-microphone"></i> Vocal
+                </button>
+            </div>
+            <div class="voice-recorder-wrap hidden" id="newPostVoiceWrap">
+                <button type="button" class="voice-rec-btn" id="newPostRecBtn" title="Enregistrer"><i class="fas fa-microphone"></i></button>
+                <span class="voice-rec-timer" id="newPostRecTimer">0:00</span>
+                <div class="voice-rec-preview" id="newPostRecPreview"></div>
+            </div>
+        </div>
+        <div class="modal-new-post-footer">
+            <button class="modal-btn modal-btn-cancel" id="cancelNewPost">Annuler</button>
+            <button class="modal-btn modal-btn-submit" id="submitNewPost">
+                <i class="fas fa-paper-plane"></i> Publier
+            </button>
+        </div>
+    </div>
+</div>
+
+{# ══════════════════════════════════════════════════
+   MODAL: Edit Post
+   ══════════════════════════════════════════════════ #}
+<div class="modal-overlay" id="editPostOverlay">
+    <div class="modal-box modal-new-post">
+        <button class="modal-close" id="closeEditPost">&times;</button>
+        <div class="modal-new-post-header">
+            <span class="ln-avatar"><i class="fas fa-pen" style="font-size: 0.85rem;"></i></span>
+            <h3>Modifier le post</h3>
+        </div>
+        <div class="modal-new-post-body">
+            <ul class="modal-errors" id="editPostErrors"></ul>
+            <div class="modal-field">
+                <label for="editPostTitle"><i class="fas fa-heading"></i> Titre</label>
+                <input type="text" id="editPostTitle" placeholder="Titre du post" maxlength="255">
+            </div>
+            <div class="modal-field">
+                <label for="editPostContent"><i class="fas fa-align-left"></i> Contenu</label>
+                <textarea id="editPostContent" placeholder="Contenu du post..."></textarea>
+            </div>
+            <div class="modal-media-preview" id="editPostImagePreview"></div>
+            <div class="modal-media-toolbar">
+                <button type="button" class="media-tool-btn" id="editPostImageBtn" title="Ajouter une image">
+                    <i class="fas fa-image"></i> Photo
+                </button>
+                <input type="file" id="editPostImageFile" accept="image/*" style="display:none;">
+                <button type="button" class="media-tool-btn" id="editPostVoiceBtn" title="Mémo vocal">
+                    <i class="fas fa-microphone"></i> Vocal
+                </button>
+            </div>
+            <div class="voice-recorder-wrap hidden" id="editPostVoiceWrap">
+                <button type="button" class="voice-rec-btn" id="editPostRecBtn" title="Enregistrer"><i class="fas fa-microphone"></i></button>
+                <span class="voice-rec-timer" id="editPostRecTimer">0:00</span>
+                <div class="voice-rec-preview" id="editPostRecPreview"></div>
+            </div>
+        </div>
+        <div class="modal-new-post-footer">
+            <button class="modal-btn modal-btn-cancel" id="cancelEditPost">Annuler</button>
+            <button class="modal-btn modal-btn-submit" id="submitEditPost">
+                <i class="fas fa-check"></i> Enregistrer
+            </button>
+        </div>
+    </div>
+</div>
+
+{# ══════════════════════════════════════════════════
+   MODAL: Post Detail + Comments (split view)
+   ══════════════════════════════════════════════════ #}
+<div class="modal-overlay" id="detailOverlay">
+    <div class="modal-box modal-detail">
+        <button class="modal-close" id="closeDetail">&times;</button>
+        <div class="modal-detail-body">
+            {# Left: post details #}
+            <div class="modal-detail-left" id="detailLeft">
+                <div class="ln-loading" id="detailLoading" style="display:block;">
+                    <span class="spinner"></span>
+                </div>
+            </div>
+            {# Right: comments #}
+            <div class="modal-detail-right">
+                <div class="mdl-comments-header">
+                    <i class="far fa-comment-dots"></i> Commentaires (<span id="detailCommentCount">0</span>)
+                </div>
+                <div class="mdl-comments-list" id="detailCommentsList"></div>
+                <div class="mdl-comment-form" id="detailCommentForm">
+                    <ul class="mdl-comment-errors" id="commentErrors"></ul>
+                    {% if is_granted('ROLE_ADMIN') %}
+                    <div class="modal-field" style="margin-bottom:0.5rem;">
+                        <select id="commentAuthor">
+                            <option value="">-- Auteur --</option>
+                            {% for user in users %}
+                                <option value="{{ user.id }}"
+                                    {% if app.user and app.user.id == user.id %} selected{% endif %}>
+                                    {{ user.fullName }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    <div class="mdl-comment-form-row">
+                        <textarea id="commentContent" placeholder="Écrire un commentaire..." rows="1"></textarea>
+                        <button class="mdl-comment-send" id="submitComment" title="Envoyer">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── Floating Language Picker ── #}
+<div class="lang-picker" id="langPicker">
+    <button class="lang-picker-btn" id="langPickerBtn" title="Traduire">
+        <i class="fas fa-language"></i>
+        <span class="lang-picker-current" id="langPickerCurrent">FR</span>
+    </button>
+    <div class="lang-picker-menu" id="langPickerMenu">
+        <div class="lang-picker-menu-title"><i class="fas fa-language"></i> Traduire en</div>
+        <button class="lang-picker-option" data-lang="fr">
+            <span class="lang-flag">🇫🇷</span>
+            <span class="lang-name">Français</span>
+            <span class="lang-check"><i class="fas fa-check"></i></span>
+        </button>
+        <button class="lang-picker-option" data-lang="en">
+            <span class="lang-flag">🇬🇧</span>
+            <span class="lang-name">English</span>
+            <span class="lang-check"><i class="fas fa-check"></i></span>
+        </button>
+        <button class="lang-picker-option" data-lang="ar">
+            <span class="lang-flag">🇸🇦</span>
+            <span class="lang-name">العربية</span>
+            <span class="lang-check"><i class="fas fa-check"></i></span>
+        </button>
+        <div class="lang-picker-sep"></div>
+        <button class="lang-picker-option original-btn" id="langShowOriginal">
+            <i class="fas fa-undo"></i> Afficher l'original
+        </button>
+    </div>
+</div>
+{% endblock %}
+{% block javascripts %}
+<script>
+(function() {
+    /* ── Forum Rules Toggle ── */
+    const rulesToggle = document.getElementById('rulesToggle');
+    const rulesList = document.getElementById('rulesList');
+    const rulesChevron = document.getElementById('rulesChevron');
+    if (rulesToggle && rulesList) {
+        const rulesKey = 'tf-rules-collapsed';
+        if (localStorage.getItem(rulesKey) === '1') {
+            rulesList.classList.add('hidden');
+            rulesChevron.classList.add('collapsed');
+        }
+        rulesToggle.addEventListener('click', function() {
+            const isHidden = rulesList.classList.toggle('hidden');
+            rulesChevron.classList.toggle('collapsed', isHidden);
+            localStorage.setItem(rulesKey, isHidden ? '1' : '0');
+        });
+    }
+
+    /* ── Refs ── */
+    const searchInput = document.getElementById('feedSearch');
+    const filterChips = document.querySelectorAll('.ln-filter-chip');
+    const feedContainer = document.getElementById('feedContainer');
+    const noResults = document.getElementById('noResults');
+    const feedLoading = document.getElementById('feedLoading');
+    const resultCount = document.getElementById('resultCount');
+    const searchUrl = '{{ path("post_search") }}';
+    const createUrl = '{{ path("post_create_ajax") }}';
+    const isAdmin = {{ is_granted('ROLE_ADMIN') ? 'true' : 'false' }};
+    const currentUserId = {{ app.user ? app.user.id : 'null' }};
+
+    let debounceTimer = null;
+    let currentSort = 'recent';
+    let isSearchActive = false;
+    let currentDetailPostId = null;
+
+    /* ── Media state ── */
+    let newPostImageUrl = '';
+    let editPostImageUrl = '';
+    const IMGBB_KEY = '779afaf82155656af4e0e8e92c2970e0';
+
+    /* ── Translation state ── */
+    let currentDisplayLang = null; // null = show original
+    const translationCache = {}; // key: "postId|srcLang|tgtLang|field" → translated text
+    const LANG_LABELS = { fr: 'FR', en: 'EN', ar: 'AR' };
+
+    async function translateText(text, srcLang, tgtLang) {
+        if (!text || text.trim() === '' || srcLang === tgtLang) return text;
+        const cacheKey = srcLang + '|' + tgtLang + '|' + text.substring(0, 80);
+        if (translationCache[cacheKey]) return translationCache[cacheKey];
+        try {
+            const url = 'https://api.mymemory.translated.net/get?q=' +
+                encodeURIComponent(text.substring(0, 500)) +
+                '&langpair=' + encodeURIComponent(srcLang + '|' + tgtLang);
+            const resp = await fetch(url);
+            const data = await resp.json();
+            if (data.responseStatus === 200 && data.responseData && data.responseData.translatedText) {
+                let result = data.responseData.translatedText;
+                // MyMemory returns uppercase "TRANSLATED" on failure
+                if (result === result.toUpperCase() && result.length > 10) result = text;
+                translationCache[cacheKey] = result;
+                return result;
+            }
+        } catch (e) { /* fallback to original */ }
+        return text;
+    }
+
+    async function translateAllCards(targetLang) {
+        const cards = document.querySelectorAll('.ln-post-card[data-original-lang]');
+        const promises = [];
+        cards.forEach(card => {
+            promises.push(translateCard(card, targetLang));
+        });
+        await Promise.all(promises);
+    }
+
+    async function translateCard(card, targetLang) {
+        const origLang = card.dataset.originalLang;
+        const origTitle = card.dataset.originalTitle || '';
+        const origContent = card.dataset.originalContent || '';
+
+        if (targetLang === null || targetLang === origLang) {
+            // Restore original
+            const titleEl = card.querySelector('.ln-post-title a');
+            const contentEl = card.querySelector('.ln-post-content-text');
+            if (titleEl) titleEl.textContent = origTitle;
+            if (contentEl) contentEl.textContent = origContent;
+            card.dataset.displayLang = origLang;
+            return;
+        }
+
+        card.classList.add('translating');
+        // Always translate from ORIGINAL language → target (never from intermediate)
+        const [trTitle, trContent] = await Promise.all([
+            translateText(origTitle, origLang, targetLang),
+            origContent ? translateText(origContent, origLang, targetLang) : Promise.resolve(''),
+        ]);
+
+        const titleEl = card.querySelector('.ln-post-title a');
+        const contentEl = card.querySelector('.ln-post-content-text');
+        if (titleEl) titleEl.textContent = trTitle;
+        if (contentEl) contentEl.textContent = trContent;
+        card.dataset.displayLang = targetLang;
+        card.classList.remove('translating');
+    }
+
+    /* ══════════════════════════════════════════════
+       SEARCH TOGGLE (icon → expanded bar)
+       ══════════════════════════════════════════════ */
+    const searchToggleBtn = document.getElementById('searchToggle');
+    const searchExpanded = document.getElementById('searchExpanded');
+
+    if (searchToggleBtn && searchExpanded) {
+        searchToggleBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            searchExpanded.classList.add('active');
+            searchToggleBtn.style.display = 'none';
+            setTimeout(() => searchInput.focus(), 50);
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!searchExpanded.classList.contains('active')) return;
+            if (searchExpanded.contains(e.target)) return;
+            // Collapse
+            searchExpanded.classList.remove('active');
+            searchToggleBtn.style.display = '';
+        });
+
+        // Prevent filter chip clicks from closing
+        searchExpanded.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+
+    /* ══════════════════════════════════════════════
+       SEARCH & FILTER
+       ══════════════════════════════════════════════ */
+    filterChips.forEach(chip => {
+        chip.addEventListener('click', function() {
+            filterChips.forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            currentSort = this.dataset.sort;
+            doSearch();
+        });
+    });
+
+    searchInput.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(doSearch, 250);
+    });
+
+    function doSearch() {
+        const q = searchInput.value.trim();
+        if (!q && currentSort === 'recent' && !isSearchActive) return;
+        isSearchActive = !!(q || currentSort !== 'recent');
+
+        feedLoading.style.display = 'block';
+        feedContainer.style.opacity = '0.4';
+        noResults.style.display = 'none';
+
+        const params = new URLSearchParams({ q, sort: currentSort });
+        fetch(searchUrl + '?' + params.toString(), {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(posts => {
+            feedLoading.style.display = 'none';
+            feedContainer.style.opacity = '1';
+
+            if (posts.length === 0) {
+                feedContainer.innerHTML = '';
+                noResults.style.display = 'block';
+                resultCount.textContent = '0 résultat';
+                return;
+            }
+
+            noResults.style.display = 'none';
+            resultCount.textContent = posts.length + ' post' + (posts.length > 1 ? 's' : '');
+            feedContainer.innerHTML = posts.map(renderPost).join('');
+            bindAll();
+            if (currentDisplayLang) translateAllCards(currentDisplayLang);
+        })
+        .catch(() => {
+            feedLoading.style.display = 'none';
+            feedContainer.style.opacity = '1';
+        });
+    }
+
+    /* ══════════════════════════════════════════════
+       RENDER POST CARD
+       ══════════════════════════════════════════════ */
+    function esc(str) {
+        const d = document.createElement('div');
+        d.textContent = str;
+        return d.innerHTML;
+    }
+
+    function renderPost(p) {
+        const lang = p.lang || 'fr';
+        const contentShort = p.content && p.content.length > 200;
+        const contentHtml = p.content ? `<div class="ln-post-content-text">${esc(p.content)}</div>
+                ${contentShort ? `<a href="#" class="ln-see-more open-detail-modal" data-id="${p.id}">...voir plus</a>` : ''}` : '';
+        let mediaHtml = '';
+        if (p.imagePath) {
+            mediaHtml = '<div class="ln-post-media">';
+            mediaHtml += `<img src="${esc(p.imagePath)}" alt="Post image" loading="lazy">`;
+            mediaHtml += '</div>';
+        }
+        let audioHtml = '';
+        if (p.audioPath) {
+            audioHtml = `<div class="ln-post-audio">
+                <i class="fas fa-microphone"></i>
+                <audio controls preload="metadata" src="${esc(p.audioPath)}"></audio>
+                <span class="audio-label">Mémo vocal</span>
+            </div>`;
+        }
+        return `
+        <div class="ln-post-card" data-post-id="${p.id}" data-original-lang="${lang}" data-display-lang="${lang}" data-original-title="${esc(p.title)}" data-original-content="${esc(p.content || '')}">
+            <div class="ln-post-header">
+                <span class="ln-avatar">${esc(p.authorInitial)}</span>
+                <div class="ln-post-author-info">
+                    <span class="ln-post-author-name">${esc(p.authorName)}</span>
+                    <div class="ln-post-author-role">${esc(p.authorRole)}</div>
+                    <div class="ln-post-time">
+                        ${esc(p.timeLabel)} &bull; <i class="fas fa-globe-americas"></i>
+                        <span class="ln-lang-badge" title="Langue originale"><i class="fas fa-language"></i> ${lang.toUpperCase()}</span>
+                    </div>
+                </div>
+                <div class="ln-post-menu">
+                    ${p.canManage ? `
+                    <div class="ln-dropdown">
+                        <button class="ln-post-menu-btn" title="Plus d'options">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                        <div class="ln-dropdown-menu">
+                            <button class="ln-dropdown-item open-edit-modal" data-id="${p.id}">
+                                <i class="fas fa-pen"></i> Modifier
+                            </button>
+                            <div class="ln-dropdown-sep"></div>
+                            <form method="post" action="${esc(p.deleteUrl)}" onsubmit="return confirm('Supprimer ce post ?')">
+                                <input type="hidden" name="_token" value="${esc(p.deleteToken)}">
+                                <button type="submit" class="ln-dropdown-item danger">
+                                    <i class="fas fa-trash-alt"></i> Supprimer
                                 </button>
                             </form>
                         </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% else %}
-    <div style="text-align: center; padding: 3rem; color: var(--tf-gray);">
-        <i class="fas fa-newspaper" style="font-size: 3rem; color: var(--tf-border); margin-bottom: 1rem; display: block;"></i>
-        <p style="font-size: 1.1rem;">Aucun post pour le moment</p>
-        <a href="{{ path('post_new') }}" class="btn-gold" style="margin-top: 0.5rem;">
-            <i class="fas fa-plus"></i> Créer le premier post
-        </a>
-    </div>
-    {% endif %}
-</div>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+            <div class="ln-post-title">
+                <a href="#" class="open-detail-modal" data-id="${p.id}">${esc(p.title)}</a>
+            </div>
+            <div class="ln-post-content">${contentHtml}</div>
+            ${mediaHtml}
+            ${audioHtml}
+            ${(p.upvotes !== 0 || p.commentCount > 0) ? `
+            <div class="ln-post-stats">
+                <div class="ln-post-stats-left">
+                    ${p.upvotes !== 0 ? `
+                        <span class="ln-reaction-icons">
+                            <span class="ln-reaction-icon ${p.upvotes > 0 ? 'up' : 'down'}"><i class="fas fa-arrow-${p.upvotes > 0 ? 'up' : 'down'}"></i></span>
+                        </span>
+                        <span>${p.upvotes}</span>
+                    ` : ''}
+                </div>
+                <div class="ln-post-stats-right">
+                    ${p.commentCount > 0 ? `<button class="open-detail-modal" data-id="${p.id}">${p.commentCount} commentaire${p.commentCount > 1 ? 's' : ''}</button>` : ''}
+                </div>
+            </div>` : ''}
+            <div class="ln-post-actions">
+                <div class="ln-vote-group">
+                    <button class="ln-vote-btn upvote${p.userVote === 'up' ? ' voted' : ''}" data-id="${p.id}" title="Upvote">
+                        <i class="fas fa-arrow-up"></i>
+                    </button>
+                    <span class="ln-vote-count" data-vote-count="${p.id}">${p.upvotes}</span>
+                    <button class="ln-vote-btn downvote${p.userVote === 'down' ? ' voted' : ''}" data-id="${p.id}" title="Downvote">
+                        <i class="fas fa-arrow-down"></i>
+                    </button>
+                </div>
+                <button class="ln-action-btn open-detail-modal" data-id="${p.id}" title="Commenter">
+                    <i class="far fa-comment-dots"></i> <span>Commenter</span>
+                </button>
+                ${p.authorId && p.authorId != currentUserId ? `<a href="/message/start/${p.authorId}" class="ln-action-btn" title="Envoyer un message"><i class="far fa-paper-plane"></i> <span>Message</span></a>` : ''}
+            </div>
+        </div>`;
+    }
+
+    /* ══════════════════════════════════════════════
+       VOTE HANDLING
+       ══════════════════════════════════════════════ */
+    function handleVote(e) {
+        const btn = e.currentTarget;
+        const id = btn.dataset.id;
+        const isUp = btn.classList.contains('upvote');
+        const url = '/post/' + id + (isUp ? '/upvote' : '/downvote');
+
+        btn.style.pointerEvents = 'none';
+        fetch(url, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            // Update vote count
+            document.querySelectorAll(`[data-vote-count="${id}"]`).forEach(el => {
+                el.textContent = data.upvotes;
+            });
+            // Update active state on all matching vote buttons
+            document.querySelectorAll(`.ln-vote-btn.upvote[data-id="${id}"]`).forEach(el => {
+                el.classList.toggle('voted', data.userVote === 'up');
+            });
+            document.querySelectorAll(`.ln-vote-btn.downvote[data-id="${id}"]`).forEach(el => {
+                el.classList.toggle('voted', data.userVote === 'down');
+            });
+            btn.style.pointerEvents = '';
+        })
+        .catch(() => { btn.style.pointerEvents = ''; });
+    }
+
+    /* ══════════════════════════════════════════════
+       NEW POST MODAL
+       ══════════════════════════════════════════════ */
+    const newPostOverlay = document.getElementById('newPostOverlay');
+    const newPostErrors = document.getElementById('newPostErrors');
+
+    function openNewPostModal() {
+        newPostErrors.innerHTML = '';
+        document.getElementById('newPostTitle').value = '';
+        document.getElementById('newPostContent').value = '';
+        newPostImageUrl = '';
+        newPostAudioData = '';
+        document.getElementById('newPostImagePreview').classList.remove('visible');
+        document.getElementById('newPostImagePreview').innerHTML = '';
+        const imgBtn = document.getElementById('newPostImageBtn');
+        if (imgBtn) imgBtn.classList.remove('active');
+        document.getElementById('newPostVoiceBtn').classList.remove('active');
+        document.getElementById('newPostVoiceWrap').classList.add('hidden');
+        document.getElementById('newPostRecPreview').innerHTML = '';
+        document.getElementById('newPostRecTimer').textContent = '0:00';
+        newPostOverlay.classList.add('active');
+        setTimeout(() => document.getElementById('newPostTitle').focus(), 100);
+    }
+
+    function closeNewPostModal() {
+        newPostOverlay.classList.remove('active');
+    }
+
+    document.getElementById('openNewPostModal').addEventListener('click', openNewPostModal);
+    const emptyBtn = document.getElementById('openNewPostModalEmpty');
+    if (emptyBtn) emptyBtn.addEventListener('click', openNewPostModal);
+    document.getElementById('closeNewPost').addEventListener('click', closeNewPostModal);
+    document.getElementById('cancelNewPost').addEventListener('click', closeNewPostModal);
+
+    newPostOverlay.addEventListener('click', function(e) {
+        if (e.target === newPostOverlay) closeNewPostModal();
+    });
+
+    document.getElementById('submitNewPost').addEventListener('click', function() {
+        const btn = this;
+        const title = document.getElementById('newPostTitle').value.trim();
+        const content = document.getElementById('newPostContent').value.trim();
+        const authorSelect = document.getElementById('newPostAuthor');
+        const author = authorSelect ? authorSelect.value : '';
+
+        newPostErrors.innerHTML = '';
+        btn.disabled = true;
+
+        fetch(createUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({
+                title, content, author,
+                imagePath: newPostImageUrl || '',
+                audioPath: newPostAudioData || '',
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            btn.disabled = false;
+            if (!data.success) {
+                newPostErrors.innerHTML = data.errors.map(e => '<li>' + esc(e) + '</li>').join('');
+                return;
+            }
+            closeNewPostModal();
+            // Prepend new post to feed
+            feedContai
+            if (currentDisplayLang) {
+                const newCard = feedContainer.querySelector('.ln-post-card:first-child');
+                if (newCard) translateCard(newCard, currentDisplayLang);
+            }ner.insertAdjacentHTML('afterbegin', renderPost(data.post));
+            bindAll();
+        })
+        .catch(() => {
+            btn.disabled = false;
+            newPostErrors.innerHTML = '<li>Erreur réseau, réessayez.</li>';
+        });
+    });
+
+    /* ══════════════════════════════════════════════
+       DETAIL / COMMENT MODAL
+       ══════════════════════════════════════════════ */
+    const detailOverlay = document.getElementById('detailOverlay');
+    const detailLeft = document.getElementById('detailLeft');
+    const detailLoading = document.getElementById('detailLoading');
+    const detailCommentsList = document.getElementById('detailCommentsList');
+    const detailCommentCount = document.getElementById('detailCommentCount');
+    const commentErrors = document.getElementById('commentErrors');
+
+    function openDetailModal(postId) {
+        currentDetailPostId = postId;
+        commentErrors.innerHTML = '';
+        document.getElementById('commentContent').value = '';
+        detailLeft.innerHTML = '<div class="ln-loading" style="display:block;"><span class="spinner"></span></div>';
+        detailCommentsList.innerHTML = '';
+        detailCommentCount.textContent = '0';
+        detailOverlay.classList.add('active');
+
+        fetch('/post/' + postId + '/detail', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            const p = data.post;
+            const pLang = p.lang || 'fr';
+            // Store original for translation
+            detailLeft.dataset.originalLang = pLang;
+            detailLeft.dataset.originalTitle = p.title;
+            detailLeft.dataset.originalContent = p.content || '';
+
+            const displayLang = currentDisplayLang || pLang;
+            const showTranslated = currentDisplayLang && currentDisplayLang !== pLang;
+
+            if (showTranslated) {
+                Promise.all([
+                    translateText(p.title, pLang, displayLang),
+                    p.content ? translateText(p.content, pLang, displayLang) : Promise.resolve(''),
+                ]).then(([trTitle, trContent]) => {
+                    renderDetailContent(p, trTitle, trContent, pLang, displayLang);
+                });
+            } else {
+                renderDetailContent(p, p.title, p.content, pLang, pLang);
+            }
+
+            detailCommentCount.textContent = data.comments.length;
+            if (data.comments.length === 0) {
+                detailCommentsList.innerHTML = '<div class="mdl-no-comments"><i class="far fa-comment-dots"></i>Aucun commentaire pour le moment</div>';
+            } else {
+                detailCommentsList.innerHTML = data.comments.map(renderComment).join('');
+            }
+            // Scroll to bottom of comments
+            detailCommentsList.scrollTop = detailCommentsList.scrollHeight;
+            bindCommentActions();
+        })
+        .catch(() => {
+            detailLeft.innerHTML = '<div class="mdl-no-comments"><i class="fas fa-exclamation-triangle"></i>Erreur de chargement</div>';
+        });
+    }
+
+    function renderComment(c) {
+        const showMenu = c.canManage;
+        return `
+        <div class="mdl-comment" data-comment-id="${c.id}">
+            <span class="ln-avatar">${esc(c.authorInitial)}</span>
+            <div class="mdl-comment-bubble">
+                <div class="mdl-comment-header">
+                    <div class="mdl-comment-author">${esc(c.authorName)}</div>
+                    ${showMenu ? `
+                    <div class="mdl-comment-menu">
+                        <button class="mdl-comment-menu-btn" title="Options"><i class="fas fa-ellipsis-h"></i></button>
+                        <div class="mdl-comment-dropdown">
+                            <button class="mdl-comment-dropdown-item comment-edit-btn" data-id="${c.id}">
+                                <i class="fas fa-pen"></i> Modifier
+                            </button>
+                            <button class="mdl-comment-dropdown-item danger comment-delete-btn" data-id="${c.id}" data-token="${esc(c.deleteToken || '')}">
+                                <i class="fas fa-trash-alt"></i> Supprimer
+                            </button>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+                <div class="mdl-comment-text" data-comment-text="${c.id}">${esc(c.content)}</div>
+                <div class="mdl-comment-time">${esc(c.timeLabel)}</div>
+            </div>
+        </div>`;
+    }
+
+    /* ── Comment Edit ── */
+    function handleCommentEdit(e) {
+        const id = e.currentTarget.dataset.id;
+        const commentEl = document.querySelector(`.mdl-comment[data-comment-id="${id}"]`);
+        const textEl = commentEl.querySelector(`[data-comment-text="${id}"]`);
+        const currentText = textEl.textContent;
+
+        textEl.innerHTML = `
+            <textarea class="mdl-comment-edit-area">${esc(currentText)}</textarea>
+            <div class="mdl-comment-edit-actions">
+                <button class="mdl-edit-cancel">Annuler</button>
+                <button class="mdl-edit-save" data-id="${id}">Enregistrer</button>
+            </div>
+        `;
+
+        const textarea = textEl.querySelector('textarea');
+        textarea.focus();
+        textarea.selectionStart = textarea.value.length;
+
+        textEl.querySelector('.mdl-edit-cancel').addEventListener('click', function() {
+            textEl.textContent = currentText;
+        });
+
+        textEl.querySelector('.mdl-edit-save').addEventListener('click', function() {
+            const newContent = textarea.value.trim();
+            if (newContent.length < 2) { textarea.style.borderColor = '#e74c3c'; return; }
+            this.disabled = true;
+
+            fetch('/post/comment/' + id + '/edit-ajax', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                body: JSON.stringify({ content: newContent })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    textEl.textContent = data.comment.content;
+                } else {
+                    textarea.style.borderColor = '#e74c3c';
+                    this.disabled = false;
+                }
+            })
+            .catch(() => { this.disabled = false; });
+        });
+    }
+
+    /* ── Comment Delete ── */
+    function handleCommentDelete(e) {
+        const btn = e.currentTarget;
+        const id = btn.dataset.id;
+        const token = btn.dataset.token;
+        if (!confirm('Supprimer ce commentaire ?')) return;
+
+        fetch('/post/comment/' + id + '/delete-ajax', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ _token: token })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const commentEl = document.querySelector(`.mdl-comment[data-comment-id="${id}"]`);
+                if (commentEl) commentEl.remove();
+                detailCommentCount.textContent = data.commentCount;
+
+                // Update feed card
+                if (currentDetailPostId) {
+                    const card = document.querySelector(`.ln-post-card[data-post-id="${currentDetailPostId}"]`);
+                    if (card) {
+                        const statsRight = card.querySelector('.ln-post-stats-right');
+                        if (statsRight) {
+                            const countBtn = statsRight.querySelector('.open-detail-modal');
+                            if (countBtn) {
+                                if (data.commentCount > 0) {
+                                    countBtn.textContent = data.commentCount + ' commentaire' + (data.commentCount > 1 ? 's' : '');
+                                } else {
+                                    countBtn.remove();
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (detailCommentsList.querySelectorAll('.mdl-comment').length === 0) {
+                    detailCommentsList.innerHTML = '<div class="mdl-no-comments"><i class="far fa-comment-dots"></i>Aucun commentaire pour le moment</div>';
+                }
+            }
+        });
+    }
+
+    function bindCommentActions() {
+        document.querySelectorAll('.comment-edit-btn').forEach(btn => {
+            btn.removeEventListener('click', handleCommentEdit);
+            btn.addEventListener('click', handleCommentEdit);
+        });
+        document.querySelectorAll('.comment-delete-btn').forEach(btn => {
+            btn.removeEventListener('click', handleCommentDelete);
+            btn.addEventListener('click', handleCommentDelete);
+        });
+    }
+
+    function closeDetailModal() {
+        detailOverlay.classList.remove('active');
+        currentDetailPostId = null;
+    }
+
+    function renderDetailContent(p, title, content, origLang, displayLang) {
+        const dir = displayLang === 'ar' ? ' style="direction:rtl;text-align:right;"' : '';
+        detailLeft.innerHTML = `
+            <div class="mdl-author-row">
+                <span class="ln-avatar">${esc(p.authorInitial)}</span>
+                <div>
+                    <div class="mdl-author-name">${esc(p.authorName)}</div>
+                    <div class="mdl-author-role">${esc(p.authorRole)}</div>
+                    <div class="mdl-author-time"><i class="far fa-clock"></i> ${esc(p.timeLabel)}
+                        <span class="ln-lang-badge" title="Langue originale"><i class="fas fa-language"></i> ${origLang.toUpperCase()}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mdl-post-title"${dir}>${esc(title)}</div>
+            ${content ? `<div class="mdl-post-content"${dir}>${esc(content)}</div>` : ''}
+            ${p.imagePath ? `<div class="ln-post-media" style="margin:0.8rem 0;">
+                <img src="${esc(p.imagePath)}" alt="Post image" style="max-height:300px;">
+            </div>` : ''}
+            ${p.audioPath ? `<div class="ln-post-audio" style="margin:0.5rem 0;">
+                <i class="fas fa-microphone"></i>
+                <audio controls preload="metadata" src="${esc(p.audioPath)}"></audio>
+                <span class="audio-label">Mémo vocal</span>
+            </div>` : ''}
+            <div class="mdl-post-meta">
+                <span><i class="fas fa-arrow-up"></i> ${p.upvotes} votes</span>
+                <span><i class="far fa-comment-dots"></i> ${p.commentCount} commentaire${p.commentCount !== 1 ? 's' : ''}</span>
+            </div>
+        `;
+    }
+
+    document.getElementById('closeDetail').addEventListener('click', closeDetailModal);
+    detailOverlay.addEventListener('click', function(e) {
+        if (e.target === detailOverlay) closeDetailModal();
+    });
+
+    // Submit comment
+    document.getElementById('submitComment').addEventListener('click', function() {
+        if (!currentDetailPostId) return;
+        const btn = this;
+        const content = document.getElementById('commentContent').value.trim();
+        const authorSelect = document.getElementById('commentAuthor');
+        const author = authorSelect ? authorSelect.value : '';
+        commentErrors.innerHTML = '';
+        btn.disabled = true;
+
+        fetch('/post/' + currentDetailPostId + '/comment-ajax', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ content, author })
+        })
+        .then(r => r.json())
+        .then(data => {
+            btn.disabled = false;
+            if (!data.success) {
+                commentErrors.innerHTML = data.errors.map(e => '<li>' + esc(e) + '</li>').join('');
+                return;
+            }
+            // Remove "no comments" message if present
+            const noMsg = detailCommentsList.querySelector('.mdl-no-comments');
+            if (noMsg) noMsg.remove();
+
+            // Append new comment
+            detailCommentsList.insertAdjacentHTML('beforeend', renderComment(data.comment));
+            detailCommentsList.scrollTop = detailCommentsList.scrollHeight;
+            detailCommentCount.textContent = data.commentCount;
+            bindCommentActions();
+            document.getElementById('commentContent').value = '';
+
+            // Update comment count in feed card
+            const card = document.querySelector(`.ln-post-card[data-post-id="${currentDetailPostId}"]`);
+            if (card) {
+                const statsRight = card.querySelector('.ln-post-stats-right');
+                if (statsRight) {
+                    const countBtn = statsRight.querySelector('.open-detail-modal');
+                    if (countBtn) {
+                        countBtn.textContent = data.commentCount + ' commentaire' + (data.commentCount > 1 ? 's' : '');
+                    }
+                }
+            }
+        })
+        .catch(() => {
+            btn.disabled = false;
+            commentErrors.innerHTML = '<li>Erreur réseau, réessayez.</li>';
+        });
+    });
+
+    // Allow Enter to submit comment (Shift+Enter for new line)
+    document.getElementById('commentContent').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            document.getElementById('submitComment').click();
+        }
+    });
+
+    /* ══════════════════════════════════════════════
+       BIND ALL INTERACTIVE ELEMENTS
+       ══════════════════════════════════════════════ */
+    function bindAll() {
+        // Vote buttons
+        document.querySelectorAll('.ln-vote-btn').forEach(btn => {
+            btn.removeEventListener('click', handleVote);
+            btn.addEventListener('click', handleVote);
+        });
+        // Detail modal openers
+        document.querySelectorAll('.open-detail-modal').forEach(el => {
+            el.removeEventListener('click', handleOpenDetail);
+            el.addEventListener('click', handleOpenDetail);
+        });
+        // Edit modal openers
+        document.querySelectorAll('.open-edit-modal').forEach(el => {
+            el.removeEventListener('click', handleOpenEdit);
+            el.addEventListener('click', handleOpenEdit);
+        });
+    }
+
+    function handleOpenDetail(e) {
+        e.preventDefault();
+        const id = this.dataset.id;
+        if (id) openDetailModal(id);
+    }
+
+    // Keyboard: Escape to close modals
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            if (detailOverlay.classList.contains('active')) closeDetailModal();
+            else if (editPostOverlay.classList.contains('active')) closeEditPostModal();
+            else if (newPostOverlay.classList.contains('active')) closeNewPostModal();
+        }
+    });
+
+    /* ══════════════════════════════════════════════
+       EDIT POST MODAL
+       ══════════════════════════════════════════════ */
+    const editPostOverlay = document.getElementById('editPostOverlay');
+    const editPostErrors = document.getElementById('editPostErrors');
+    let editingPostId = null;
+
+    function openEditPostModal(postId) {
+        editingPostId = postId;
+        editPostErrors.innerHTML = '';
+        document.getElementById('editPostTitle').value = '';
+        document.getElementById('editPostContent').value = '';
+        editPostImageUrl = '';
+        editPostAudioData = '';
+        document.getElementById('editPostImagePreview').classList.remove('visible');
+        document.getElementById('editPostImagePreview').innerHTML = '';
+        document.getElementById('editPostImageBtn').classList.remove('active');
+        document.getElementById('editPostVoiceBtn').classList.remove('active');
+        document.getElementById('editPostVoiceWrap').classList.add('hidden');
+        document.getElementById('editPostRecPreview').innerHTML = '';
+        document.getElementById('editPostRecTimer').textContent = '0:00';
+        editPostOverlay.classList.add('active');
+
+        // Load current post data
+        fetch('/post/' + postId + '/detail', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('editPostTitle').value = data.post.title;
+            document.getElementById('editPostContent').value = data.post.content || '';
+            if (data.post.imagePath) {
+                editPostImageUrl = data.post.imagePath;
+                showImagePreview('editPostImagePreview', data.post.imagePath, 'edit');
+                document.getElementById('editPostImageBtn').classList.add('active');
+            }
+            if (data.post.audioPath) {
+                editPostAudioData = data.post.audioPath;
+                document.getElementById('editPostVoiceBtn').classList.add('active');
+                document.getElementById('editPostVoiceWrap').classList.remove('hidden');
+                const prev = document.getElementById('editPostRecPreview');
+                prev.innerHTML = `
+                    <audio controls src="${data.post.audioPath}" style="height:32px;flex:1;max-width:200px;"></audio>
+                    <button type="button" class="voice-rec-remove" title="Supprimer">&times;</button>
+                `;
+                prev.querySelector('.voice-rec-remove').addEventListener('click', function() {
+                    editPostAudioData = '__remove__';
+                    prev.innerHTML = '';
+                    document.getElementById('editPostRecTimer').textContent = '0:00';
+                });
+            }
+            setTimeout(() => document.getElementById('editPostTitle').focus(), 50);
+        });
+    }
+
+    function closeEditPostModal() {
+        editPostOverlay.classList.remove('active');
+        editingPostId = null;
+    }
+
+    function handleOpenEdit(e) {
+        e.preventDefault();
+        const id = this.dataset.id;
+        if (id) openEditPostModal(id);
+    }
+
+    document.getElementById('closeEditPost').addEventListener('click', closeEditPostModal);
+    document.getElementById('cancelEditPost').addEventListener('click', closeEditPostModal);
+    editPostOverlay.addEventListener('click', function(e) {
+        if (e.target === editPostOverlay) closeEditPostModal();
+    });
+
+    document.getElementById('submitEditPost').addEventListener('click', function() {
+        const btn = this;
+        const title = document.getElementById('editPostTitle').value.trim();
+        const content = document.getElementById('editPostContent').value.trim();
+
+        editPostErrors.innerHTML = '';
+        btn.disabled = true;
+
+        fetch('/post/edit-ajax/' + editingPostId, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ title, content, imagePath: editPostImageUrl, audioPath: editPostAudioData === '__remove__' ? '' : (editPostAudioData || null) })
+        })
+        .then(r => r.json())
+        .then(data => {
+            btn.disabled = false;
+            if (!data.success) {
+                editPostErrors.innerHTML = data.errors.map(e => '<li>' + esc(e) + '</li>').join('');
+                return;
+            }
+            closeEditPostModal();
+            // Replace the card in the feed
+                if (currentDisplayLang) {
+                    const updatedCard = document.querySelector(`.ln-post-card[data-post-id="${editingPostId}"]`);
+                    if (updatedCard) translateCard(updatedCard, currentDisplayLang);
+                }
+            const card = document.querySelector(`.ln-post-card[data-post-id="${editingPostId}"]`);
+            if (card) {
+                card.outerHTML = renderPost(data.post);
+                bindAll();
+            }
+        })
+        .catch(() => {
+            btn.disabled = false;
+            editPostErrors.innerHTML = '<li>Erreur réseau, réessayez.</li>';
+        });
+    });
+
+    /* ══════════════════════════════════════════════
+       MEDIA HELPERS (Image upload)
+       ══════════════════════════════════════════════ */
+    function uploadToImgBB(file) {
+        return new Promise((resolve, reject) => {
+            const fd = new FormData();
+            fd.append('image', file);
+            fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_KEY, {
+                method: 'POST',
+                body: fd,
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) resolve(data.data.url);
+                else reject(data.error?.message || 'Upload failed');
+            })
+            .catch(reject);
+        });
+    }
+
+    function showImagePreview(containerId, url, prefix) {
+        const c = document.getElementById(containerId);
+        c.innerHTML = `<img src="${url}" alt="Preview"><button class="media-remove-btn" data-prefix="${prefix}" data-type="image">&times;</button>`;
+        c.classList.add('visible');
+        c.querySelector('.media-remove-btn').addEventListener('click', function() {
+            if (prefix === 'new') newPostImageUrl = '';
+            else editPostImageUrl = '';
+            c.innerHTML = '';
+            c.classList.remove('visible');
+            document.getElementById(prefix + 'PostImageBtn').classList.remove('active');
+        });
+    }
+
+    function setupImageButton(prefix) {
+        const btn = document.getElementById(prefix + 'PostImageBtn');
+        const input = document.getElementById(prefix + 'PostImageFile');
+        const previewId = prefix + 'PostImagePreview';
+
+        btn.addEventListener('click', () => input.click());
+        input.addEventListener('change', function() {
+            const file = this.files[0];
+            if (!file) return;
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Image trop grande (max 10 Mo).');
+                return;
+            }
+            btn.classList.add('active');
+            const prevEl = document.getElementById(previewId);
+            prevEl.innerHTML = '<div class="media-uploading"><span class="spinner"></span> Upload en cours...</div>';
+            prevEl.classList.add('visible');
+
+            uploadToImgBB(file).then(url => {
+                if (prefix === 'new') newPostImageUrl = url;
+                else editPostImageUrl = url;
+                showImagePreview(previewId, url, prefix);
+            }).catch(err => {
+                prevEl.innerHTML = '';
+                prevEl.classList.remove('visible');
+                btn.classList.remove('active');
+                alert('Échec upload image : ' + err);
+            });
+            this.value = '';
+        });
+    }
+
+    setupImageButton('new');
+    setupImageButton('edit');
+
+    /* ══════════════════════════════════════════════
+       VOICE MEMO RECORDER
+       ══════════════════════════════════════════════ */
+    let newPostAudioData = '';
+    let editPostAudioData = '';
+
+    function setupVoiceRecorder(prefix) {
+        const voiceBtn = document.getElementById(prefix + 'PostVoiceBtn');
+        const wrap = document.getElementById(prefix + 'PostVoiceWrap');
+        const recBtn = document.getElementById(prefix + 'PostRecBtn');
+        const timer = document.getElementById(prefix + 'PostRecTimer');
+        const preview = document.getElementById(prefix + 'PostRecPreview');
+
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let timerInterval = null;
+        let seconds = 0;
+
+        voiceBtn.addEventListener('click', function() {
+            wrap.classList.toggle('hidden');
+            voiceBtn.classList.toggle('active');
+        });
+
+        recBtn.addEventListener('click', async function() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                // Stop recording
+                mediaRecorder.stop();
+                return;
+            }
+            // Start recording
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                audioChunks = [];
+                seconds = 0;
+                timer.textContent = '0:00';
+                preview.innerHTML = '';
+                recBtn.classList.add('recording');
+                recBtn.innerHTML = '<i class="fas fa-stop"></i>';
+
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+                mediaRecorder.ondataavailable = function(e) {
+                    if (e.data.size > 0) audioChunks.push(e.data);
+                };
+                mediaRecorder.onstop = function() {
+                    clearInterval(timerInterval);
+                    recBtn.classList.remove('recording');
+                    recBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+                    stream.getTracks().forEach(t => t.stop());
+
+                    const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const reader = new FileReader();
+                    reader.onloadend = function() {
+                        const dataUrl = reader.result;
+                        if (prefix === 'new') newPostAudioData = dataUrl;
+                        else editPostAudioData = dataUrl;
+
+                        preview.innerHTML = `
+                            <audio controls src="${dataUrl}" style="height:32px;flex:1;max-width:200px;"></audio>
+                            <button type="button" class="voice-rec-remove" title="Supprimer">&times;</button>
+                        `;
+                        preview.querySelector('.voice-rec-remove').addEventListener('click', function() {
+                            if (prefix === 'new') newPostAudioData = '';
+                            else editPostAudioData = '';
+                            preview.innerHTML = '';
+                            timer.textContent = '0:00';
+                        });
+                    };
+                    reader.readAsDataURL(blob);
+                };
+                mediaRecorder.start();
+                timerInterval = setInterval(function() {
+                    seconds++;
+                    const m = Math.floor(seconds / 60);
+                    const s = seconds % 60;
+                    timer.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+                }, 1000);
+            } catch(err) {
+                alert('Impossible d\'accéder au microphone. Vérifiez les permissions.');
+            }
+        });
+    }
+
+    setupVoiceRecorder('new');
+    setupVoiceRecorder('edit');
+
+    // Initial bind
+    bindAll();
+
+    /* ══════════════════════════════════════════════
+       LANGUAGE PICKER
+       ══════════════════════════════════════════════ */
+    (function initLangPicker() {
+        const pickerBtn = document.getElementById('langPickerBtn');
+        const pickerMenu = document.getElementById('langPickerMenu');
+        const pickerCurrent = document.getElementById('langPickerCurrent');
+        const options = pickerMenu.querySelectorAll('.lang-picker-option[data-lang]');
+        const showOriginalBtn = document.getElementById('langShowOriginal');
+
+        // Load saved preference
+        const saved = localStorage.getItem('tf-display-lang');
+        if (saved && ['fr', 'en', 'ar'].includes(saved)) {
+            currentDisplayLang = saved;
+            pickerCurrent.textContent = saved.toUpperCase();
+            updatePickerActive();
+            // Translate existing cards
+            translateAllCards(saved);
+        }
+
+        pickerBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            pickerMenu.classList.toggle('open');
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!pickerMenu.contains(e.target) && e.target !== pickerBtn) {
+                pickerMenu.classList.remove('open');
+            }
+        });
+
+        options.forEach(opt => {
+            opt.addEventListener('click', function() {
+                const lang = this.dataset.lang;
+                currentDisplayLang = lang;
+                localStorage.setItem('tf-display-lang', lang);
+                pickerCurrent.textContent = lang.toUpperCase();
+                updatePickerActive();
+                pickerMenu.classList.remove('open');
+                translateAllCards(lang);
+            });
+        });
+
+        showOriginalBtn.addEventListener('click', function() {
+            currentDisplayLang = null;
+            localStorage.removeItem('tf-display-lang');
+            pickerCurrent.textContent = '—';
+            updatePickerActive();
+            pickerMenu.classList.remove('open');
+            translateAllCards(null);
+        });
+
+        function updatePickerActive() {
+            options.forEach(o => {
+                o.classList.toggle('active', o.dataset.lang === currentDisplayLang);
+                const check = o.querySelector('.lang-check');
+                if (check) check.style.visibility = (o.dataset.lang === currentDisplayLang) ? 'visible' : 'hidden';
+            });
+        }
+        // Initial state
+        updatePickerActive();
+    })();
+
+    // ── Chart.js: Sidebar Charts ──
+    (function initSidebarCharts() {
+        const postsPerDay = {{ postsPerDay|json_encode|raw }};
+        const topAuthors = {{ topAuthors|json_encode|raw }};
+        const isLight = document.body.classList.contains('light-mode');
+        const gridColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
+        const textColor = isLight ? '#65676b' : '#b0b3b8';
+
+        // Activity bar chart
+        const actCtx = document.getElementById('activityChart');
+        if (actCtx) {
+            new Chart(actCtx, {
+                type: 'bar',
+                data: {
+                    labels: postsPerDay.map(d => d.label),
+                    datasets: [{
+                        label: 'Posts',
+                        data: postsPerDay.map(d => d.count),
+                        backgroundColor: 'rgba(212, 168, 67, 0.6)',
+                        borderColor: 'rgba(212, 168, 67, 1)',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: isLight ? '#fff' : '#1e1e2e',
+                            titleColor: isLight ? '#1c1e21' : '#e4e6eb',
+                            bodyColor: isLight ? '#333' : '#b0b3b8',
+                            borderColor: 'rgba(212,168,67,0.3)',
+                            borderWidth: 1,
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: textColor, font: { size: 10 } }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: gridColor },
+                            ticks: {
+                                color: textColor,
+                                font: { size: 10 },
+                                stepSize: 1,
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Top authors doughnut
+        const authCtx = document.getElementById('authorsChart');
+        if (authCtx && Object.keys(topAuthors).length > 0) {
+            const authNames = Object.keys(topAuthors);
+            const authCounts = Object.values(topAuthors);
+            const palette = [
+                'rgba(212,168,67,0.85)',
+                'rgba(67,160,212,0.85)',
+                'rgba(212,67,100,0.85)',
+                'rgba(67,212,150,0.85)',
+                'rgba(160,67,212,0.85)',
+            ];
+            new Chart(authCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: authNames,
+                    datasets: [{
+                        data: authCounts,
+                        backgroundColor: palette.slice(0, authNames.length),
+                        borderColor: isLight ? '#fff' : '#1e1e2e',
+                        borderWidth: 2,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '55%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: textColor,
+                                font: { size: 10 },
+                                padding: 8,
+                                boxWidth: 12,
+                                boxHeight: 12,
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: isLight ? '#fff' : '#1e1e2e',
+                            titleColor: isLight ? '#1c1e21' : '#e4e6eb',
+                            bodyColor: isLight ? '#333' : '#b0b3b8',
+                            borderColor: 'rgba(212,168,67,0.3)',
+                            borderWidth: 1,
+                        }
+                    }
+                }
+            });
+        }
+    })();
+})();
+</script>
 {% endblock %}

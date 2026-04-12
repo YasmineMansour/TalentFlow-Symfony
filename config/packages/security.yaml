@@ -33,6 +33,8 @@ security:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/dashboard, roles: ROLE_USER }
+        - { path: ^/call, roles: ROLE_USER }
+        - { path: ^/message, roles: ROLE_USER }
         - { path: ^/user, roles: ROLE_ADMIN }
 
 when@test:

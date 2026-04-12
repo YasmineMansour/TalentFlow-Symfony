@@ -1,0 +1,1293 @@
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}TalentFlow - Messages{% endblock %}
+
+{% block page_title %}Messages{% endblock %}
+
+{% block stylesheets %}
+<style>
+    /* ── DM Layout ── */
+    .dm-container {
+        display: flex;
+        height: calc(100vh - 100px);
+        background: var(--tf-card-bg);
+        border: 1px solid var(--tf-border);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    /* ── Left Panel: Conversation List ── */
+    .dm-sidebar {
+        width: 340px;
+        min-width: 340px;
+        border-right: 1px solid var(--tf-border);
+        display: flex;
+        flex-direction: column;
+    }
+    .dm-sidebar-header {
+        padding: 1.2rem 1.2rem 0.8rem;
+        border-bottom: 1px solid var(--tf-border);
+    }
+    .dm-sidebar-header h2 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--tf-text);
+        margin: 0 0 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .dm-sidebar-header h2 i { color: var(--tf-gold); }
+    .dm-search-box {
+        position: relative;
+    }
+    .dm-search-box input {
+        width: 100%;
+        padding: 0.55rem 0.8rem 0.55rem 2.2rem;
+        background: var(--tf-body-bg);
+        border: 1px solid var(--tf-border);
+        border-radius: 20px;
+        color: var(--tf-text);
+        font-size: 0.85rem;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+    .dm-search-box input:focus {
+        border-color: var(--tf-gold);
+    }
+    .dm-search-box input::placeholder { color: var(--tf-text-muted); }
+    .dm-search-box i {
+        position: absolute;
+        left: 0.8rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--tf-text-muted);
+        font-size: 0.8rem;
+    }
+
+    .dm-conv-list {
+        flex: 1;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--tf-border) transparent;
+    }
+    .dm-conv-item {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        padding: 0.9rem 1.2rem;
+        cursor: pointer;
+        transition: background 0.15s;
+        border-bottom: 1px solid rgba(255,255,255,0.03);
+        text-decoration: none;
+        color: inherit;
+    }
+    .dm-conv-item:hover { background: rgba(212, 168, 67, 0.05); }
+    .dm-conv-item.active {
+        background: rgba(212, 168, 67, 0.1);
+        border-left: 3px solid var(--tf-gold);
+    }
+    .dm-conv-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
+        color: var(--tf-midnight);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.95rem;
+        flex-shrink: 0;
+        position: relative;
+    }
+    .dm-conv-avatar .online-dot {
+        position: absolute;
+        bottom: 1px;
+        right: 1px;
+        width: 12px;
+        height: 12px;
+        background: #2ecc71;
+        border-radius: 50%;
+        border: 2px solid var(--tf-card-bg);
+    }
+    .dm-conv-info {
+        flex: 1;
+        min-width: 0;
+    }
+    .dm-conv-name {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--tf-text);
+        margin-bottom: 2px;
+    }
+    .dm-conv-preview {
+        font-size: 0.8rem;
+        color: var(--tf-text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .dm-conv-preview.unread {
+        color: var(--tf-text);
+        font-weight: 600;
+    }
+    .dm-conv-meta {
+        text-align: right;
+        flex-shrink: 0;
+    }
+    .dm-conv-time {
+        font-size: 0.7rem;
+        color: var(--tf-text-muted);
+    }
+    .dm-conv-badge {
+        display: inline-block;
+        min-width: 18px;
+        height: 18px;
+        line-height: 18px;
+        background: var(--tf-gold);
+        color: var(--tf-midnight);
+        font-size: 0.65rem;
+        font-weight: 700;
+        border-radius: 50%;
+        text-align: center;
+        margin-top: 4px;
+    }
+
+    /* ── Right Panel: Message Thread ── */
+    .dm-chat {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+    .dm-chat-header {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        padding: 0.9rem 1.5rem;
+        border-bottom: 1px solid var(--tf-border);
+        background: var(--tf-card-bg);
+    }
+    .dm-chat-header .dm-conv-avatar { width: 40px; height: 40px; font-size: 0.85rem; }
+    .dm-chat-header-info h3 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--tf-text);
+        margin: 0;
+    }
+    .dm-chat-header-info span {
+        font-size: 0.75rem;
+        color: var(--tf-text-muted);
+    }
+
+    /* ── Call buttons in header ── */
+    .dm-call-buttons {
+        margin-left: auto;
+        display: flex;
+        gap: 8px;
+    }
+    .dm-call-btn {
+        width: 38px; height: 38px;
+        border-radius: 50%;
+        background: rgba(212,168,67,0.15);
+        color: var(--tf-gold);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 15px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+    }
+    .dm-call-btn:hover {
+        background: var(--tf-gold);
+        color: #1a1a2e;
+        transform: scale(1.08);
+    }
+
+    /* ── Incoming call banner ── */
+    .dm-incoming-call {
+        background: linear-gradient(135deg, rgba(212,168,67,0.15), rgba(74,222,128,0.1));
+        border-bottom: 1px solid var(--tf-border);
+        padding: 10px 16px;
+        animation: incomingPulse 2s ease-in-out infinite;
+    }
+    @keyframes incomingPulse {
+        0%, 100% { background-color: rgba(212,168,67,0.08); }
+        50% { background-color: rgba(212,168,67,0.18); }
+    }
+    .dm-incoming-call-inner {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .dm-incoming-call-ring {
+        width: 40px; height: 40px;
+        border-radius: 50%;
+        background: rgba(74,222,128,0.2);
+        color: #4ade80;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 16px;
+        animation: ringShake 0.5s ease-in-out infinite alternate;
+    }
+    @keyframes ringShake {
+        0% { transform: rotate(-8deg); }
+        100% { transform: rotate(8deg); }
+    }
+    .dm-incoming-call-info {
+        flex: 1;
+        font-size: 0.88rem;
+        color: var(--tf-text);
+    }
+    .dm-incoming-call-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+    .dm-incoming-call-accept {
+        padding: 6px 16px;
+        border-radius: 20px;
+        background: #4ade80;
+        color: #1a1a2e;
+        font-weight: 600;
+        font-size: 0.82rem;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .dm-incoming-call-accept:hover {
+        background: #22c55e;
+        transform: scale(1.05);
+        color: #1a1a2e;
+    }
+    .dm-incoming-call-decline {
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(239,68,68,0.2);
+        color: #ef4444;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        font-size: 13px;
+    }
+    .dm-incoming-call-decline:hover { background: rgba(239,68,68,0.4); }
+
+    .dm-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        background: var(--tf-body-bg);
+        scrollbar-width: thin;
+        scrollbar-color: var(--tf-border) transparent;
+    }
+
+    .dm-msg-row {
+        display: flex;
+        align-items: flex-end;
+        gap: 0.5rem;
+        max-width: 70%;
+    }
+    .dm-msg-row.own {
+        align-self: flex-end;
+        flex-direction: row-reverse;
+    }
+    .dm-msg-row.other {
+        align-self: flex-start;
+    }
+    .dm-msg-avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
+        color: var(--tf-midnight);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.6rem;
+        flex-shrink: 0;
+    }
+    .dm-msg-bubble {
+        padding: 0.6rem 1rem;
+        border-radius: 18px;
+        font-size: 0.88rem;
+        line-height: 1.4;
+        word-break: break-word;
+        position: relative;
+    }
+    .dm-msg-row.own .dm-msg-bubble {
+        background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
+        color: #1a1a2e;
+        border-bottom-right-radius: 4px;
+    }
+    .dm-msg-row.other .dm-msg-bubble {
+        background: var(--tf-card-bg);
+        color: var(--tf-text);
+        border: 1px solid var(--tf-border);
+        border-bottom-left-radius: 4px;
+    }
+    .dm-msg-time {
+        font-size: 0.65rem;
+        color: var(--tf-text-muted);
+        margin-top: 3px;
+        text-align: right;
+    }
+    .dm-msg-row.other .dm-msg-time { text-align: left; }
+
+    /* ── Input Bar ── */
+    .dm-input-bar {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.8rem 1.2rem;
+        border-top: 1px solid var(--tf-border);
+        background: var(--tf-card-bg);
+    }
+    .dm-input-bar input {
+        flex: 1;
+        padding: 0.65rem 1rem;
+        background: var(--tf-body-bg);
+        border: 1px solid var(--tf-border);
+        border-radius: 22px;
+        color: var(--tf-text);
+        font-size: 0.88rem;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+    .dm-input-bar input:focus {
+        border-color: var(--tf-gold);
+    }
+    .dm-input-bar input::placeholder { color: var(--tf-text-muted); }
+    .dm-send-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: none;
+        background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
+        color: #1a1a2e;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: transform 0.15s, box-shadow 0.15s;
+        flex-shrink: 0;
+    }
+    .dm-send-btn:hover {
+        transform: scale(1.08);
+        box-shadow: 0 4px 12px rgba(212, 168, 67, 0.4);
+    }
+    .dm-send-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* ── Empty State ── */
+    .dm-empty {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: var(--tf-text-muted);
+        gap: 1rem;
+    }
+    .dm-empty i {
+        font-size: 4rem;
+        color: var(--tf-gold);
+        opacity: 0.3;
+    }
+    .dm-empty h3 {
+        font-size: 1.1rem;
+        color: var(--tf-text);
+        margin: 0;
+    }
+    .dm-empty p {
+        font-size: 0.85rem;
+        max-width: 280px;
+        text-align: center;
+    }
+
+    .dm-no-convs {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        color: var(--tf-text-muted);
+        text-align: center;
+    }
+    .dm-no-convs i { font-size: 2.5rem; color: var(--tf-gold); opacity: 0.3; margin-bottom: 0.8rem; }
+    .dm-no-convs p { font-size: 0.85rem; }
+
+    /* ── Date separator ── */
+    .dm-date-sep {
+        text-align: center;
+        font-size: 0.72rem;
+        color: var(--tf-text-muted);
+        padding: 0.8rem 0;
+        position: relative;
+    }
+    .dm-date-sep span {
+        background: var(--tf-body-bg);
+        padding: 0 0.8rem;
+        position: relative;
+        z-index: 1;
+    }
+    .dm-date-sep::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 10%;
+        right: 10%;
+        height: 1px;
+        background: var(--tf-border);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+        .dm-sidebar { width: 100%; min-width: auto; }
+        .dm-chat { display: none; }
+        .dm-container.chat-active .dm-sidebar { display: none; }
+        .dm-container.chat-active .dm-chat { display: flex; }
+        .dm-back-btn { display: inline-flex !important; }
+    }
+    .dm-back-btn {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: none;
+        background: transparent;
+        color: var(--tf-text);
+        cursor: pointer;
+        font-size: 1rem;
+    }
+    .dm-back-btn:hover { background: rgba(212,168,67,0.1); }
+
+    /* Light mode */
+    body.light-mode .dm-msg-row.other .dm-msg-bubble { background: #f0f2f5; border-color: #dddfe2; }
+    body.light-mode .dm-conv-item:hover { background: #f0f2f5; }
+    body.light-mode .dm-conv-item.active { background: rgba(212,168,67,0.08); }
+
+    /* ── Message actions (edit/delete) ── */
+    .dm-msg-actions {
+        display: none;
+        position: absolute;
+        top: -28px;
+        right: 4px;
+        background: var(--tf-card-bg);
+        border: 1px solid var(--tf-border);
+        border-radius: 16px;
+        padding: 2px 4px;
+        gap: 2px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        z-index: 5;
+    }
+    /* Bridge the gap between actions and bubble so hover doesn't break */
+    .dm-msg-actions::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        right: 0;
+        height: 10px;
+    }
+    .dm-msg-row.own .dm-msg-actions { right: auto; left: 4px; }
+    .dm-msg-content-wrap { position: relative; padding-top: 4px; }
+    .dm-msg-content-wrap:hover .dm-msg-actions,
+    .dm-msg-actions:hover { display: flex; }
+    .dm-msg-content-wrap.editing .dm-msg-actions { display: none !important; }
+    .dm-msg-action-btn {
+        background: none;
+        border: none;
+        color: var(--tf-text-muted);
+        cursor: pointer;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        transition: all 0.15s;
+    }
+    .dm-msg-action-btn:hover { background: rgba(212,168,67,0.12); color: var(--tf-gold); }
+    .dm-msg-action-btn.delete:hover { color: #e74c3c; background: rgba(231,76,60,0.1); }
+    .dm-msg-edited {
+        font-size: 0.6rem;
+        color: var(--tf-text-muted);
+        font-style: italic;
+        margin-left: 4px;
+    }
+
+    /* ── Edit inline ── */
+    .dm-edit-wrap {
+        display: flex;
+        gap: 0.4rem;
+        align-items: center;
+    }
+    .dm-edit-input {
+        flex: 1;
+        padding: 0.4rem 0.7rem;
+        background: var(--tf-body-bg);
+        border: 1px solid var(--tf-gold);
+        border-radius: 14px;
+        color: var(--tf-text);
+        font-size: 0.85rem;
+        outline: none;
+        min-width: 150px;
+    }
+    .dm-edit-save, .dm-edit-cancel {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 0.85rem;
+        padding: 4px;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .dm-edit-save { color: #2ecc71; }
+    .dm-edit-save:hover { background: rgba(46,204,113,0.12); }
+    .dm-edit-cancel { color: #e74c3c; }
+    .dm-edit-cancel:hover { background: rgba(231,76,60,0.1); }
+
+    /* ── Delete confirmation modal ── */
+    .dm-confirm-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.55);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.15s ease-out;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .dm-confirm-box {
+        background: var(--tf-card-bg);
+        border: 1px solid var(--tf-border);
+        border-radius: 14px;
+        padding: 1.8rem 2rem;
+        max-width: 360px;
+        width: 90%;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+        text-align: center;
+        animation: modalSlide 0.2s ease-out;
+    }
+    @keyframes modalSlide {
+        from { opacity: 0; transform: scale(0.92) translateY(10px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .dm-confirm-icon {
+        width: 52px; height: 52px; border-radius: 50%;
+        background: rgba(231,76,60,0.12);
+        color: #e74c3c;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: 1.4rem; margin-bottom: 1rem;
+    }
+    .dm-confirm-title {
+        font-size: 1.05rem; font-weight: 700; color: var(--tf-text); margin-bottom: 0.4rem;
+    }
+    .dm-confirm-text {
+        font-size: 0.85rem; color: var(--tf-text-muted); margin-bottom: 1.4rem; line-height: 1.4;
+    }
+    .dm-confirm-actions { display: flex; gap: 0.7rem; justify-content: center; }
+    .dm-confirm-cancel {
+        padding: 0.55rem 1.4rem; border-radius: 8px; border: 1px solid var(--tf-border);
+        background: transparent; color: var(--tf-text); font-weight: 600; font-size: 0.88rem;
+        cursor: pointer; transition: all 0.15s;
+    }
+    .dm-confirm-cancel:hover { background: rgba(255,255,255,0.05); border-color: var(--tf-gold); }
+    .dm-confirm-delete {
+        padding: 0.55rem 1.4rem; border-radius: 8px; border: none;
+        background: #e74c3c; color: white; font-weight: 600; font-size: 0.88rem;
+        cursor: pointer; transition: all 0.15s;
+    }
+    .dm-confirm-delete:hover { background: #c0392b; }
+    body.light-mode .dm-confirm-box { background: #fff; }
+    body.light-mode .dm-confirm-cancel { border-color: #dddfe2; color: #1c1e21; }
+    body.light-mode .dm-confirm-cancel:hover { background: #f0f2f5; }
+
+    /* ── Notification toast ── */
+    .dm-notif-toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: var(--tf-card-bg);
+        border: 1px solid var(--tf-gold);
+        border-radius: 12px;
+        padding: 0.8rem 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+        z-index: 9999;
+        animation: toastSlideIn 0.3s ease-out;
+        cursor: pointer;
+        max-width: 340px;
+    }
+    .dm-notif-toast .dm-conv-avatar { width: 36px; height: 36px; font-size: 0.75rem; }
+    .dm-notif-toast-text { flex: 1; }
+    .dm-notif-toast-name { font-weight: 600; font-size: 0.85rem; color: var(--tf-text); }
+    .dm-notif-toast-preview { font-size: 0.78rem; color: var(--tf-text-muted); }
+    @keyframes toastSlideIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Call event messages ── */
+    .dm-msg-row.call-event {
+        justify-content: center !important;
+        padding: 0.5rem 0;
+    }
+    .dm-call-event-bubble {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        background: rgba(212, 168, 67, 0.08);
+        border: 1px solid rgba(212, 168, 67, 0.2);
+        border-radius: 20px;
+        padding: 0.6rem 1.2rem;
+        max-width: 320px;
+    }
+    .dm-call-event-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+    .dm-call-event-icon.ended {
+        background: rgba(46, 204, 113, 0.15);
+        color: #2ecc71;
+    }
+    .dm-call-event-icon.missed {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+    }
+    .dm-call-event-text {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+    }
+    .dm-call-event-label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--tf-text);
+    }
+    .dm-call-event-detail {
+        font-size: 0.72rem;
+        color: var(--tf-text-muted);
+    }
+    .dm-call-event-bubble.missed .dm-call-event-label {
+        color: #ef4444;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="dm-container{% if activeConversation %} chat-active{% endif %}" id="dmContainer">
+    {# ── Left: Conversation List ── #}
+    <div class="dm-sidebar">
+        <div class="dm-sidebar-header">
+            <h2><i class="fas fa-paper-plane"></i> Messages</h2>
+            <div class="dm-search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Rechercher une conversation..." id="dmSearchInput">
+            </div>
+        </div>
+        <div class="dm-conv-list" id="dmConvList">
+            {% if conversations|length > 0 %}
+                {% for conv in conversations %}
+                    {% set other = conv.getOtherUser(app.user) %}
+                    {% set lastMsg = conv.getLastMessage() %}
+                    <a href="{{ path('message_conversation', {id: conv.id}) }}"
+                       class="dm-conv-item{% if activeConversation and activeConversation.id == conv.id %} active{% endif %}"
+                       data-name="{{ other.fullName|lower }}">
+                        <div class="dm-conv-avatar">
+                            {{ other.prenom|first|upper }}{{ other.nom|first|upper }}
+                        </div>
+                        <div class="dm-conv-info">
+                            <div class="dm-conv-name">{{ other.fullName }}</div>
+                            <div class="dm-conv-preview{% if lastMsg and lastMsg.sender != app.user and not lastMsg.isRead %} unread{% endif %}">
+                                {% if lastMsg %}
+                                    {% if lastMsg.type == 'call_ended' %}
+                                        <i class="fas fa-phone" style="font-size:0.7rem;margin-right:3px;"></i> Appel terminé
+                                    {% elseif lastMsg.type == 'call_missed' %}
+                                        <i class="fas fa-phone-slash" style="font-size:0.7rem;margin-right:3px;color:#ef4444;"></i> Appel manqué
+                                    {% else %}
+                                        {% if lastMsg.sender == app.user %}Vous : {% endif %}{{ lastMsg.content|length > 35 ? lastMsg.content|slice(0, 35) ~ '...' : lastMsg.content }}
+                                    {% endif %}
+                                {% else %}
+                                    Démarrer la conversation
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="dm-conv-meta">
+                            {% if lastMsg %}
+                                <div class="dm-conv-time">{{ lastMsg.createdAt|date('H:i') }}</div>
+                            {% endif %}
+                        </div>
+                    </a>
+                {% endfor %}
+            {% else %}
+                <div class="dm-no-convs">
+                    <i class="far fa-comment-dots"></i>
+                    <p>Aucune conversation.<br>Cliquez sur <i class="fas fa-paper-plane"></i> sur un post pour envoyer un message.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ── Right: Chat Thread ── #}
+    <div class="dm-chat">
+        {% if activeConversation %}
+            {% set otherUser = activeConversation.getOtherUser(app.user) %}
+            <div class="dm-chat-header">
+                <button class="dm-back-btn" onclick="document.getElementById('dmContainer').classList.remove('chat-active')">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="dm-conv-avatar">
+                    {{ otherUser.prenom|first|upper }}{{ otherUser.nom|first|upper }}
+                </div>
+                <div class="dm-chat-header-info">
+                    <h3>{{ otherUser.fullName }}</h3>
+                    <span>{{ otherUser.roleLabel }}</span>
+                </div>
+                <div class="dm-call-buttons">
+                    <a href="{{ path('call_room', {id: activeConversation.id}) }}?mode=audio" class="dm-call-btn" title="Appel vocal">
+                        <i class="fas fa-phone"></i>
+                    </a>
+                    <a href="{{ path('call_room', {id: activeConversation.id}) }}?mode=video" class="dm-call-btn" title="Appel vidéo">
+                        <i class="fas fa-video"></i>
+                    </a>
+                </div>
+            </div>
+            <!-- Incoming call banner -->
+            <div class="dm-incoming-call" id="incomingCallBanner" style="display:none;">
+                <div class="dm-incoming-call-inner">
+                    <div class="dm-incoming-call-ring">
+                        <i class="fas fa-phone-volume"></i>
+                    </div>
+                    <div class="dm-incoming-call-info">
+                        <strong>{{ otherUser.fullName }}</strong> vous appelle
+                    </div>
+                    <div class="dm-incoming-call-actions">
+                        <a href="{{ path('call_room', {id: activeConversation.id}) }}?mode=video&join=1" class="dm-incoming-call-accept">
+                            <i class="fas fa-video me-1"></i> Rejoindre
+                        </a>
+                        <button class="dm-incoming-call-decline" onclick="dismissIncomingCall()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="dm-messages" id="dmMessages">
+                {% set now = "now"|date("U") %}
+                {% for msg in messages %}
+                    {% if msg.type in ['call_ended', 'call_missed'] %}
+                        {% set callMode = msg.callMode %}
+                        {% set callDuration = msg.callDuration %}
+                        {% set isMissed = msg.type == 'call_missed' %}
+                        <div class="dm-msg-row call-event" data-msg-id="{{ msg.id }}">
+                            <div class="dm-call-event-bubble{{ isMissed ? ' missed' : '' }}">
+                                <div class="dm-call-event-icon {{ isMissed ? 'missed' : 'ended' }}">
+                                    {% if isMissed %}
+                                        <i class="fas fa-phone-slash"></i>
+                                    {% elseif callMode == 'audio' %}
+                                        <i class="fas fa-phone"></i>
+                                    {% else %}
+                                        <i class="fas fa-video"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="dm-call-event-text">
+                                    <span class="dm-call-event-label">
+                                        {% if isMissed %}
+                                            Appel {{ callMode == 'audio' ? 'vocal' : 'vidéo' }} manqué
+                                        {% else %}
+                                            Appel {{ callMode == 'audio' ? 'vocal' : 'vidéo' }}
+                                        {% endif %}
+                                    </span>
+                                    <span class="dm-call-event-detail">
+                                        {% if not isMissed and callDuration > 0 %}
+                                            {{ (callDuration / 60)|round(0, 'floor') }}:{{ '%02d'|format(callDuration % 60) }}
+                                            &middot;
+                                        {% endif %}
+                                        {{ msg.createdAt|date('H:i') }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        {% set ageMin = ((now - msg.createdAt|date("U")) / 60)|round(0, 'floor') %}
+                        {% set canEdit = (msg.sender == app.user) and (ageMin <= 15) %}
+                        <div class="dm-msg-row {{ msg.sender == app.user ? 'own' : 'other' }}" data-msg-id="{{ msg.id }}">
+                            {% if msg.sender != app.user %}
+                            <div class="dm-msg-avatar">
+                                {{ msg.sender.prenom|first|upper }}{{ msg.sender.nom|first|upper }}
+                            </div>
+                            {% endif %}
+                            <div class="dm-msg-content-wrap">
+                                {% if canEdit %}
+                                <div class="dm-msg-actions">
+                                    <button class="dm-msg-action-btn edit" data-msg-id="{{ msg.id }}" title="Modifier"><i class="fas fa-pen"></i></button>
+                                    <button class="dm-msg-action-btn delete" data-msg-id="{{ msg.id }}" title="Supprimer"><i class="fas fa-trash"></i></button>
+                                </div>
+                                {% endif %}
+                                <div class="dm-msg-bubble" id="msgBubble{{ msg.id }}">{{ msg.content }}</div>
+                                <div class="dm-msg-time">{{ msg.createdAt|date('H:i') }}</div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <div class="dm-input-bar">
+                <input type="text" id="dmInput" placeholder="Écrire un message..." autocomplete="off" maxlength="2000">
+                <button class="dm-send-btn" id="dmSendBtn" title="Envoyer">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        {% else %}
+            <div class="dm-empty">
+                <i class="far fa-paper-plane"></i>
+                <h3>Vos messages</h3>
+                <p>Sélectionnez une conversation ou envoyez un message depuis un post du forum.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+(function() {
+    const EDIT_WINDOW_MS = 15 * 60 * 1000;
+
+    // Search conversations
+    const searchInput = document.getElementById('dmSearchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const q = this.value.toLowerCase();
+            document.querySelectorAll('.dm-conv-item').forEach(item => {
+                const name = item.dataset.name || '';
+                item.style.display = name.includes(q) ? '' : 'none';
+            });
+        });
+    }
+
+    // Scroll to bottom
+    const msgContainer = document.getElementById('dmMessages');
+    if (msgContainer) {
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+    }
+
+    // Send message
+    const input = document.getElementById('dmInput');
+    const sendBtn = document.getElementById('dmSendBtn');
+    const convId = {{ activeConversation ? activeConversation.id : 'null' }};
+    const currentUserId = {{ app.user ? app.user.id : 'null' }};
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    /* ── Build message row HTML ── */
+    function buildMsgRow(m) {
+        const row = document.createElement('div');
+        row.dataset.msgId = m.id;
+        const time = m.createdAt || new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+
+        // Call event messages
+        if (m.type === 'call_ended' || m.type === 'call_missed') {
+            row.className = 'dm-msg-row call-event';
+            let callData = {};
+            try { callData = JSON.parse(m.content); } catch(e) {}
+            const mode = callData.mode || 'video';
+            const dur = callData.duration || 0;
+            const isMissed = m.type === 'call_missed';
+            const modeLabel = mode === 'audio' ? 'vocal' : 'vidéo';
+            let icon, iconClass, label, detail;
+            if (isMissed) {
+                icon = 'fa-phone-slash';
+                iconClass = 'missed';
+                label = `Appel ${modeLabel} manqué`;
+            } else {
+                icon = mode === 'audio' ? 'fa-phone' : 'fa-video';
+                iconClass = 'ended';
+                label = `Appel ${modeLabel}`;
+            }
+            const durStr = (!isMissed && dur > 0)
+                ? String(Math.floor(dur/60)) + ':' + String(dur%60).padStart(2,'0') + ' &middot; '
+                : '';
+            detail = durStr + escapeHtml(time);
+            row.innerHTML = `<div class="dm-call-event-bubble${isMissed ? ' missed' : ''}">
+                <div class="dm-call-event-icon ${iconClass}"><i class="fas ${icon}"></i></div>
+                <div class="dm-call-event-text">
+                    <span class="dm-call-event-label">${label}</span>
+                    <span class="dm-call-event-detail">${detail}</span>
+                </div>
+            </div>`;
+            return row;
+        }
+
+        // Regular text message
+        row.className = `dm-msg-row ${m.isOwn ? 'own' : 'other'}`;
+
+        let actionsHtml = '';
+        if (m.isOwn && m.canEdit) {
+            actionsHtml = `
+                <div class="dm-msg-actions">
+                    <button class="dm-msg-action-btn edit" data-msg-id="${m.id}" title="Modifier"><i class="fas fa-pen"></i></button>
+                    <button class="dm-msg-action-btn delete" data-msg-id="${m.id}" title="Supprimer"><i class="fas fa-trash"></i></button>
+                </div>`;
+        }
+
+        let avatarHtml = '';
+        if (!m.isOwn) {
+            avatarHtml = `<div class="dm-msg-avatar">${escapeHtml(m.senderInitials)}</div>`;
+        }
+
+        row.innerHTML = `${avatarHtml}
+            <div class="dm-msg-content-wrap">
+                ${actionsHtml}
+                <div class="dm-msg-bubble" id="msgBubble${m.id}">${escapeHtml(m.content)}</div>
+                <div class="dm-msg-time">${escapeHtml(time)}</div>
+            </div>`;
+        return row;
+    }
+
+    /* ── Send ── */
+    function sendMessage() {
+        if (!input || !convId) return;
+        const content = input.value.trim();
+        if (!content) return;
+
+        sendBtn.disabled = true;
+        input.value = '';
+
+        const formData = new FormData();
+        formData.append('conversation_id', convId);
+        formData.append('content', content);
+
+        // Optimistic row
+        const tempRow = buildMsgRow({id: 'temp', content, isOwn: true, canEdit: true, senderInitials: '', createdAt: null});
+        msgContainer.appendChild(tempRow);
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+
+        fetch('{{ path("message_send") }}', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+            sendBtn.disabled = false;
+            if (data.error) {
+                tempRow.remove();
+                alert(data.error);
+            } else {
+                // Replace temp with real
+                tempRow.replaceWith(buildMsgRow(data.message));
+                msgContainer.scrollTop = msgContainer.scrollHeight;
+            }
+        })
+        .catch(() => { sendBtn.disabled = false; });
+    }
+
+    if (sendBtn) sendBtn.addEventListener('click', sendMessage);
+    if (input) {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+        });
+        input.focus();
+    }
+
+    /* ── Edit message ── */
+    function startEdit(msgId) {
+        const bubble = document.getElementById('msgBubble' + msgId);
+        if (!bubble) return;
+        // Prevent duplicate edit forms
+        if (document.getElementById('editWrap' + msgId)) return;
+        const original = bubble.textContent;
+        const wrap = bubble.parentElement;
+        wrap.classList.add('editing');
+        const editHtml = `
+            <div class="dm-edit-wrap" id="editWrap${msgId}">
+                <input class="dm-edit-input" value="${escapeHtml(original)}" maxlength="2000">
+                <button class="dm-edit-save" title="Sauvegarder"><i class="fas fa-check"></i></button>
+                <button class="dm-edit-cancel" title="Annuler"><i class="fas fa-times"></i></button>
+            </div>`;
+        bubble.style.display = 'none';
+        bubble.insertAdjacentHTML('afterend', editHtml);
+
+        const editWrap = document.getElementById('editWrap' + msgId);
+        const editInput = editWrap.querySelector('.dm-edit-input');
+        editInput.focus();
+        editInput.setSelectionRange(editInput.value.length, editInput.value.length);
+
+        editWrap.querySelector('.dm-edit-cancel').addEventListener('click', () => {
+            editWrap.remove();
+            bubble.style.display = '';
+            bubble.parentElement.classList.remove('editing');
+        });
+
+        function saveEdit() {
+            const newContent = editInput.value.trim();
+            if (!newContent || newContent === original) {
+                editWrap.remove();
+                bubble.style.display = '';
+                bubble.parentElement.classList.remove('editing');
+                return;
+            }
+            const fd = new FormData();
+            fd.append('content', newContent);
+            fetch(`/message/edit/${msgId}`, { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => {
+                editWrap.remove();
+                bubble.style.display = '';
+                bubble.parentElement.classList.remove('editing');
+                if (data.success) {
+                    bubble.textContent = data.content;
+                    if (!bubble.querySelector('.dm-msg-edited')) {
+                        bubble.insertAdjacentHTML('beforeend', ' <span class="dm-msg-edited">(modifié)</span>');
+                    }
+                } else {
+                    alert(data.error || 'Erreur');
+                }
+            })
+            .catch(() => { editWrap.remove(); bubble.style.display = ''; bubble.parentElement.classList.remove('editing'); });
+        }
+
+        editWrap.querySelector('.dm-edit-save').addEventListener('click', saveEdit);
+        editInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); saveEdit(); }
+            if (e.key === 'Escape') { editWrap.remove(); bubble.style.display = ''; bubble.parentElement.classList.remove('editing'); }
+        });
+    }
+
+    /* ── Delete message ── */
+    function deleteMsg(msgId) {
+        showDeleteConfirm(msgId);
+    }
+
+    function showDeleteConfirm(msgId) {
+        // Remove any existing modal
+        document.querySelectorAll('.dm-confirm-overlay').forEach(el => el.remove());
+
+        const overlay = document.createElement('div');
+        overlay.className = 'dm-confirm-overlay';
+        overlay.innerHTML = `
+            <div class="dm-confirm-box">
+                <div class="dm-confirm-icon"><i class="fas fa-trash-alt"></i></div>
+                <div class="dm-confirm-title">Supprimer ce message ?</div>
+                <div class="dm-confirm-text">Cette action est irréversible. Le message sera définitivement supprimé.</div>
+                <div class="dm-confirm-actions">
+                    <button class="dm-confirm-cancel">Annuler</button>
+                    <button class="dm-confirm-delete"><i class="fas fa-trash"></i> Supprimer</button>
+                </div>
+            </div>`;
+        document.body.appendChild(overlay);
+
+        // Close on overlay click (outside box)
+        overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+        overlay.querySelector('.dm-confirm-cancel').addEventListener('click', () => overlay.remove());
+        overlay.querySelector('.dm-confirm-delete').addEventListener('click', () => {
+            overlay.remove();
+            performDelete(msgId);
+        });
+        // Close on Escape
+        const onKey = e => { if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', onKey); } };
+        document.addEventListener('keydown', onKey);
+    }
+
+    function performDelete(msgId) {
+        fetch(`/message/delete/${msgId}`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const row = document.querySelector(`[data-msg-id="${msgId}"]`);
+                if (row) { row.style.opacity = '0'; row.style.transition = 'opacity 0.2s'; setTimeout(() => row.remove(), 200); }
+            } else {
+                alert(data.error || 'Erreur');
+            }
+        })
+        .catch(() => alert('Erreur réseau'));
+    }
+
+    /* ── Delegate edit/delete clicks ── */
+    if (msgContainer) {
+        msgContainer.addEventListener('click', function(e) {
+            const editBtn = e.target.closest('.dm-msg-action-btn.edit');
+            const delBtn = e.target.closest('.dm-msg-action-btn.delete');
+            if (editBtn) startEdit(editBtn.dataset.msgId);
+            if (delBtn) deleteMsg(delBtn.dataset.msgId);
+        });
+    }
+
+    /* ── Notification sound (Web Audio API) ── */
+    let audioCtx;
+    function playNotifSound() {
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            // Two-tone chime
+            [0, 0.15].forEach((delay, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'sine';
+                osc.frequency.value = i === 0 ? 830 : 1050;
+                gain.gain.setValueAtTime(0.18, audioCtx.currentTime + delay);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + 0.35);
+                osc.start(audioCtx.currentTime + delay);
+                osc.stop(audioCtx.currentTime + delay + 0.4);
+            });
+        } catch(e) {}
+    }
+
+    /* ── Toast notification ── */
+    function showToast(name, initials, preview) {
+        // Remove existing toast
+        document.querySelectorAll('.dm-notif-toast').forEach(t => t.remove());
+        const toast = document.createElement('div');
+        toast.className = 'dm-notif-toast';
+        toast.innerHTML = `
+            <div class="dm-conv-avatar">${escapeHtml(initials)}</div>
+            <div class="dm-notif-toast-text">
+                <div class="dm-notif-toast-name">${escapeHtml(name)}</div>
+                <div class="dm-notif-toast-preview">${escapeHtml(preview.length > 50 ? preview.slice(0,50) + '...' : preview)}</div>
+            </div>`;
+        document.body.appendChild(toast);
+        toast.addEventListener('click', () => toast.remove());
+        setTimeout(() => { if (toast.parentNode) toast.remove(); }, 5000);
+    }
+
+    /* ── Poll for new messages every 4 seconds ── */
+    if (convId && msgContainer) {
+        let lastCount = msgContainer.querySelectorAll('.dm-msg-row').length;
+        setInterval(() => {
+            fetch(`/message/fetch/${convId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.messages) return;
+                    if (data.messages.length > lastCount) {
+                        const newMsgs = data.messages.slice(lastCount);
+                        newMsgs.forEach(m => {
+                            if (m.senderId === currentUserId) return;
+                            msgContainer.appendChild(buildMsgRow(m));
+                            playNotifSound();
+                            showToast(m.senderName, m.senderInitials, m.content);
+                        });
+                        msgContainer.scrollTop = msgContainer.scrollHeight;
+                    }
+                    lastCount = data.messages.length;
+
+                    // Also refresh canEdit flags (remove expired action buttons)
+                    data.messages.forEach(m => {
+                        if (m.isOwn && !m.canEdit) {
+                            const row = document.querySelector(`[data-msg-id="${m.id}"]`);
+                            if (row) {
+                                const actions = row.querySelector('.dm-msg-actions');
+                                if (actions) actions.remove();
+                            }
+                        }
+                    });
+                })
+                .catch(() => {});
+        }, 4000);
+    }
+
+    /* ── Global unread badge polling (for nav icon) ── */
+    function updateUnreadBadge() {
+        fetch('/message/unread-count')
+            .then(r => r.json())
+            .then(data => {
+                document.querySelectorAll('.dm-unread-badge').forEach(badge => {
+                    if (data.count > 0) {
+                        badge.textContent = data.count > 99 ? '99+' : data.count;
+                        badge.style.display = 'inline-flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                });
+            })
+            .catch(() => {});
+    }
+    updateUnreadBadge();
+    setInterval(updateUnreadBadge, 8000);
+})();
+
+// ── Incoming call detection ──
+(function() {
+    const convId = {{ activeConversation ? activeConversation.id : 'null' }};
+    if (!convId) return;
+
+    const banner = document.getElementById('incomingCallBanner');
+    if (!banner) return;
+
+    let dismissed = false;
+    let callRingtone = null;
+
+    function playRingtone() {
+        if (callRingtone) return;
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            function ring() {
+                const o1 = ctx.createOscillator();
+                const o2 = ctx.createOscillator();
+                const g = ctx.createGain();
+                o1.frequency.value = 440;
+                o2.frequency.value = 560;
+                g.gain.value = 0.08;
+                o1.connect(g); o2.connect(g); g.connect(ctx.destination);
+                o1.start(); o2.start();
+                o1.stop(ctx.currentTime + 0.3);
+                o2.stop(ctx.currentTime + 0.3);
+            }
+            ring();
+            callRingtone = setInterval(ring, 1500);
+        } catch(e) {}
+    }
+
+    function stopRingtone() {
+        if (callRingtone) { clearInterval(callRingtone); callRingtone = null; }
+    }
+
+    window.dismissIncomingCall = function() {
+        dismissed = true;
+        banner.style.display = 'none';
+        stopRingtone();
+    };
+
+    function checkCall() {
+        if (dismissed) return;
+        fetch('/call/check/' + convId)
+            .then(r => r.json())
+            .then(data => {
+                if (data.active && !dismissed) {
+                    banner.style.display = '';
+                    playRingtone();
+                } else {
+                    banner.style.display = 'none';
+                    stopRingtone();
+                }
+            })
+            .catch(() => {});
+    }
+
+    setInterval(checkCall, 5000);
+})();
+</script>
+{% endblock %}
