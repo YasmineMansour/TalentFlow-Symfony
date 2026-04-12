@@ -1,14 +1,12 @@
 <!DOCTYPE html>
-<html lang="{{ app.request.locale }}" data-theme="light">
+<html lang="fr">
     <head>
-        <script>(function(){var t=localStorage.getItem('tf-theme');if(!t)t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');})()</script>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{% block title %}TalentFlow - Dashboard{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>💼</text></svg>">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
         <style>
             :root {
                 --tf-midnight: #1a1a2e;
@@ -21,19 +19,47 @@
                 --tf-gray: #a0a0b0;
                 --tf-card-bg: #1e2a3a;
                 --tf-border: #2a3a4e;
+                --tf-body-bg: #1a1a2e;
+                --tf-text: #f5f5f5;
+                --tf-text-muted: #a0a0b0;
                 --sidebar-width: 260px;
             }
+
+            /* ── Light mode overrides ── */
+            body.light-mode {
+                --tf-midnight: #f0f2f5;
+                --tf-navy: #ffffff;
+                --tf-dark-blue: #e4e6eb;
+                --tf-white: #1c1e21;
+                --tf-gray: #65676b;
+                --tf-card-bg: #ffffff;
+                --tf-border: #dddfe2;
+                --tf-body-bg: #f0f2f5;
+                --tf-text: #1c1e21;
+                --tf-text-muted: #65676b;
+            }
+            body.light-mode .tf-sidebar {
+                background: linear-gradient(180deg, #ffffff 0%, #f7f8fa 100%);
+            }
+            body.light-mode .tf-sidebar-brand a { color: var(--tf-gold-dark); }
+            body.light-mode .tf-topbar { background: #ffffff; border-color: #dddfe2; }
+            body.light-mode .tf-topbar-left h1 { color: #1c1e21; }
+            body.light-mode .badge-admin { background: #c0392b; }
+            body.light-mode .btn-gold { color: #1a1a2e; }
 
             * { margin: 0; padding: 0; box-sizing: border-box; }
 
             body {
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background-color: var(--tf-midnight);
-                color: var(--tf-white);
+                background-color: var(--tf-body-bg);
+                color: var(--tf-text);
                 min-height: 100vh;
             }
 
-            /* ==================== SIDEBAR ==================== */
+            /* ── No-sidebar layout (non-admin) ── */
+            body.no-sidebar .tf-topbar { left: 0; }
+            body.no-sidebar .tf-main { margin-left: 0; }
+
             .tf-sidebar {
                 position: fixed;
                 top: 0;
@@ -87,9 +113,7 @@
                 padding: 0 0.6rem;
                 flex: 1;
             }
-            .tf-sidebar-nav li {
-                margin-bottom: 2px;
-            }
+            .tf-sidebar-nav li { margin-bottom: 2px; }
             .tf-sidebar-nav a {
                 display: flex;
                 align-items: center;
@@ -111,11 +135,7 @@
                 color: var(--tf-gold);
                 font-weight: 600;
             }
-            .tf-sidebar-nav a i {
-                width: 20px;
-                text-align: center;
-                font-size: 0.95rem;
-            }
+            .tf-sidebar-nav a i { width: 20px; text-align: center; font-size: 0.95rem; }
 
             .tf-sidebar-footer {
                 padding: 1rem;
@@ -140,9 +160,7 @@
                 font-size: 0.8rem;
                 flex-shrink: 0;
             }
-            .tf-sidebar-footer .user-details {
-                overflow: hidden;
-            }
+            .tf-sidebar-footer .user-details { overflow: hidden; }
             .tf-sidebar-footer .user-name {
                 font-weight: 600;
                 font-size: 0.85rem;
@@ -151,12 +169,8 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
-            .tf-sidebar-footer .user-role {
-                font-size: 0.7rem;
-                color: var(--tf-gold);
-            }
+            .tf-sidebar-footer .user-role { font-size: 0.7rem; color: var(--tf-gold); }
 
-            /* ==================== TOPBAR ==================== */
             .tf-topbar {
                 position: fixed;
                 top: 0;
@@ -171,57 +185,49 @@
                 padding: 0 2rem;
                 z-index: 999;
             }
-            .tf-topbar-left {
-                display: flex;
-                align-items: center;
-                gap: 1rem;
+            .tf-topbar-left { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
+            .tf-topbar-left h1 { font-size: 1.1rem; font-weight: 600; color: var(--tf-white); margin: 0; white-space: nowrap; }
+            .tf-topbar-nav { display: flex; align-items: center; gap: 0.15rem; margin-left: 0.4rem; }
+            .tf-topbar-nav a {
+                display: flex; align-items: center; gap: 0.4rem;
+                padding: 0.45rem 0.85rem; border-radius: 8px; font-size: 0.82rem;
+                font-weight: 600; color: var(--tf-gray); text-decoration: none;
+                transition: all 0.2s; white-space: nowrap;
             }
-            .tf-topbar-left h1 {
-                font-size: 1.1rem;
-                font-weight: 600;
-                color: var(--tf-white);
-                margin: 0;
-            }
-            .tf-topbar-left .breadcrumb-text {
-                font-size: 0.8rem;
-                color: var(--tf-gray);
-            }
-            .tf-topbar-right {
-                display: flex;
-                align-items: center;
-                gap: 1.2rem;
-            }
-            .tf-topbar-right .top-user {
-                display: flex;
-                align-items: center;
-                gap: 0.6rem;
-                color: var(--tf-white);
-                font-size: 0.9rem;
-            }
+            .tf-topbar-nav a:hover { background: rgba(212,168,67,0.08); color: var(--tf-gold); }
+            .tf-topbar-nav a.active { color: var(--tf-gold); background: rgba(212,168,67,0.12); }
+            .tf-topbar-nav a i { font-size: 0.9rem; }
+            body.light-mode .tf-topbar-nav a { color: #65676b; }
+            body.light-mode .tf-topbar-nav a:hover { background: #f0f2f5; color: var(--tf-gold-dark); }
+            body.light-mode .tf-topbar-nav a.active { color: var(--tf-gold-dark); background: rgba(212,168,67,0.1); }
+            .tf-topbar-sep { width: 1px; height: 24px; background: var(--tf-border); margin: 0 0.3rem; flex-shrink: 0; }
+            body.light-mode .tf-topbar-sep { background: #dddfe2; }
+            .tf-topbar-center { flex: 1; display: flex; align-items: center; justify-content: flex-end; padding: 0 0.8rem; min-width: 0; position: relative; }
+            .tf-topbar-right { display: flex; align-items: center; gap: 1.2rem; flex-shrink: 0; }
+            .tf-topbar-right .top-user { display: flex; align-items: center; gap: 0.6rem; color: var(--tf-white); font-size: 0.9rem; }
             .tf-topbar-right .tf-avatar-sm {
-                width: 34px;
-                height: 34px;
-                border-radius: 50%;
+                width: 34px; height: 34px; border-radius: 50%;
                 background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
-                color: var(--tf-midnight);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: 700;
-                font-size: 0.75rem;
+                color: var(--tf-midnight); display: flex; align-items: center; justify-content: center;
+                font-weight: 700; font-size: 0.75rem;
             }
             .tf-topbar-right a {
-                color: var(--tf-gray);
-                text-decoration: none;
-                font-size: 0.85rem;
-                transition: color 0.2s;
-                display: flex;
-                align-items: center;
-                gap: 0.3rem;
+                color: var(--tf-gray); text-decoration: none; font-size: 0.85rem;
+                transition: color 0.2s; display: flex; align-items: center; gap: 0.3rem;
             }
             .tf-topbar-right a:hover { color: #e74c3c; }
 
-            /* ==================== MAIN CONTENT ==================== */
+            /* Theme toggle */
+            .theme-toggle {
+                background: none; border: 1px solid var(--tf-border); color: var(--tf-gray);
+                width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 1rem; transition: all 0.25s;
+            }
+            .theme-toggle:hover { border-color: var(--tf-gold); color: var(--tf-gold); background: rgba(212,168,67,0.08); }
+            body.light-mode .theme-toggle { border-color: #dddfe2; color: #65676b; }
+            body.light-mode .theme-toggle:hover { border-color: var(--tf-gold); color: var(--tf-gold); }
+
             .tf-main {
                 margin-left: var(--sidebar-width);
                 margin-top: 60px;
@@ -229,313 +235,128 @@
                 min-height: calc(100vh - 60px);
             }
 
-            /* ==================== WIDGETS ==================== */
             .tf-widget {
-                background: var(--tf-card-bg);
-                border: 1px solid var(--tf-border);
-                border-radius: 12px;
-                padding: 1.5rem;
-                display: flex;
-                align-items: center;
-                gap: 1.2rem;
-                transition: transform 0.2s, box-shadow 0.2s;
+                background: var(--tf-card-bg); border: 1px solid var(--tf-border);
+                border-radius: 12px; padding: 1.5rem; display: flex; align-items: center;
+                gap: 1.2rem; transition: transform 0.2s, box-shadow 0.2s;
             }
-            .tf-widget:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-            }
+            .tf-widget:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); }
             .tf-widget-icon {
-                width: 55px;
-                height: 55px;
-                border-radius: 12px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 1.4rem;
-                flex-shrink: 0;
+                width: 55px; height: 55px; border-radius: 12px;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 1.4rem; flex-shrink: 0;
             }
             .tf-widget-icon.gold { background: rgba(212, 168, 67, 0.15); color: var(--tf-gold); }
             .tf-widget-icon.blue { background: rgba(15, 52, 96, 0.4); color: #5dade2; }
             .tf-widget-icon.green { background: rgba(39, 174, 96, 0.15); color: #2ecc71; }
             .tf-widget-icon.red { background: rgba(192, 57, 43, 0.15); color: #e74c3c; }
             .tf-widget-icon.purple { background: rgba(142, 68, 173, 0.15); color: #9b59b6; }
-            .tf-widget-info h3 {
-                font-size: 1.8rem;
-                font-weight: 700;
-                color: var(--tf-white);
-                margin: 0;
-                line-height: 1;
-            }
-            .tf-widget-info p {
-                font-size: 0.8rem;
-                color: var(--tf-gray);
-                margin: 0.2rem 0 0;
-            }
-            .tf-widget-info .trend {
-                font-size: 0.75rem;
-                font-weight: 600;
-                margin-top: 0.2rem;
-            }
+            .tf-widget-info h3 { font-size: 1.8rem; font-weight: 700; color: var(--tf-white); margin: 0; line-height: 1; }
+            .tf-widget-info p { font-size: 0.8rem; color: var(--tf-gray); margin: 0.2rem 0 0; }
+            .tf-widget-info .trend { font-size: 0.75rem; font-weight: 600; margin-top: 0.2rem; }
             .tf-widget-info .trend.up { color: #2ecc71; }
             .tf-widget-info .trend.down { color: #e74c3c; }
 
-            /* ==================== CARDS ==================== */
             .tf-card {
-                background: var(--tf-card-bg);
-                border: 1px solid var(--tf-border);
-                border-radius: 12px;
-                padding: 1.5rem;
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+                background: var(--tf-card-bg); border: 1px solid var(--tf-border);
+                border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             }
             .tf-card-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 1.2rem;
-                padding-bottom: 0.8rem;
-                border-bottom: 1px solid var(--tf-border);
+                display: flex; justify-content: space-between; align-items: center;
+                margin-bottom: 1.2rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--tf-border);
             }
             .tf-card-header h3 {
-                font-size: 1rem;
-                font-weight: 700;
-                color: var(--tf-gold);
-                margin: 0;
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
+                font-size: 1rem; font-weight: 700; color: var(--tf-gold); margin: 0;
+                display: flex; align-items: center; gap: 0.5rem;
             }
 
-            /* ==================== TABLE ==================== */
-            .tf-table {
-                width: 100%;
-                border-collapse: separate;
-                border-spacing: 0;
-            }
+            .tf-table { width: 100%; border-collapse: separate; border-spacing: 0; }
             .tf-table thead th {
-                background: var(--tf-navy);
-                color: var(--tf-gold);
-                padding: 0.8rem 1rem;
-                text-align: left;
-                font-weight: 600;
-                font-size: 0.8rem;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                border-bottom: 2px solid var(--tf-gold);
-                white-space: nowrap;
+                background: var(--tf-navy); color: var(--tf-gold); padding: 0.8rem 1rem;
+                text-align: left; font-weight: 600; font-size: 0.8rem; text-transform: uppercase;
+                letter-spacing: 0.5px; border-bottom: 2px solid var(--tf-gold); white-space: nowrap;
             }
             .tf-table tbody tr { transition: background 0.2s; }
             .tf-table tbody tr:hover { background: rgba(212, 168, 67, 0.05); }
             .tf-table tbody td {
-                padding: 0.7rem 1rem;
-                border-bottom: 1px solid var(--tf-border);
-                vertical-align: middle;
-                font-size: 0.88rem;
+                padding: 0.7rem 1rem; border-bottom: 1px solid var(--tf-border);
+                vertical-align: middle; font-size: 0.88rem;
             }
 
-            /* ==================== BADGES ==================== */
-            .badge-role {
-                padding: 0.25rem 0.7rem;
-                border-radius: 20px;
-                font-size: 0.75rem;
-                font-weight: 600;
-            }
+            .badge-role { padding: 0.25rem 0.7rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
             .badge-admin { background: #c0392b; color: white; }
             .badge-rh { background: var(--tf-dark-blue); color: var(--tf-gold); border: 1px solid var(--tf-gold); }
             .badge-candidat { background: #27ae60; color: white; }
 
-            /* ==================== BUTTONS ==================== */
             .btn-gold {
                 background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
-                color: var(--tf-midnight);
-                border: none;
-                padding: 0.5rem 1.2rem;
-                border-radius: 8px;
-                font-weight: 600;
-                transition: all 0.3s;
-                text-decoration: none;
-                display: inline-flex;
-                align-items: center;
-                gap: 0.4rem;
-                font-size: 0.88rem;
-                cursor: pointer;
+                color: var(--tf-midnight); border: none; padding: 0.5rem 1.2rem; border-radius: 8px;
+                font-weight: 600; transition: all 0.3s; text-decoration: none;
+                display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.88rem; cursor: pointer;
             }
             .btn-gold:hover {
                 background: linear-gradient(135deg, var(--tf-gold-light), var(--tf-gold));
-                color: var(--tf-midnight);
-                transform: translateY(-1px);
-                box-shadow: 0 4px 12px rgba(212, 168, 67, 0.3);
+                color: var(--tf-midnight); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(212, 168, 67, 0.3);
             }
             .btn-outline-gold {
-                border: 1px solid var(--tf-gold);
-                color: var(--tf-gold);
-                background: transparent;
-                padding: 0.5rem 1.2rem;
-                border-radius: 8px;
-                font-weight: 600;
-                transition: all 0.3s;
-                text-decoration: none;
-                display: inline-flex;
-                align-items: center;
-                gap: 0.4rem;
-                font-size: 0.88rem;
-                cursor: pointer;
+                border: 1px solid var(--tf-gold); color: var(--tf-gold); background: transparent;
+                padding: 0.5rem 1.2rem; border-radius: 8px; font-weight: 600; transition: all 0.3s;
+                text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;
+                font-size: 0.88rem; cursor: pointer;
             }
-            .btn-outline-gold:hover {
-                background: var(--tf-gold);
-                color: var(--tf-midnight);
-            }
+            .btn-outline-gold:hover { background: var(--tf-gold); color: var(--tf-midnight); }
             .btn-danger-tf {
-                background: #c0392b;
-                color: white;
-                border: none;
-                padding: 0.4rem 1rem;
-                border-radius: 8px;
-                font-weight: 600;
-                transition: all 0.3s;
-                cursor: pointer;
+                background: #c0392b; color: white; border: none; padding: 0.4rem 1rem;
+                border-radius: 8px; font-weight: 600; transition: all 0.3s; cursor: pointer;
             }
             .btn-danger-tf:hover { background: #e74c3c; }
+            .btn-sm-tf { padding: 0.3rem 0.7rem; font-size: 0.8rem; border-radius: 6px; }
 
-            .btn-sm-tf {
-                padding: 0.3rem 0.7rem;
-                font-size: 0.8rem;
-                border-radius: 6px;
-            }
-
-            /* ==================== FORMS ==================== */
-            .tf-form .form-label {
-                color: var(--tf-gold);
-                font-weight: 600;
-                margin-bottom: 0.3rem;
-                font-size: 0.85rem;
-            }
+            .tf-form .form-label { color: var(--tf-gold); font-weight: 600; margin-bottom: 0.3rem; font-size: 0.85rem; }
             .tf-form .form-control, .tf-form .form-select {
-                background: var(--tf-navy);
-                border: 1px solid var(--tf-border);
-                color: var(--tf-white);
-                border-radius: 8px;
-                padding: 0.6rem 1rem;
+                background: var(--tf-navy); border: 1px solid var(--tf-border);
+                color: var(--tf-white); border-radius: 8px; padding: 0.6rem 1rem;
             }
             .tf-form .form-control:focus, .tf-form .form-select:focus {
-                border-color: var(--tf-gold);
-                box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.15);
-                background: var(--tf-navy);
-                color: var(--tf-white);
+                border-color: var(--tf-gold); box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.15);
+                background: var(--tf-navy); color: var(--tf-white);
             }
             .tf-form .form-control::placeholder { color: var(--tf-gray); }
-            .tf-form .form-control.is-invalid,
-            .tf-form .form-select.is-invalid {
-                border-color: #e74c3c;
-                box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.15);
+            .tf-form .form-control.is-invalid, .tf-form .form-select.is-invalid {
+                border-color: #e74c3c; box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.15);
             }
-            .tf-form .invalid-feedback,
-            .tf-form ul li {
-                color: #e74c3c;
-                font-size: 0.8rem;
-                margin-top: 0.25rem;
-            }
-            .form-hint {
-                display: block;
-                color: var(--tf-gray);
-                font-size: 0.75rem;
-                margin-top: 0.3rem;
-                font-style: italic;
-            }
+            .tf-form .invalid-feedback, .tf-form ul li { color: #e74c3c; font-size: 0.8rem; margin-top: 0.25rem; }
+            .form-hint { display: block; color: var(--tf-gray); font-size: 0.75rem; margin-top: 0.3rem; font-style: italic; }
             .form-hint i { margin-right: 0.2rem; }
 
-            /* ==================== FLASH ==================== */
-            .tf-flash {
-                padding: 0.8rem 1.2rem;
-                border-radius: 8px;
-                margin-bottom: 1rem;
-                border-left: 4px solid;
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-            }
+            .tf-flash { padding: 0.8rem 1.2rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid; display: flex; align-items: center; gap: 0.5rem; }
             .tf-flash-success { background: rgba(39, 174, 96, 0.12); border-color: #27ae60; color: #2ecc71; }
             .tf-flash-error { background: rgba(192, 57, 43, 0.12); border-color: #c0392b; color: #e74c3c; }
             .tf-flash-warning { background: rgba(243, 156, 18, 0.12); border-color: #f39c12; color: #f1c40f; }
 
-            /* ==================== AVATAR ==================== */
             .tf-avatar {
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
+                width: 40px; height: 40px; border-radius: 50%;
                 background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
-                color: var(--tf-midnight);
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: 700;
-                font-size: 0.9rem;
+                color: var(--tf-midnight); display: inline-flex; align-items: center;
+                justify-content: center; font-weight: 700; font-size: 0.9rem;
             }
 
-            /* ==================== DETAIL ==================== */
-            .tf-detail dt {
-                color: var(--tf-gold);
-                font-weight: 600;
-                margin-bottom: 0.2rem;
-            }
-            .tf-detail dd {
-                color: var(--tf-white);
-                margin-bottom: 1rem;
-                padding-left: 0;
-            }
+            .tf-detail dt { color: var(--tf-gold); font-weight: 600; margin-bottom: 0.2rem; }
+            .tf-detail dd { color: var(--tf-white); margin-bottom: 1rem; padding-left: 0; }
 
-            /* ==================== SEARCH ==================== */
-            .tf-search {
-                display: flex;
-                gap: 0.8rem;
-                margin-bottom: 1.5rem;
-                flex-wrap: wrap;
-            }
+            .tf-search { display: flex; gap: 0.8rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
             .tf-search input, .tf-search select {
-                background: var(--tf-navy);
-                border: 1px solid var(--tf-border);
-                color: var(--tf-white);
-                padding: 0.6rem 1rem;
-                border-radius: 8px;
-                flex: 1;
-                min-width: 200px;
+                background: var(--tf-navy); border: 1px solid var(--tf-border); color: var(--tf-white);
+                padding: 0.6rem 1rem; border-radius: 8px; flex: 1; min-width: 200px;
             }
             .tf-search input:focus, .tf-search select:focus {
-                border-color: var(--tf-gold);
-                outline: none;
-                box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.15);
+                border-color: var(--tf-gold); outline: none; box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.15);
             }
             .tf-search input::placeholder { color: var(--tf-gray); }
-            input.tf-search, select.tf-search {
-                background: var(--tf-navy);
-                border: 1px solid var(--tf-border);
-                color: var(--tf-white);
-                padding: 0.6rem 1rem;
-                border-radius: 8px;
-                width: 100%;
-            }
-            input.tf-search:focus, select.tf-search:focus {
-                border-color: var(--tf-gold);
-                outline: none;
-                box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.15);
-            }
-            input.tf-search::placeholder { color: var(--tf-gray); }
-            select.tf-search option { background: var(--tf-navy); color: var(--tf-white); }
 
-            /* ==================== ACTIVITY ==================== */
-            .tf-activity-item {
-                display: flex;
-                gap: 0.8rem;
-                padding: 0.7rem 0;
-                border-bottom: 1px solid var(--tf-border);
-            }
+            .tf-activity-item { display: flex; gap: 0.8rem; padding: 0.7rem 0; border-bottom: 1px solid var(--tf-border); }
             .tf-activity-item:last-child { border-bottom: none; }
-            .tf-activity-dot {
-                width: 10px;
-                height: 10px;
-                border-radius: 50%;
-                margin-top: 5px;
-                flex-shrink: 0;
-            }
+            .tf-activity-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
             .tf-activity-dot.green { background: #2ecc71; }
             .tf-activity-dot.gold { background: var(--tf-gold); }
             .tf-activity-dot.blue { background: #5dade2; }
@@ -543,340 +364,199 @@
             .tf-activity-text { font-size: 0.85rem; color: var(--tf-white); }
             .tf-activity-time { font-size: 0.72rem; color: var(--tf-gray); margin-top: 0.1rem; }
 
-            /* ==================== QUICK ACTION ==================== */
             .tf-quick-action {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                padding: 1.2rem;
-                background: var(--tf-navy);
-                border: 1px solid var(--tf-border);
-                border-radius: 12px;
-                text-decoration: none;
-                color: var(--tf-white);
-                transition: all 0.2s;
-                text-align: center;
+                display: flex; flex-direction: column; align-items: center; justify-content: center;
+                padding: 1.2rem; background: var(--tf-navy); border: 1px solid var(--tf-border);
+                border-radius: 12px; text-decoration: none; color: var(--tf-white);
+                transition: all 0.2s; text-align: center;
             }
             .tf-quick-action:hover {
-                border-color: var(--tf-gold);
-                background: rgba(212, 168, 67, 0.08);
-                color: var(--tf-gold);
-                transform: translateY(-2px);
+                border-color: var(--tf-gold); background: rgba(212, 168, 67, 0.08);
+                color: var(--tf-gold); transform: translateY(-2px);
             }
-            .tf-quick-action i {
-                font-size: 1.5rem;
-                color: var(--tf-gold);
-                margin-bottom: 0.5rem;
-            }
-            .tf-quick-action span {
-                font-size: 0.8rem;
-                font-weight: 600;
-            }
+            .tf-quick-action i { font-size: 1.5rem; color: var(--tf-gold); margin-bottom: 0.5rem; }
+            .tf-quick-action span { font-size: 0.8rem; font-weight: 600; }
 
-            /* ==================== ACTIONS ==================== */
-            .tf-actions {
-                display: flex;
-                gap: 0.4rem;
-                flex-wrap: nowrap;
-            }
-            .tf-actions a, .tf-actions button {
-                padding: 0.35rem 0.7rem;
-                font-size: 0.85rem;
-                border-radius: 6px;
-            }
+            .tf-actions { display: flex; gap: 0.4rem; flex-wrap: nowrap; }
+            .tf-actions a, .tf-actions button { padding: 0.35rem 0.7rem; font-size: 0.85rem; border-radius: 6px; }
 
-            /* ==================== CONFIRMATION MODAL ==================== */
-            .tf-modal-backdrop {
-                position: fixed;
-                top: 0; left: 0; right: 0; bottom: 0;
-                background: rgba(10, 10, 20, 0.85);
-                z-index: 9998;
-                display: none;
-                align-items: center;
-                justify-content: center;
-                animation: fadeIn 0.2s ease;
-            }
-            .tf-modal-backdrop.show { display: flex; }
-            .tf-modal-box {
-                background: var(--tf-card-bg);
-                border: 1px solid var(--tf-border);
-                border-radius: 16px;
-                padding: 2rem;
-                max-width: 450px;
-                width: 90%;
-                text-align: center;
-                box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-                animation: slideUp 0.25s ease;
-            }
-            .tf-modal-icon {
-                width: 70px; height: 70px;
-                border-radius: 50%;
+            .tf-login-wrapper {
                 display: flex; align-items: center; justify-content: center;
-                margin: 0 auto 1.2rem;
-                font-size: 1.8rem;
+                min-height: 100vh; background: var(--tf-midnight);
             }
-            .tf-modal-icon.danger { background: rgba(192,57,43,0.15); color: #e74c3c; }
-            .tf-modal-icon.warning { background: rgba(243,156,18,0.15); color: #f39c12; }
-            .tf-modal-icon.success { background: rgba(39,174,96,0.15); color: #2ecc71; }
-            .tf-modal-icon.info { background: rgba(212,168,67,0.15); color: var(--tf-gold); }
-            .tf-modal-title {
-                font-size: 1.2rem; font-weight: 700;
-                color: var(--tf-white); margin-bottom: 0.5rem;
+            .tf-login-card {
+                background: var(--tf-card-bg); border: 1px solid var(--tf-border); border-radius: 16px;
+                padding: 2.5rem; width: 100%; max-width: 420px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
             }
-            .tf-modal-text {
-                font-size: 0.9rem; color: var(--tf-gray);
-                margin-bottom: 1.5rem; line-height: 1.5;
-            }
-            .tf-modal-actions {
-                display: flex; gap: 0.8rem; justify-content: center;
-            }
-            .tf-modal-actions .btn-cancel {
-                background: var(--tf-navy); color: var(--tf-gray);
-                border: 1px solid var(--tf-border); padding: 0.6rem 1.5rem;
-                border-radius: 8px; font-weight: 600; cursor: pointer;
-                transition: all 0.2s; font-size: 0.9rem;
-            }
-            .tf-modal-actions .btn-cancel:hover {
-                background: var(--tf-border); color: var(--tf-white);
-            }
-            .tf-modal-actions .btn-confirm-danger {
-                background: #c0392b; color: white; border: none;
-                padding: 0.6rem 1.5rem; border-radius: 8px;
-                font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;
-            }
-            .tf-modal-actions .btn-confirm-danger:hover { background: #e74c3c; }
-            .tf-modal-actions .btn-confirm-gold {
-                background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
-                color: var(--tf-midnight); border: none;
-                padding: 0.6rem 1.5rem; border-radius: 8px;
-                font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;
-            }
-            .tf-modal-actions .btn-confirm-gold:hover {
-                background: linear-gradient(135deg, var(--tf-gold-light), var(--tf-gold));
-                transform: translateY(-1px);
-            }
-            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-            @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+            .brand-lg { text-align: center; margin-bottom: 2rem; }
+            .brand-lg h1 { color: var(--tf-gold); font-size: 1.8rem; font-weight: 800; }
+            .brand-lg p { color: var(--tf-gray); font-size: 0.85rem; }
 
-            /* ==================== RESPONSIVE ==================== */
+            /* Form styles */
+            .tf-form-group { margin-bottom: 1.2rem; }
+            .tf-label { display: block; color: var(--tf-gold); font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; }
+            .tf-input, .tf-input.form-control, .tf-input.form-select {
+                background: var(--tf-navy); border: 1px solid var(--tf-border); color: var(--tf-white);
+                padding: 0.65rem 1rem; border-radius: 8px; width: 100%; font-size: 0.9rem;
+                transition: border-color 0.2s, box-shadow 0.2s;
+            }
+            .tf-input:focus { border-color: var(--tf-gold); outline: none; box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.15); background: var(--tf-navy); color: var(--tf-white); }
+            .tf-input::placeholder { color: var(--tf-gray); }
+            textarea.tf-input { resize: vertical; min-height: 100px; }
+            select.tf-input option { background: var(--tf-navy); color: var(--tf-white); }
+
+            /* Detail list for show pages */
+            .tf-detail-list { padding: 0; }
+            .tf-detail-item { display: flex; justify-content: space-between; align-items: center; padding: 0.7rem 0; border-bottom: 1px solid var(--tf-border); }
+            .tf-detail-item:last-child { border-bottom: none; }
+            .tf-detail-label { color: var(--tf-gray); font-size: 0.85rem; font-weight: 500; }
+            .tf-detail-value { color: var(--tf-white); font-weight: 600; font-size: 0.9rem; text-align: right; }
+
+            /* Topbar brand link (non-admin) */
+            .tf-topbar-brand-link {
+                text-decoration: none; display: flex; align-items: center; gap: 0.45rem; flex-shrink: 0;
+            }
+            .tf-topbar-brand-link i { color: var(--tf-gold); font-size: 1.15rem; }
+            .tf-topbar-brand-link span { font-weight: 800; font-size: 1.05rem; color: var(--tf-gold); }
+            body.light-mode .tf-topbar-brand-link span { color: var(--tf-gold-dark); }
+            body.light-mode .tf-topbar-brand-link i { color: var(--tf-gold-dark); }
+
+            /* Collapsible search icon */
+            .topbar-search-toggle {
+                background: none; border: 1px solid var(--tf-border); color: var(--tf-gray);
+                width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 0.9rem; transition: all 0.25s; flex-shrink: 0;
+            }
+            .topbar-search-toggle:hover { border-color: var(--tf-gold); color: var(--tf-gold); }
+            body.light-mode .topbar-search-toggle { border-color: #dddfe2; color: #65676b; }
+            body.light-mode .topbar-search-toggle:hover { border-color: var(--tf-gold); color: var(--tf-gold-dark); }
+
+            /* Expanded search bar (slides in, replaces center) */
+            .topbar-search-expanded {
+                display: none; align-items: center; gap: 0.6rem;
+                background: var(--tf-card-bg); border: 1px solid var(--tf-border);
+                border-radius: 30px; padding: 0.35rem 0.5rem 0.35rem 1rem;
+                position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+                width: 100%; max-width: 680px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+                animation: searchSlideIn 0.2s ease-out;
+                z-index: 10;
+            }
+            .topbar-search-expanded.active { display: flex; }
+            @keyframes searchSlideIn {
+                from { opacity: 0; transform: translateY(-50%) scaleX(0.9); }
+                to { opacity: 1; transform: translateY(-50%) scaleX(1); }
+            }
+            body.light-mode .topbar-search-expanded { background: #fff; border-color: #dddfe2; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+
             @media (max-width: 992px) {
                 .tf-sidebar { display: none; }
                 .tf-topbar { left: 0; }
                 .tf-main { margin-left: 0; }
+                .tf-topbar-nav a span { display: none; }
+                .tf-topbar-nav a { padding: 0.45rem 0.6rem; }
             }
-
-            /* ==================== BOOTSTRAP COMPAT (dark theme) ==================== */
-            .table { color: var(--tf-white); }
-            .table-striped > tbody > tr:nth-of-type(odd) { --bs-table-accent-bg: rgba(212, 168, 67, 0.03); color: var(--tf-white); }
-            .table-hover > tbody > tr:hover { --bs-table-hover-bg: rgba(212, 168, 67, 0.08); color: var(--tf-gold); }
-            .table-dark, .table thead.table-dark th { background-color: var(--tf-navy) !important; color: var(--tf-gold) !important; border-color: var(--tf-border) !important; }
-            .table td, .table th { border-color: var(--tf-border); }
-            .card { background: var(--tf-card-bg); border-color: var(--tf-border); color: var(--tf-white); }
-            .card-body { background: transparent; }
-            .card-header { background: var(--tf-navy); border-color: var(--tf-border); color: var(--tf-gold); }
-            .form-control, .form-select { background-color: var(--tf-navy); border-color: var(--tf-border); color: var(--tf-white); }
-            .form-control:focus, .form-select:focus { background-color: var(--tf-navy); border-color: var(--tf-gold); color: var(--tf-white); box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.15); }
-            .form-control::placeholder { color: var(--tf-gray); }
-            .form-label { color: var(--tf-gold); font-weight: 600; }
-            .input-group-text { background-color: var(--tf-navy); border-color: var(--tf-border); color: var(--tf-gold); }
-            .btn-primary { background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark)); border: none; color: var(--tf-midnight); font-weight: 600; }
-            .btn-primary:hover { background: linear-gradient(135deg, var(--tf-gold-light), var(--tf-gold)); color: var(--tf-midnight); }
-            .btn-outline-primary { border-color: var(--tf-gold); color: var(--tf-gold); }
-            .btn-outline-primary:hover { background: var(--tf-gold); color: var(--tf-midnight); }
-            .btn-outline-secondary { border-color: var(--tf-gray); color: var(--tf-gray); }
-            .btn-outline-secondary:hover { background: var(--tf-gray); color: var(--tf-midnight); }
-            .btn-outline-danger { border-color: #e74c3c; color: #e74c3c; }
-            .btn-outline-danger:hover { background: #e74c3c; color: white; }
-            .btn-danger { background: #c0392b; border-color: #c0392b; }
-            .btn-danger:hover { background: #e74c3c; border-color: #e74c3c; }
-            .btn-success { background: #27ae60; border-color: #27ae60; }
-            .btn-warning { background: var(--tf-gold); border-color: var(--tf-gold); color: var(--tf-midnight); }
-            .alert { border-radius: 8px; border-left-width: 4px; }
-            .alert-info { background: rgba(93, 173, 226, 0.1); border-color: #5dade2; color: #5dade2; }
-            .alert-success { background: rgba(39, 174, 96, 0.1); border-color: #27ae60; color: #2ecc71; }
-            .alert-danger { background: rgba(192, 57, 43, 0.1); border-color: #c0392b; color: #e74c3c; }
-            .alert-warning { background: rgba(243, 156, 18, 0.1); border-color: #f39c12; color: #f1c40f; }
-            .text-muted { color: var(--tf-gray) !important; }
-            .text-success { color: #2ecc71 !important; }
-            .text-danger { color: #e74c3c !important; }
-            h1, h2, h3, h4, h5, h6 { color: var(--tf-white); }
-            a { color: var(--tf-gold); }
-            a:hover { color: var(--tf-gold-light); }
-            .badge.bg-info { background-color: var(--tf-dark-blue) !important; color: var(--tf-gold) !important; }
-            .badge.bg-success { background-color: #27ae60 !important; }
-            .badge.bg-warning { background-color: var(--tf-gold) !important; color: var(--tf-midnight) !important; }
-            .badge.bg-secondary { background-color: var(--tf-navy) !important; border: 1px solid var(--tf-border); }
-            .badge.bg-danger { background-color: #c0392b !important; }
-            dl dt { color: var(--tf-gold); }
-            dl dd { color: var(--tf-white); }
-            .list-group-item { background: var(--tf-card-bg); border-color: var(--tf-border); color: var(--tf-white); }
-            .bi { font-style: normal; }
-
-            /* ==================== DARK/LIGHT MODE ==================== */
-            [data-theme="light"] {
-                --tf-midnight: #f4f6fb;
-                --tf-navy: #ffffff;
-                --tf-dark-blue: #e8ecf4;
-                --tf-white: #1a1a2e;
-                --tf-gray: #5a5f7a;
-                --tf-card-bg: #ffffff;
-                --tf-border: #e2e6ef;
+            @media (max-width: 576px) {
+                .tf-topbar { padding: 0 0.8rem; }
+                .tf-topbar-right .top-user span { display: none; }
+                .tf-topbar-nav { display: none; }
+                .topbar-search-expanded { max-width: calc(100vw - 120px); }
             }
-            [data-theme="light"] body { background: #f4f6fb; color: #1a1a2e; }
-            [data-theme="light"] .tf-sidebar { background: linear-gradient(180deg, #ffffff 0%, #f8f9fc 100%); border-right-color: #e2e6ef; }
-            [data-theme="light"] .tf-sidebar-nav a { color: #5a5f7a; }
-            [data-theme="light"] .tf-sidebar-nav a:hover { background: rgba(201,162,39,0.08); color: var(--tf-gold); }
-            [data-theme="light"] .tf-sidebar-nav a.active { background: rgba(201,162,39,0.12); color: var(--tf-gold); }
-            [data-theme="light"] .tf-topbar { background: #ffffff; border-bottom-color: #e2e6ef; }
-            [data-theme="light"] .tf-table thead th { background: #f0f2f8; color: #5a5f7a; }
-            [data-theme="light"] .tf-table tbody td { color: #1a1a2e; border-bottom-color: #e2e6ef; }
-            [data-theme="light"] .tf-table tbody tr:hover td { background: #f8f9fc; }
-            [data-theme="light"] .tf-widget { background: #ffffff; border-color: #e2e6ef; }
-            [data-theme="light"] .tf-flash { border-radius: 8px; }
-            [data-theme="light"] .tf-sidebar-brand a { color: var(--tf-gold); }
-            [data-theme="light"] .tf-sidebar-brand small { color: #8b90a5; }
-            [data-theme="light"] .tf-sidebar-section { color: #8b90a5; }
-            [data-theme="light"] .tf-sidebar-footer { border-top-color: #e2e6ef; }
-            [data-theme="light"] .tf-sidebar-footer .user-name { color: #1a1a2e; }
-            [data-theme="light"] .tf-search { background: #f0f2f8; border-color: #e2e6ef; color: #1a1a2e; }
-            [data-theme="light"] .form-control, [data-theme="light"] .form-select { background: #ffffff; border-color: #e2e6ef; color: #1a1a2e; }
-
-            .tf-theme-btn { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--tf-border); background: transparent; color: var(--tf-gray); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: all 0.2s; }
-            .tf-theme-btn:hover { background: rgba(212,168,67,0.1); color: var(--tf-gold); border-color: var(--tf-gold); transform: rotate(15deg); }
-
-            /* ==================== LANGUAGE SWITCHER ==================== */
-            .tf-lang-switcher { position: relative; display: inline-flex; }
-            .tf-lang-btn { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--tf-border); background: transparent; color: var(--tf-gray); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; transition: all 0.2s; text-transform: uppercase; }
-            .tf-lang-btn:hover { background: rgba(212,168,67,0.1); color: var(--tf-gold); border-color: var(--tf-gold); }
-            .tf-lang-dropdown { position: absolute; top: calc(100% + 8px); right: 0; background: var(--tf-card-bg); border: 1px solid var(--tf-border); border-radius: 10px; padding: 0.4rem; min-width: 140px; box-shadow: 0 8px 25px rgba(0,0,0,0.3); display: none; z-index: 9999; }
-            .tf-lang-dropdown.show { display: block; }
-            .tf-lang-dropdown a { display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 0.8rem; color: var(--tf-gray); text-decoration: none; border-radius: 6px; font-size: 0.85rem; transition: all 0.15s; }
-            .tf-lang-dropdown a:hover { background: rgba(212,168,67,0.08); color: var(--tf-gold); }
-            .tf-lang-dropdown a.active { color: var(--tf-gold); font-weight: 600; background: rgba(212,168,67,0.12); }
-            .tf-lang-dropdown a .flag-icon { font-size: 1.1rem; }
         </style>
-        <link rel="stylesheet" href="/css/cards.css">
         {% block stylesheets %}{% endblock %}
     </head>
-    <body>
-        {# ==================== SIDEBAR ==================== #}
+    <body class="{{ not is_granted('ROLE_ADMIN') ? 'no-sidebar' : '' }}">
+        {% if is_granted('ROLE_ADMIN') %}
         <aside class="tf-sidebar">
             <div class="tf-sidebar-brand">
                 <a href="{{ path('app_dashboard') }}">
                     <i class="fas fa-briefcase"></i> TalentFlow
                 </a>
-                <small>{{ app.user ? app.user.prenom ~ ' ' ~ app.user.nom ~ ' • ' ~ app.user.roleLabel : 'common.hr_management'|trans }}</small>
+                <small>Admin Connect</small>
             </div>
 
-            {# ── Principal ── #}
-            <div class="tf-sidebar-section">{{ 'section.main'|trans }}</div>
+            <div class="tf-sidebar-section">Principal</div>
             <ul class="tf-sidebar-nav">
                 <li>
                     <a href="{{ path('app_dashboard') }}" class="{% if app.request.attributes.get('_route') == 'app_dashboard' %}active{% endif %}">
-                        <i class="fas fa-tachometer-alt"></i> {{ 'nav.dashboard'|trans }}
+                        <i class="fas fa-tachometer-alt"></i> Tableau de bord
                     </a>
                 </li>
 
-                {# ── 👥 Utilisateurs (ADMIN uniquement) ── #}
                 {% if is_granted('ROLE_ADMIN') %}
-                <div class="tf-sidebar-section">👥 {{ 'section.users'|trans }}</div>
+                <div class="tf-sidebar-section">Administration</div>
                 <li>
                     <a href="{{ path('app_user_index') }}" class="{% if 'app_user' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-users-cog"></i> {{ 'nav.users'|trans }}
+                        <i class="fas fa-users-cog"></i> Gestion Utilisateurs
                     </a>
                 </li>
                 <li>
                     <a href="{{ path('app_user_new') }}">
-                        <i class="fas fa-user-plus"></i> {{ 'nav.new_user'|trans }}
+                        <i class="fas fa-user-plus"></i> Nouvel Utilisateur
                     </a>
                 </li>
                 {% endif %}
 
-                {# ── 💼 Offres d'emploi (ADMIN + RH : gestion / CANDIDAT : consultation) ── #}
-                <div class="tf-sidebar-section">💼 {{ 'section.offers'|trans }}</div>
-                {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_RH') %}
+                {% if is_granted('ROLE_RH') or is_granted('ROLE_ADMIN') %}
+                <div class="tf-sidebar-section">Recrutement</div>
                 <li>
-                    <a href="{{ path('offre_index') }}" class="{% if 'offre' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-clipboard-list"></i> {{ 'nav.offers'|trans }}
+                    <a href="#">
+                        <i class="fas fa-clipboard-list"></i> Offres d'emploi
                     </a>
                 </li>
                 <li>
-                    <a href="{{ path('entreprise_index') }}" class="{% if 'entreprise' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-building"></i> {{ 'nav.companies'|trans }}
+                    <a href="#">
+                        <i class="fas fa-file-alt"></i> Candidatures
                     </a>
                 </li>
                 <li>
-                    <a href="{{ path('categorie_index') }}" class="{% if 'categorie' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-tags"></i> {{ 'nav.categories'|trans }}
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ path('avantage_index') }}" class="{% if 'avantage' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-gift"></i> {{ 'nav.benefits'|trans }}
-                    </a>
-                </li>
-                {% endif %}
-                {% if is_granted('ROLE_CANDIDAT') and not is_granted('ROLE_ADMIN') and not is_granted('ROLE_RH') %}
-                <li>
-                    <a href="{{ path('offre_index') }}" class="{% if 'offre' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-search"></i> {{ 'nav.browse_offers'|trans }}
+                    <a href="#">
+                        <i class="fas fa-calendar-check"></i> Entretiens
                     </a>
                 </li>
                 {% endif %}
 
-                {# ── 📄 Candidatures (tous, vue différente par rôle) ── #}
-                <div class="tf-sidebar-section">📄 {{ 'section.applications'|trans }}</div>
-                {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_RH') %}
-                <li>
-                    <a href="{{ path('app_candidature_index') }}" class="{% if 'app_candidature' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-folder-open"></i> {{ 'nav.applications'|trans }}
-                    </a>
-                </li>
-                {% endif %}
-                {% if is_granted('ROLE_CANDIDAT') and not is_granted('ROLE_ADMIN') and not is_granted('ROLE_RH') %}
-                <li>
-                    <a href="{{ path('app_candidature_index') }}" class="{% if 'app_candidature' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-paper-plane"></i> {{ 'nav.my_applications'|trans }}
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ path('app_candidature_new') }}">
-                        <i class="fas fa-plus-circle"></i> {{ 'nav.new_application'|trans }}
-                    </a>
-                </li>
-                {% endif %}
-
-                {# ── 📅 Entretiens (ADMIN + RH uniquement) ── #}
-                {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_RH') %}
-                <div class="tf-sidebar-section">📅 {{ 'section.interviews'|trans }}</div>
-                <li>
-                    <a href="{{ path('app_entretien_index') }}" class="{% if 'app_entretien' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-calendar-check"></i> {{ 'nav.interviews'|trans }}
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ path('app_decision_finale_index') }}" class="{% if 'app_decision_finale' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-scale-balanced"></i> {{ 'nav.decisions'|trans }}
-                    </a>
-                </li>
-                {% endif %}
-
-                {# ── 💬 Forum (tous les rôles) ── #}
-                <div class="tf-sidebar-section">💬 {{ 'section.forum'|trans }}</div>
+                <div class="tf-sidebar-section">Forum</div>
                 <li>
                     <a href="{{ path('post_index') }}" class="{% if 'post' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-newspaper"></i> {{ 'nav.posts'|trans }}
+                        <i class="fas fa-comments"></i> Posts
                     </a>
                 </li>
                 <li>
-                    <a href="{{ path('comment_index') }}" class="{% if 'comment' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-comments"></i> {{ 'nav.comments'|trans }}
+                    <a href="{{ path('message_index') }}" class="{% if 'message' in app.request.attributes.get('_route') %}active{% endif %}" style="position:relative">
+                        <i class="fas fa-paper-plane"></i> Messages
+                        <span class="dm-unread-badge" style="display:none;position:absolute;top:6px;right:8px;min-width:16px;height:16px;line-height:16px;background:var(--tf-gold);color:var(--tf-midnight);font-size:0.6rem;font-weight:700;border-radius:50%;text-align:center;padding:0 3px"></span>
+                    </a>
+                </li>
+
+                {% if is_granted('ROLE_CANDIDAT') and not is_granted('ROLE_ADMIN') %}
+                <div class="tf-sidebar-section">Mon Espace</div>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-paper-plane"></i> Mes Candidatures
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-search"></i> Offres disponibles
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-id-badge"></i> Mon Profil
+                    </a>
+                </li>
+                {% endif %}
+
+                <div class="tf-sidebar-section">Système</div>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-cog"></i> Paramètres
                     </a>
                 </li>
             </ul>
 
-            {# ── Déconnexion ── #}
             {% if app.user %}
             <div class="tf-sidebar-footer">
                 <div class="user-info">
@@ -888,36 +568,54 @@
                         <div class="user-role">{{ app.user.roleLabel }}</div>
                     </div>
                 </div>
-                <a href="{{ path('app_logout') }}" class="btn-gold w-100 mt-2 justify-content-center" style="font-size:0.8rem;">
-                    <i class="fas fa-sign-out-alt"></i> {{ 'nav.logout'|trans }}
-                </a>
             </div>
             {% endif %}
         </aside>
+        {% endif %}
 
-        {# ==================== TOPBAR ==================== #}
         <header class="tf-topbar">
             <div class="tf-topbar-left">
-                <h1>{% block page_title %}{{ 'nav.dashboard'|trans }}{% endblock %}</h1>
+                {% if not is_granted('ROLE_ADMIN') %}
+                <a href="{{ path('app_dashboard') }}" class="tf-topbar-brand-link">
+                    <i class="fas fa-briefcase"></i>
+                    <span>TalentFlow</span>
+                </a>
+                <div class="tf-topbar-sep"></div>
+                <nav class="tf-topbar-nav">
+                    <a href="{{ path('app_dashboard') }}" class="{% if app.request.attributes.get('_route') == 'app_dashboard' %}active{% endif %}">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                    <a href="{{ path('post_index') }}" class="{% if 'post' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-comments"></i> Posts
+                    </a>
+                    <a href="{{ path('message_index') }}" class="{% if 'message' in app.request.attributes.get('_route') %}active{% endif %}" style="position:relative">
+                        <i class="fas fa-paper-plane"></i> Messages
+                        <span class="dm-unread-badge" style="display:none;min-width:16px;height:16px;line-height:16px;background:var(--tf-gold);color:var(--tf-midnight);font-size:0.6rem;font-weight:700;border-radius:50%;text-align:center;padding:0 3px;margin-left:4px"></span>
+                    </a>
+                    {% if is_granted('ROLE_RH') %}
+                    <a href="#">
+                        <i class="fas fa-clipboard-list"></i> Offres
+                    </a>
+                    {% endif %}
+                    {% if is_granted('ROLE_CANDIDAT') and not is_granted('ROLE_RH') %}
+                    <a href="#">
+                        <i class="fas fa-paper-plane"></i> Candidatures
+                    </a>
+                    <a href="#">
+                        <i class="fas fa-search"></i> Offres
+                    </a>
+                    {% endif %}
+                </nav>
+                {% else %}
+                <h1>{% block page_title %}Tableau de bord{% endblock %}</h1>
+                {% endif %}
+            </div>
+            <div class="tf-topbar-center">
+                {% block topbar_center %}{% endblock %}
             </div>
             <div class="tf-topbar-right">
-                {# Language switcher #}
-                <div class="tf-lang-switcher">
-                    <button class="tf-lang-btn" onclick="this.nextElementSibling.classList.toggle('show')" title="{{ 'language.switch'|trans }}">
-                        {{ app.request.locale|upper }}
-                    </button>
-                    <div class="tf-lang-dropdown" id="langDropdown">
-                        <a href="{{ path('app_switch_locale', {locale: 'fr'}) }}" class="{{ app.request.locale == 'fr' ? 'active' : '' }}">
-                            <span class="flag-icon">🇫🇷</span> {{ 'language.fr'|trans }}
-                        </a>
-                        <a href="{{ path('app_switch_locale', {locale: 'en'}) }}" class="{{ app.request.locale == 'en' ? 'active' : '' }}">
-                            <span class="flag-icon">🇬🇧</span> {{ 'language.en'|trans }}
-                        </a>
-                    </div>
-                </div>
-                <button class="tf-theme-btn" onclick="TFTheme.toggle()" aria-label="{{ 'theme.change'|trans }}" title="{{ 'theme.toggle'|trans }}">
-                    <i class="fas fa-sun" id="theme-icon-sun"></i>
-                    <i class="fas fa-moon" id="theme-icon-moon" style="display:none;"></i>
+                <button class="theme-toggle" id="themeToggle" title="Changer de thème">
+                    <i class="fas fa-moon"></i>
                 </button>
                 {% if app.user %}
                 <div class="top-user">
@@ -927,15 +625,13 @@
                     <span>{{ app.user.fullName }}</span>
                 </div>
                 <a href="{{ path('app_logout') }}">
-                    <i class="fas fa-sign-out-alt"></i> {{ 'nav.logout'|trans }}
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
                 </a>
                 {% endif %}
             </div>
         </header>
 
-        {# ==================== MAIN CONTENT ==================== #}
         <main class="tf-main">
-            {# Flash messages #}
             {% for label, messages in app.flashes %}
                 {% for message in messages %}
                     <div class="tf-flash tf-flash-{{ label }}">
@@ -951,138 +647,72 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
         <script>
-        // ==================== CONFIRMATION MODAL SYSTEM ====================
-        function showConfirmModal(options) {
-            // Remove existing modal
-            const old = document.getElementById('tfConfirmModal');
-            if (old) old.remove();
+            // Theme toggle (persisted in localStorage)
+            (function() {
+                const toggle = document.getElementById('themeToggle');
+                const icon = toggle ? toggle.querySelector('i') : null;
 
-            const iconClass = options.iconClass || 'danger';
-            const icon = options.icon || 'fa-exclamation-triangle';
-            const btnClass = options.btnClass || 'btn-confirm-danger';
-
-            const modal = document.createElement('div');
-            modal.id = 'tfConfirmModal';
-            modal.className = 'tf-modal-backdrop show';
-            modal.innerHTML = `
-                <div class="tf-modal-box">
-                    <div class="tf-modal-icon ${iconClass}">
-                        <i class="fas ${icon}"></i>
-                    </div>
-                    <div class="tf-modal-title">${options.title}</div>
-                    <div class="tf-modal-text">${options.message}</div>
-                    <div class="tf-modal-actions">
-                        <button class="btn-cancel" onclick="closeConfirmModal()">  
-                            <i class="fas fa-times"></i> {{ 'action.cancel'|trans }}
-                        </button>
-                        <button class="${btnClass}" id="tfConfirmBtn">
-                            <i class="fas ${options.confirmIcon || icon}"></i> ${options.confirmText || 'Confirmer'}
-                        </button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-
-            // Close on backdrop click
-            modal.addEventListener('click', function(e) {
-                if (e.target === modal) closeConfirmModal();
-            });
-
-            // Close on Escape
-            document.addEventListener('keydown', function handler(e) {
-                if (e.key === 'Escape') { closeConfirmModal(); document.removeEventListener('keydown', handler); }
-            });
-
-            // Confirm action
-            document.getElementById('tfConfirmBtn').addEventListener('click', function() {
-                closeConfirmModal();
-                if (options.onConfirm) options.onConfirm();
-            });
-        }
-
-        function closeConfirmModal() {
-            const m = document.getElementById('tfConfirmModal');
-            if (m) m.remove();
-        }
-
-        // Delete confirmation
-        function confirmDelete(formEl, userName) {
-            showConfirmModal({
-                title: TFi18n.modal_delete_title,
-                message: `${TFi18n.modal_delete_msg} <strong style="color:#e74c3c">${userName}</strong> ?<br><small style="color:#a0a0b0">${TFi18n.modal_delete_warning}</small>`,
-                icon: 'fa-trash-alt',
-                iconClass: 'danger',
-                btnClass: 'btn-confirm-danger',
-                confirmIcon: 'fa-trash',
-                confirmText: TFi18n.yes_delete,
-                onConfirm: function() { formEl.submit(); }
-            });
-        }
-
-        // Submit form confirmation (create / edit)
-        function confirmFormSubmit(formEl, actionType, entityName) {
-            entityName = entityName || '';
-            const configs = {
-                create: {
-                    title: TFi18n.modal_create_title,
-                    message: `${TFi18n.modal_create_msg} ${entityName} ?<br><small style="color:#a0a0b0">${TFi18n.modal_create_warning}</small>`,
-                    icon: 'fa-plus-circle',
-                    iconClass: 'success',
-                    confirmIcon: 'fa-check',
-                    confirmText: TFi18n.yes_create
-                },
-                edit: {
-                    title: TFi18n.modal_edit_title,
-                    message: `${TFi18n.modal_edit_msg} ${entityName} ?<br><small style="color:#a0a0b0">${TFi18n.modal_edit_warning}</small>`,
-                    icon: 'fa-save',
-                    iconClass: 'warning',
-                    confirmIcon: 'fa-check',
-                    confirmText: TFi18n.yes_save
+                function applyTheme(mode) {
+                    if (mode === 'light') {
+                        document.body.classList.add('light-mode');
+                        if (icon) { icon.className = 'fas fa-sun'; }
+                    } else {
+                        document.body.classList.remove('light-mode');
+                        if (icon) { icon.className = 'fas fa-moon'; }
+                    }
                 }
-            };
-            const cfg = configs[actionType];
-            showConfirmModal({
-                title: cfg.title,
-                message: cfg.message,
-                icon: cfg.icon,
-                iconClass: cfg.iconClass,
-                btnClass: 'btn-confirm-gold',
-                confirmIcon: cfg.confirmIcon,
-                confirmText: cfg.confirmText,
-                onConfirm: function() {
-                    formEl.setAttribute('data-confirmed', 'true');
-                    formEl.submit();
+
+                // Load saved preference
+                const saved = localStorage.getItem('tf-theme') || 'dark';
+                applyTheme(saved);
+
+                if (toggle) {
+                    toggle.addEventListener('click', function() {
+                        const isLight = document.body.classList.contains('light-mode');
+                        const next = isLight ? 'dark' : 'light';
+                        localStorage.setItem('tf-theme', next);
+                        applyTheme(next);
+                    });
                 }
-            });
-        }
+            })();
         </script>
+        {% if app.user %}
         <script>
-        // ==================== I18N JS VARIABLES ====================
-        var TFi18n = {
-            cancel: "{{ 'action.cancel'|trans|e('js') }}",
-            confirm: "{{ 'action.confirm'|trans|e('js') }}",
-            yes_delete: "{{ 'action.yes_delete'|trans|e('js') }}",
-            yes_create: "{{ 'action.yes_create'|trans|e('js') }}",
-            yes_save: "{{ 'action.yes_save'|trans|e('js') }}",
-            modal_delete_title: "{{ 'modal.confirm_delete_title'|trans|e('js') }}",
-            modal_delete_msg: "{{ 'modal.confirm_delete_msg'|trans|e('js') }}",
-            modal_delete_warning: "{{ 'modal.confirm_delete_warning'|trans|e('js') }}",
-            modal_create_title: "{{ 'modal.confirm_create_title'|trans|e('js') }}",
-            modal_create_msg: "{{ 'modal.confirm_create_msg'|trans|e('js') }}",
-            modal_create_warning: "{{ 'modal.confirm_create_warning'|trans|e('js') }}",
-            modal_edit_title: "{{ 'modal.confirm_edit_title'|trans|e('js') }}",
-            modal_edit_msg: "{{ 'modal.confirm_edit_msg'|trans|e('js') }}",
-            modal_edit_warning: "{{ 'modal.confirm_edit_warning'|trans|e('js') }}"
-        };
-        // Close lang dropdown on outside click
-        document.addEventListener('click', function(e) {
-            var d = document.getElementById('langDropdown');
-            if (d && !e.target.closest('.tf-lang-switcher')) d.classList.remove('show');
-        });
+        (function(){
+            let prevCount = -1;
+            let audioCtx;
+            function playChime() {
+                try {
+                    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    [0, 0.15].forEach((d,i) => {
+                        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+                        o.connect(g); g.connect(audioCtx.destination);
+                        o.type='sine'; o.frequency.value = i?1050:830;
+                        g.gain.setValueAtTime(0.15, audioCtx.currentTime+d);
+                        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+d+0.35);
+                        o.start(audioCtx.currentTime+d); o.stop(audioCtx.currentTime+d+0.4);
+                    });
+                } catch(e){}
+            }
+            function poll() {
+                fetch('/message/unread-count').then(r=>r.json()).then(data=>{
+                    const c = data.count || 0;
+                    document.querySelectorAll('.dm-unread-badge').forEach(b=>{
+                        if(c>0){ b.textContent=c>99?'99+':c; b.style.display='inline-flex'; }
+                        else { b.style.display='none'; }
+                    });
+                    if (prevCount >= 0 && c > prevCount) playChime();
+                    prevCount = c;
+                }).catch(()=>{});
+            }
+            // Don't poll on call pages — it blocks the single-threaded PHP dev server
+            if (!window.location.pathname.startsWith('/call')) {
+                poll();
+                setInterval(poll, 8000);
+            }
+        })();
         </script>
-        <script>
-        var TFTheme={toggle:function(){var c=document.documentElement.getAttribute('data-theme')||'dark';var n=c==='dark'?'light':'dark';localStorage.setItem('tf-theme',n);document.documentElement.setAttribute('data-theme',n);document.documentElement.classList.toggle('dark',n==='dark');TFTheme._icons();},_icons:function(){var t=document.documentElement.getAttribute('data-theme');var s=document.getElementById('theme-icon-sun');var m=document.getElementById('theme-icon-moon');if(s&&m){s.style.display=t==='dark'?'':'none';m.style.display=t==='dark'?'none':'';}}};document.addEventListener('DOMContentLoaded',function(){TFTheme._icons();});
-        </script>
+        {% endif %}
         {% block javascripts %}{% endblock %}
     </body>
 </html>

@@ -1,0 +1,732 @@
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}Appel – {{ otherUser.fullName }} | TalentFlow{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .call-page {
+        position: fixed;
+        inset: 0;
+        background: #0a0a1a;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        color: #fff;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* ── Top bar ── */
+    .call-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 24px;
+        background: rgba(0,0,0,0.5);
+        backdrop-filter: blur(10px);
+        z-index: 10;
+    }
+    .call-topbar-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .call-topbar-avatar {
+        width: 40px; height: 40px;
+        border-radius: 50%;
+        background: var(--tf-gold, #d4a843);
+        color: #1a1a2e;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 14px;
+    }
+    .call-topbar-name { font-weight: 600; font-size: 16px; }
+    .call-topbar-status {
+        font-size: 13px;
+        color: #8f8fa0;
+        display: flex; align-items: center; gap: 6px;
+    }
+    .call-topbar-status .dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: #888;
+        display: inline-block;
+    }
+    .call-topbar-status .dot.connected { background: #4ade80; }
+    .call-topbar-timer { font-size: 14px; color: #ccc; font-variant-numeric: tabular-nums; }
+
+    /* ── Video grid ── */
+    .call-grid {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        gap: 16px;
+        overflow: hidden;
+        position: relative;
+    }
+    .call-grid.solo { justify-content: center; }
+
+    .participant-box {
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
+        background: #1a1a2e;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 200px;
+        min-height: 200px;
+        transition: all 0.3s ease;
+    }
+    .participant-box.full {
+        width: 100%;
+        max-width: 900px;
+        aspect-ratio: 16/9;
+    }
+    .participant-box.half {
+        width: 48%;
+        max-width: 640px;
+        aspect-ratio: 16/9;
+    }
+    .participant-box video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 16px;
+    }
+    .participant-box .avatar-placeholder {
+        width: 100px; height: 100px;
+        border-radius: 50%;
+        background: var(--tf-gold, #d4a843);
+        color: #1a1a2e;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 36px; font-weight: 700;
+    }
+    .participant-box .participant-label {
+        position: absolute;
+        bottom: 12px; left: 12px;
+        background: rgba(0,0,0,0.6);
+        padding: 4px 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        backdrop-filter: blur(4px);
+    }
+    .participant-box .mic-indicator {
+        position: absolute;
+        bottom: 12px; right: 12px;
+        background: rgba(0,0,0,0.6);
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 13px;
+    }
+    .participant-box .mic-indicator.muted { color: #ef4444; }
+
+    /* ── Controls bar ── */
+    .call-controls {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        padding: 20px;
+        background: rgba(0,0,0,0.5);
+        backdrop-filter: blur(10px);
+    }
+    .call-btn {
+        width: 56px; height: 56px;
+        border-radius: 50%;
+        border: none;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 20px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: #fff;
+        background: rgba(255,255,255,0.15);
+    }
+    .call-btn:hover {
+        background: rgba(255,255,255,0.25);
+        transform: scale(1.05);
+    }
+    .call-btn.active {
+        background: rgba(255,255,255,0.9);
+        color: #1a1a2e;
+    }
+    .call-btn.off {
+        background: rgba(239,68,68,0.3);
+        color: #ef4444;
+    }
+    .call-btn.hangup {
+        background: #ef4444;
+        color: #fff;
+        width: 64px; height: 64px;
+        font-size: 24px;
+    }
+    .call-btn.hangup:hover {
+        background: #dc2626;
+        transform: scale(1.08);
+    }
+
+    /* ── Connecting ── */
+    .call-connecting {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        z-index: 20;
+        background: rgba(10,10,26,0.95);
+    }
+    .call-connecting .ring-anim {
+        width: 120px; height: 120px;
+        border-radius: 50%;
+        border: 3px solid var(--tf-gold, #d4a843);
+        display: flex; align-items: center; justify-content: center;
+        animation: ringPulse 2s ease-in-out infinite;
+    }
+    .call-connecting .ring-anim .inner-avatar {
+        width: 80px; height: 80px;
+        border-radius: 50%;
+        background: var(--tf-gold, #d4a843);
+        color: #1a1a2e;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 28px; font-weight: 700;
+    }
+    @keyframes ringPulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.15); opacity: 0.7; }
+    }
+    .call-connecting h3 { font-size: 20px; font-weight: 600; margin: 0; }
+    .call-connecting p { color: #8f8fa0; margin: 0; }
+
+    /* ── Error overlay ── */
+    .call-error {
+        position: absolute;
+        inset: 0;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        z-index: 25;
+        background: rgba(10,10,26,0.95);
+    }
+    .call-error.show { display: flex; }
+    .call-error .error-icon {
+        width: 80px; height: 80px;
+        border-radius: 50%;
+        background: rgba(239,68,68,0.2);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 36px; color: #ef4444;
+    }
+    .call-error h3 { color: #ef4444; font-size: 18px; margin: 0; }
+    .call-error p { color: #8f8fa0; margin: 0; max-width: 400px; text-align: center; }
+    .call-error .retry-btn {
+        padding: 10px 28px;
+        border-radius: 8px;
+        border: none;
+        background: var(--tf-gold, #d4a843);
+        color: #1a1a2e;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .call-error .retry-btn:hover { background: var(--tf-gold-light, #e8c96d); }
+    .call-error .back-btn {
+        padding: 10px 28px;
+        border-radius: 8px;
+        border: 1px solid #555;
+        background: transparent;
+        color: #ccc;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="call-page" id="callPage">
+    <!-- Top bar -->
+    <div class="call-topbar">
+        <div class="call-topbar-info">
+            <div class="call-topbar-avatar">
+                {{ otherUser.prenom|slice(0,1)|upper }}{{ otherUser.nom|slice(0,1)|upper }}
+            </div>
+            <div>
+                <div class="call-topbar-name">{{ otherUser.fullName }}</div>
+                <div class="call-topbar-status" id="callStatus">
+                    <span class="dot" id="statusDot"></span>
+                    <span id="statusText">Connexion...</span>
+                </div>
+            </div>
+        </div>
+        <div class="call-topbar-timer" id="callTimer">00:00</div>
+    </div>
+
+    <!-- Video grid -->
+    <div class="call-grid" id="callGrid">
+        <!-- Connecting overlay -->
+        <div class="call-connecting" id="connectingOverlay">
+            <div class="ring-anim">
+                <div class="inner-avatar">
+                    {{ otherUser.prenom|slice(0,1)|upper }}{{ otherUser.nom|slice(0,1)|upper }}
+                </div>
+            </div>
+            <h3>Appel avec {{ otherUser.fullName }}</h3>
+            <p id="connectingText">Connexion en cours...</p>
+        </div>
+
+        <!-- Error overlay -->
+        <div class="call-error" id="errorOverlay">
+            <div class="error-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <h3 id="errorTitle">Erreur de connexion</h3>
+            <p id="errorMessage">Impossible de se connecter à l'appel.</p>
+            <div style="display:flex;gap:12px;">
+                <button class="retry-btn" onclick="retryCall()"><i class="fas fa-redo me-2"></i>Réessayer</button>
+                <button class="back-btn" onclick="leaveCall()"><i class="fas fa-arrow-left me-2"></i>Retour</button>
+            </div>
+        </div>
+
+        <!-- Local participant -->
+        <div class="participant-box full" id="localBox" style="display:none;">
+            <video id="localVideo" autoplay muted playsinline></video>
+            <div class="avatar-placeholder" id="localAvatar" style="display:none;">
+                {{ app.user.prenom|slice(0,1)|upper }}{{ app.user.nom|slice(0,1)|upper }}
+            </div>
+            <div class="participant-label">Vous</div>
+            <div class="mic-indicator" id="localMicInd"><i class="fas fa-microphone"></i></div>
+        </div>
+
+        <!-- Remote participant -->
+        <div class="participant-box full" id="remoteBox" style="display:none;">
+            <video id="remoteVideo" autoplay playsinline></video>
+            <audio id="remoteAudio" autoplay></audio>
+            <div class="avatar-placeholder" id="remoteAvatar" style="display:none;">
+                {{ otherUser.prenom|slice(0,1)|upper }}{{ otherUser.nom|slice(0,1)|upper }}
+            </div>
+            <div class="participant-label" id="remoteLabel">{{ otherUser.fullName }}</div>
+            <div class="mic-indicator" id="remoteMicInd"><i class="fas fa-microphone"></i></div>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="call-controls">
+        <button class="call-btn" id="btnMic" title="Micro" onclick="toggleMic()">
+            <i class="fas fa-microphone"></i>
+        </button>
+        <button class="call-btn" id="btnCam" title="Caméra" onclick="toggleCam()">
+            <i class="fas fa-video"></i>
+        </button>
+        <button class="call-btn" id="btnScreen" title="Partage d'écran" onclick="toggleScreen()">
+            <i class="fas fa-desktop"></i>
+        </button>
+        <button class="call-btn hangup" id="btnHangup" title="Raccrocher" onclick="hangup()">
+            <i class="fas fa-phone-slash"></i>
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+(function() {
+    var SIGNAL_URL = '{{ path("call_signal", {id: conversation.id}) }}';
+    var CHECK_URL  = '{{ path("call_check", {id: conversation.id}) }}';
+    var END_URL    = '{{ path("call_end", {id: conversation.id}) }}';
+    var BACK_URL   = '{{ path("message_conversation", {id: conversation.id}) }}';
+    var MY_USER_ID = {{ myUserId }};
+    var OTHER_USER_ID = {{ otherUser.id }};
+    var isCaller = MY_USER_ID < OTHER_USER_ID; // only ONE side initiates
+
+    // Generate a unique peer ID (avoids stale ID conflicts on PeerJS cloud)
+    var MY_PEER_ID = 'tf-' + MY_USER_ID + '-' + Math.random().toString(36).substr(2, 8);
+
+    var urlParams = new URLSearchParams(window.location.search);
+    var callMode = urlParams.get('mode') || 'video';
+
+    var peer = null;
+    var currentCall = null;
+    var localStream = null;
+    var timerInterval = null;
+    var callStartTime = null;
+    var pollInterval = null;
+    var connected = false;
+    var micOn = true;
+    var camOn = callMode === 'video';
+
+    var $ = function(id) { return document.getElementById(id); };
+    var connectingOverlay = $('connectingOverlay');
+    var connectingText = $('connectingText');
+    var errorOverlay = $('errorOverlay');
+    var localBox = $('localBox');
+    var remoteBox = $('remoteBox');
+    var localVideo = $('localVideo');
+    var remoteVideo = $('remoteVideo');
+    var remoteAudio = $('remoteAudio');
+    var localAvatar = $('localAvatar');
+    var remoteAvatar = $('remoteAvatar');
+    var localMicInd = $('localMicInd');
+    var remoteMicInd = $('remoteMicInd');
+    var statusDot = $('statusDot');
+    var statusText = $('statusText');
+    var callTimerEl = $('callTimer');
+    var btnMic = $('btnMic');
+    var btnCam = $('btnCam');
+
+    if (callMode === 'audio') {
+        btnCam.classList.add('off');
+        btnCam.innerHTML = '<i class="fas fa-video-slash"></i>';
+    }
+
+    // ── Get local media ──
+    async function getLocalStream() {
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({
+                audio: true,
+                video: camOn
+            });
+            console.log('[TF Call] Got local stream');
+            return localStream;
+        } catch (err) {
+            console.error('[TF Call] getUserMedia error:', err);
+            if (err.name === 'NotAllowedError') {
+                throw new Error('Accès caméra/micro refusé. Autorisez dans les paramètres du navigateur.');
+            }
+            throw new Error('Impossible d\'accéder caméra/micro: ' + err.message);
+        }
+    }
+
+    function showLocalVideo() {
+        if (!localStream) return;
+        var vt = localStream.getVideoTracks()[0];
+        if (vt && camOn) {
+            localVideo.srcObject = localStream;
+            localVideo.style.display = '';
+            localAvatar.style.display = 'none';
+        } else {
+            localVideo.srcObject = null;
+            localVideo.style.display = 'none';
+            localAvatar.style.display = '';
+        }
+        localBox.style.display = '';
+        updateLocalMicUI();
+    }
+
+    function handleRemoteStream(remoteStream) {
+        console.log('[TF Call] Got remote stream:', remoteStream.getTracks().map(function(t){return t.kind;}));
+        connected = true;
+
+        var vt = remoteStream.getVideoTracks();
+        if (vt.length > 0) {
+            remoteVideo.srcObject = remoteStream;
+            remoteVideo.style.display = '';
+            remoteAvatar.style.display = 'none';
+        } else {
+            remoteVideo.style.display = 'none';
+            remoteAvatar.style.display = '';
+        }
+        var at = remoteStream.getAudioTracks();
+        if (at.length > 0) {
+            remoteAudio.srcObject = new MediaStream(at);
+        }
+
+        remoteBox.style.display = '';
+        connectingOverlay.style.display = 'none';
+        statusText.textContent = 'En appel';
+        statusDot.classList.add('connected');
+        refreshLayout();
+
+        if (!callStartTime) {
+            callStartTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+        // Stop polling once connected
+        if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+    }
+
+    // ── Register my peer ID with server, then poll for the other person's ──
+    function registerAndPoll() {
+        // POST my peer ID to the server
+        fetch(SIGNAL_URL, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ peerId: MY_PEER_ID })
+        }).then(function() {
+            console.log('[TF Call] Registered peer ID:', MY_PEER_ID);
+        }).catch(function(e) {
+            console.error('[TF Call] Signal error:', e);
+        });
+
+        // Poll for the other user's peer ID every 2 seconds
+        connectingText.textContent = isCaller
+            ? 'En attente de l\'autre participant...'
+            : 'En attente de l\'appel...';
+        pollInterval = setInterval(function() {
+            if (connected) return;
+            fetch(CHECK_URL, { credentials: 'same-origin' })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.remotePeerId && !connected) {
+                        // Only the lower-ID user initiates the call
+                        if (isCaller && !currentCall) {
+                            console.log('[TF Call] Found remote peer, calling:', data.remotePeerId);
+                            connectingText.textContent = 'Connexion...';
+                            callRemotePeer(data.remotePeerId);
+                        } else if (!isCaller) {
+                            connectingText.textContent = 'Pair trouvé, en attente de l\'appel...';
+                        }
+                    }
+                }).catch(function() {});
+        }, 2000);
+    }
+
+    function callRemotePeer(remotePeerId) {
+        if (!peer || !localStream || connected) return;
+        try {
+            console.log('[TF Call] Calling:', remotePeerId);
+            var call = peer.call(remotePeerId, localStream);
+            if (!call) return;
+            currentCall = call;
+            setupCallEvents(call);
+        } catch (err) {
+            console.error('[TF Call] call error:', err);
+        }
+    }
+
+    // ── Init ──
+    async function initCall() {
+        try {
+            if (typeof Peer === 'undefined') {
+                throw new Error('SDK non chargé. Vérifiez votre connexion internet.');
+            }
+
+            connectingText.textContent = 'Accès caméra/micro...';
+            await getLocalStream();
+            showLocalVideo();
+
+            connectingText.textContent = 'Connexion au serveur...';
+            console.log('[TF Call] Creating peer:', MY_PEER_ID);
+
+            peer = new Peer(MY_PEER_ID, {
+                debug: 1,
+                config: {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' },
+                        { urls: 'stun:stun2.l.google.com:19302' }
+                    ]
+                }
+            });
+
+            peer.on('open', function(id) {
+                console.log('[TF Call] Connected to PeerJS as:', id);
+                registerAndPoll();
+            });
+
+            // Accept incoming calls from the other side
+            peer.on('call', function(call) {
+                console.log('[TF Call] Incoming call from:', call.peer);
+                if (connected) return; // already connected
+                // If we had a pending outgoing call, drop it in favor of the incoming one
+                if (currentCall) {
+                    try { currentCall.close(); } catch(e){}
+                }
+                currentCall = call;
+                call.answer(localStream);
+                setupCallEvents(call);
+            });
+
+            peer.on('error', function(err) {
+                console.error('[TF Call] Peer error:', err.type, err);
+                if (err.type === 'peer-unavailable') {
+                    // Normal — the remote peer hasn't connected yet, polling will retry
+                    console.log('[TF Call] Peer unavailable, will retry on next poll...');
+                    currentCall = null;
+                    connectingText.textContent = 'En attente de l\'autre participant...';
+                } else if (err.type === 'unavailable-id') {
+                    // Our random ID collided (extremely unlikely) — regenerate
+                    MY_PEER_ID = 'tf-' + MY_USER_ID + '-' + Math.random().toString(36).substr(2, 8);
+                    console.log('[TF Call] ID conflict, retrying with:', MY_PEER_ID);
+                    if (peer) peer.destroy();
+                    setTimeout(initCall, 500);
+                } else if (err.type === 'network' || err.type === 'server-error') {
+                    showError('Erreur réseau', 'Connexion au serveur échouée. Réessayez.');
+                }
+            });
+
+        } catch (err) {
+            console.error('[TF Call] Init error:', err);
+            showError('Erreur de connexion', err.message || 'Impossible de démarrer l\'appel.');
+        }
+    }
+
+    function setupCallEvents(call) {
+        call.on('stream', handleRemoteStream);
+
+        call.on('close', function() {
+            console.log('[TF Call] Call closed');
+            connected = false;
+            statusText.textContent = 'Appel terminé';
+            remoteBox.style.display = 'none';
+            remoteVideo.srcObject = null;
+            remoteAudio.srcObject = null;
+            refreshLayout();
+            setTimeout(function() { window.leaveCall(); }, 5000);
+        });
+
+        call.on('error', function(err) {
+            console.error('[TF Call] Call stream error:', err);
+        });
+    }
+
+    // ── Controls ──
+    window.toggleMic = function() {
+        if (!localStream) return;
+        micOn = !micOn;
+        localStream.getAudioTracks().forEach(function(t) { t.enabled = micOn; });
+        btnMic.className = 'call-btn' + (micOn ? '' : ' off');
+        btnMic.innerHTML = micOn
+            ? '<i class="fas fa-microphone"></i>'
+            : '<i class="fas fa-microphone-slash"></i>';
+        updateLocalMicUI();
+    };
+
+    window.toggleCam = function() {
+        if (!localStream) return;
+        camOn = !camOn;
+        localStream.getVideoTracks().forEach(function(t) { t.enabled = camOn; });
+        btnCam.className = 'call-btn' + (camOn ? '' : ' off');
+        btnCam.innerHTML = camOn
+            ? '<i class="fas fa-video"></i>'
+            : '<i class="fas fa-video-slash"></i>';
+        if (camOn) {
+            localVideo.srcObject = localStream;
+            localVideo.style.display = '';
+            localAvatar.style.display = 'none';
+        } else {
+            localVideo.style.display = 'none';
+            localAvatar.style.display = '';
+        }
+    };
+
+    window.toggleScreen = function() {
+        var btnScr = $('btnScreen');
+        if (!currentCall || !localStream) return;
+        if (btnScr.classList.contains('active')) {
+            navigator.mediaDevices.getUserMedia({ video: true }).then(function(cs) {
+                var ct = cs.getVideoTracks()[0];
+                replaceTrack(ct);
+                localVideo.srcObject = new MediaStream([ct].concat(localStream.getAudioTracks()));
+                btnScr.classList.remove('active');
+            }).catch(function() {});
+        } else {
+            navigator.mediaDevices.getDisplayMedia({ video: true }).then(function(ss) {
+                var st = ss.getVideoTracks()[0];
+                replaceTrack(st);
+                localVideo.srcObject = new MediaStream([st].concat(localStream.getAudioTracks()));
+                btnScr.classList.add('active');
+                st.onended = function() { window.toggleScreen(); };
+            }).catch(function() {});
+        }
+    };
+
+    function replaceTrack(newTrack) {
+        if (!currentCall || !currentCall.peerConnection) return;
+        var senders = currentCall.peerConnection.getSenders();
+        for (var i = 0; i < senders.length; i++) {
+            if (senders[i].track && senders[i].track.kind === 'video') {
+                senders[i].replaceTrack(newTrack);
+                break;
+            }
+        }
+    }
+
+    function getCallDuration() {
+        if (!callStartTime) return 0;
+        return Math.floor((Date.now() - callStartTime) / 1000);
+    }
+
+    function sendEndSignal(status) {
+        var duration = getCallDuration();
+        var wasConnected = connected;
+        var finalStatus = status || (wasConnected ? 'ended' : 'missed');
+        fetch(END_URL, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                status: finalStatus,
+                duration: duration,
+                mode: callMode
+            })
+        }).catch(function(){});
+    }
+
+    window.hangup = function() {
+        sendEndSignal(connected ? 'ended' : 'missed');
+        doCleanup();
+        window.location.href = BACK_URL;
+    };
+
+    window.leaveCall = function() {
+        doCleanup();
+        window.location.href = BACK_URL;
+    };
+
+    window.retryCall = function() {
+        errorOverlay.classList.remove('show');
+        connectingOverlay.style.display = '';
+        doCleanup();
+        initCall();
+    };
+
+    function doCleanup() {
+        connected = false;
+        if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+        if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+        callStartTime = null;
+        if (currentCall) { try { currentCall.close(); } catch(e){} currentCall = null; }
+        if (localStream) { localStream.getTracks().forEach(function(t){t.stop();}); localStream = null; }
+        if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
+    }
+
+    function updateLocalMicUI() {
+        localMicInd.className = 'mic-indicator' + (micOn ? '' : ' muted');
+        localMicInd.innerHTML = micOn
+            ? '<i class="fas fa-microphone"></i>'
+            : '<i class="fas fa-microphone-slash"></i>';
+    }
+
+    function refreshLayout() {
+        var hr = remoteBox.style.display !== 'none';
+        localBox.classList.toggle('full', !hr);
+        localBox.classList.toggle('half', hr);
+        remoteBox.classList.toggle('full', !hr);
+        remoteBox.classList.toggle('half', hr);
+    }
+
+    function updateTimer() {
+        if (!callStartTime) return;
+        var s = Math.floor((Date.now() - callStartTime) / 1000);
+        callTimerEl.textContent = String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+    }
+
+    function showError(title, msg) {
+        connectingOverlay.style.display = 'none';
+        $('errorTitle').textContent = title;
+        $('errorMessage').textContent = msg;
+        errorOverlay.classList.add('show');
+    }
+
+    // Start
+    initCall();
+})();
+</script>
+{% endblock %}

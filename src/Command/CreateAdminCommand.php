@@ -24,27 +24,51 @@ class CreateAdminCommand extends Command
         parent::__construct();
     }
 
+    protected function configure(): void
+    {
+        $this
+            ->addArgument('email', \Symfony\Component\Console\Input\InputArgument::OPTIONAL, 'Email')
+            ->addArgument('password', \Symfony\Component\Console\Input\InputArgument::OPTIONAL, 'Password')
+            ->addArgument('prenom', \Symfony\Component\Console\Input\InputArgument::OPTIONAL, 'Prenom')
+            ->addArgument('nom', \Symfony\Component\Console\Input\InputArgument::OPTIONAL, 'Nom')
+            ->addArgument('role', \Symfony\Component\Console\Input\InputArgument::OPTIONAL, 'Role')
+            ->addArgument('telephone', \Symfony\Component\Console\Input\InputArgument::OPTIONAL, 'Telephone');
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
-        $user = new User();
-        $user->setNom('Admin');
-        $user->setPrenom('Super');
-        $user->setEmail('admin@talentflow.com');
-        $user->setRoles(['ROLE_ADMIN']);
-        $user->setTelephone('0600000000');
+        $email = $input->getArgument('email') ?? 'admin@talentflow.com';
+        $pass = $input->getArgument('password') ?? 'Admin123!';
+        $prenom = $input->getArgument('prenom') ?? 'Super';
+        $nom = $input->getArgument('nom') ?? 'Admin';
+        $role = $input->getArgument('role') ?? 'ROLE_ADMIN';
+        $tel = $input->getArgument('telephone') ?? '+21600000000';
 
-        $hashedPassword = $this->passwordHasher->hashPassword($user, 'admin123');
+        $existing = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+        if ($existing) {
+            $io->warning("L'utilisateur $email existe déjà !");
+            return Command::FAILURE;
+        }
+
+        $user = new User();
+        $user->setNom($nom);
+        $user->setPrenom($prenom);
+        $user->setEmail($email);
+        $user->setRoles([$role]);
+        $user->setTelephone($tel);
+
+        $hashedPassword = $this->passwordHasher->hashPassword($user, $pass);
         $user->setPassword($hashedPassword);
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        $io->success('Utilisateur admin créé avec succès !');
+        $io->success('Utilisateur créé avec succès !');
         $io->table(
             ['Email', 'Mot de passe', 'Rôle'],
-            [['admin@talentflow.com', 'admin123', 'ROLE_ADMIN']]
+            [[$email, $pass, $role]]
         );
 
         return Command::SUCCESS;
