@@ -713,7 +713,7 @@
             {% if conversations|length > 0 %}
                 {% for conv in conversations %}
                     {% set other = conv.getOtherUser(app.user) %}
-                    {% set lastMsg = conv.getLastMessage() %}
+                    {% set lastMsg = lastMessages[conv.id] ?? null %}
                     <a href="{{ path('message_conversation', {id: conv.id}) }}"
                        class="dm-conv-item{% if activeConversation and activeConversation.id == conv.id %} active{% endif %}"
                        data-name="{{ other.fullName|lower }}">
@@ -899,6 +899,7 @@
     const sendBtn = document.getElementById('dmSendBtn');
     const convId = {{ activeConversation ? activeConversation.id : 'null' }};
     const currentUserId = {{ app.user ? app.user.id : 'null' }};
+    let lastMsgId = 0;
 
     function escapeHtml(text) {
         const div = document.createElement('div');
@@ -1000,6 +1001,10 @@
                 // Replace temp with real
                 tempRow.replaceWith(buildMsgRow(data.message));
                 msgContainer.scrollTop = msgContainer.scrollHeight;
+                // Update lastMsgId so polling won't duplicate this message
+                if (data.message.id > lastMsgId) {
+                    lastMsgId = data.message.id;
+                }
             }
         })
         .catch(() => { sendBtn.disabled = false; });
@@ -1176,23 +1181,29 @@
 
     /* ── Poll for new messages every 4 seconds ── */
     if (convId && msgContainer) {
-        let lastCount = msgContainer.querySelectorAll('.dm-msg-row').length;
+        const existingRows = msgContainer.querySelectorAll('.dm-msg-row[data-msg-id]');
+        existingRows.forEach(r => { const mid = parseInt(r.dataset.msgId); if (mid > lastMsgId) lastMsgId = mid; });
         setInterval(() => {
             fetch(`/message/fetch/${convId}`)
                 .then(r => r.json())
                 .then(data => {
                     if (!data.messages) return;
-                    if (data.messages.length > lastCount) {
-                        const newMsgs = data.messages.slice(lastCount);
-                        newMsgs.forEach(m => {
-                            if (m.senderId === currentUserId) return;
-                            msgContainer.appendChild(buildMsgRow(m));
-                            playNotifSound();
-                            showToast(m.senderName, m.senderInitials, m.content);
-                        });
-                        msgContainer.scrollTop = msgContainer.scrollHeight;
+                    data.messages.forEach(m => {
+                        if (m.id > lastMsgId) {
+                            if (m.senderId !== currentUserId) {
+                                msgContainer.appendChild(buildMsgRow(m));
+                                playNotifSound();
+                                showToast(m.senderName, m.senderInitials, m.content);
+                            }
+                        }
+                    });
+                    if (data.messages.length > 0) {
+                        const maxId = Math.max(...data.messages.map(m => m.id));
+                        if (maxId > lastMsgId) {
+                            lastMsgId = maxId;
+                            msgContainer.scrollTop = msgContainer.scrollHeight;
+                        }
                     }
-                    lastCount = data.messages.length;
 
                     // Also refresh canEdit flags (remove expired action buttons)
                     data.messages.forEach(m => {

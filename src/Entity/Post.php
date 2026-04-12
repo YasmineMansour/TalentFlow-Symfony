@@ -66,7 +66,7 @@ class Post
     public function setTitle(string $title): static { $this->title = $title; return $this; }
 
     public function getContent(): ?string { return $this->content; }
-    public function setContent(string $content): static { $this->content = $content; return $this; }
+    public function setContent(?string $content): static { $this->content = $content; return $this; }
 
     public function getAuthor(): ?User { return $this->author; }
     public function setAuthor(?User $author): static { $this->author = $author; return $this; }

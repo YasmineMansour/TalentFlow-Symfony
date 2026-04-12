@@ -43,9 +43,9 @@ class MessageRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
-    public function markConversationReadForUser(Conversation $conversation, User $user): void
+    public function markConversationReadForUser(Conversation $conversation, User $user): int
     {
-        $this->createQueryBuilder('m')
+        return (int) $this->createQueryBuilder('m')
             ->update()
             ->set('m.isRead', 'true')
             ->where('m.conversation = :conv')
@@ -55,5 +55,32 @@ class MessageRepository extends ServiceEntityRepository
             ->setParameter('user', $user)
             ->getQuery()
             ->execute();
+    }
+
+    /**
+     * @param Conversation[] $conversations
+     * @return array<int, Message> keyed by conversation ID
+     */
+    public function findLastMessageForConversations(array $conversations): array
+    {
+        if (empty($conversations)) {
+            return [];
+        }
+
+        $ids = array_map(fn(Conversation $c) => $c->getId(), $conversations);
+
+        $messages = $this->createQueryBuilder('m')
+            ->where('m.conversation IN (:ids)')
+            ->andWhere('m.createdAt = (SELECT MAX(m2.createdAt) FROM App\Entity\Message m2 WHERE m2.conversation = m.conversation)')
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getResult();
+
+        $map = [];
+        foreach ($messages as $msg) {
+            $map[$msg->getConversation()->getId()] = $msg;
+        }
+
+        return $map;
     }
 }

@@ -27,12 +27,14 @@ class MessageController extends AbstractController
 
         $conversations = $convRepo->findByUser($user);
         $unreadCount = $msgRepo->countUnreadForUser($user);
+        $lastMessages = $msgRepo->findLastMessageForConversations($conversations);
 
         return $this->render('message/index.html.twig', [
             'conversations' => $conversations,
             'activeConversation' => null,
             'messages' => [],
             'unreadCount' => $unreadCount,
+            'lastMessages' => $lastMessages,
         ]);
     }
 
@@ -51,12 +53,14 @@ class MessageController extends AbstractController
         $conversations = $convRepo->findByUser($user);
         $messages = $msgRepo->findByConversation($conversation, 100);
         $unreadCount = $msgRepo->countUnreadForUser($user);
+        $lastMessages = $msgRepo->findLastMessageForConversations($conversations);
 
         return $this->render('message/index.html.twig', [
             'conversations' => $conversations,
             'activeConversation' => $conversation,
             'messages' => $messages,
             'unreadCount' => $unreadCount,
+            'lastMessages' => $lastMessages,
         ]);
     }
 
@@ -87,6 +91,8 @@ class MessageController extends AbstractController
         $message->setConversation($conversation);
         $message->setSender($user);
         $message->setContent($content);
+
+        $conversation->setUpdatedAt(new \DateTimeImmutable());
 
         $em->persist($message);
         $em->flush();

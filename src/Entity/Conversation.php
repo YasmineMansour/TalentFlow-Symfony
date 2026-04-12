@@ -64,13 +64,17 @@ class Conversation
 
     public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
     public function getUpdatedAt(): ?\DateTimeImmutable { return $this->updatedAt; }
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static { $this->updatedAt = $updatedAt; return $this; }
 
     /** @return Collection<int, Message> */
     public function getMessages(): Collection { return $this->messages; }
 
     public function getOtherUser(User $me): ?User
     {
-        return $this->userOne === $me ? $this->userTwo : $this->userOne;
+        if ($this->userOne && $this->userOne->getId() === $me->getId()) {
+            return $this->userTwo;
+        }
+        return $this->userOne;
     }
 
     public function getLastMessage(): ?Message
@@ -81,6 +85,7 @@ class Conversation
 
     public function involvesUser(User $user): bool
     {
-        return $this->userOne === $user || $this->userTwo === $user;
+        return ($this->userOne && $this->userOne->getId() === $user->getId())
+            || ($this->userTwo && $this->userTwo->getId() === $user->getId());
     }
 }

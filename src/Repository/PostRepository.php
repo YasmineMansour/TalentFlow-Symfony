@@ -22,6 +22,8 @@ class PostRepository extends ServiceEntityRepository
     public function findAllOrderedByDate(): array
     {
         return $this->createQueryBuilder('p')
+            ->leftJoin('p.author', 'a')
+            ->addSelect('a')
             ->orderBy('p.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
@@ -46,7 +48,8 @@ class PostRepository extends ServiceEntityRepository
     public function searchAndFilter(string $query = '', string $sort = 'recent', string $author = ''): array
     {
         $qb = $this->createQueryBuilder('p')
-            ->leftJoin('p.author', 'a');
+            ->leftJoin('p.author', 'a')
+            ->addSelect('a');
 
         if ($query !== '') {
             $qb->andWhere('p.title LIKE :q OR p.content LIKE :q OR a.nom LIKE :q OR a.prenom LIKE :q')
@@ -63,6 +66,7 @@ class PostRepository extends ServiceEntityRepository
             'oldest' => $qb->orderBy('p.createdAt', 'ASC'),
             'comments' => $qb->leftJoin('p.comments', 'c')
                              ->groupBy('p.id')
+                             ->addGroupBy('a.id')
                              ->orderBy('COUNT(c.id)', 'DESC'),
             default => $qb->orderBy('p.createdAt', 'DESC'),
         };

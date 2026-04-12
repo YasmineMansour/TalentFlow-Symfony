@@ -44,7 +44,7 @@ class PostController extends AbstractController
         // Stats for right sidebar
         $userRepo = $em->getRepository(User::class);
         $commentRepo = $em->getRepository(\App\Entity\Comment::class);
-        $totalUsers = count($userRepo->findAll());
+        $totalUsers = $userRepo->count([]);
         $totalPosts = count($posts);
         $totalComments = $commentRepo->count([]);
         $totalVotes = $voteRepo->count([]);
