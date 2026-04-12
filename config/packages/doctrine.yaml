@@ -6,6 +6,7 @@ doctrine:
         # either here or in the DATABASE_URL env var (see .env file)
         server_version: '10.4.32-MariaDB'
         driver: 'pdo_mysql'
+        schema_filter: '~^(user|entretien|decision_finale|doctrine_migration_versions)$~'
 
         profiling_collect_backtrace: '%kernel.debug%'
         use_savepoints: true
