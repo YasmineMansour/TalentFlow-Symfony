@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Bienvenue sur TalentFlow !</title>
+</head>
+<body style="margin:0;padding:0;background:#1a1a2e;font-family:'Segoe UI',Tahoma,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+    <tr><td align="center" style="padding:40px 20px;">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background:#16213e;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.3);">
+            <tr>
+                <td style="background:linear-gradient(135deg,#0f3460,#1a1a2e);padding:30px 40px;text-align:center;border-bottom:3px solid #d4a843;">
+                    <h1 style="color:#d4a843;margin:0;font-size:28px;letter-spacing:1px;">&#128188; TalentFlow</h1>
+                    <p style="color:#8a8aa0;margin:8px 0 0;font-size:14px;">Plateforme de Gestion du Recrutement</p>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:40px;">
+                    <h2 style="color:#D4A843;margin:0 0 .5rem;">🎉 Bienvenue, {{ user.prenom }} !</h2>
+                    <p style="color:#aab0bc;line-height:1.7;">Votre compte TalentFlow a été créé avec succès. Vous pouvez dès maintenant accéder à votre espace et commencer à explorer les opportunités.</p>
+
+                    <table width="100%" cellpadding="0" cellspacing="0" style="margin:1.5rem 0;background:#0f3460;border-radius:8px;">
+                        <tr>
+                            <td style="padding:1.2rem 1.5rem;">
+                                <p style="color:#8a8aa0;margin:0 0 .3rem;font-size:.8rem;text-transform:uppercase;letter-spacing:1px;">Votre compte</p>
+                                <p style="color:#D4A843;font-weight:700;font-size:1.1rem;margin:0;">{{ user.email }}</p>
+                                <p style="color:#aab0bc;font-size:.9rem;margin:.3rem 0 0;">Rôle : {{ user.roleLabel }}</p>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div style="text-align:center;margin:2rem 0;">
+                        <a href="{{ absolute_url(path('app_login')) }}" style="background:#D4A843;color:#1e2a3a;padding:.9rem 2.5rem;border-radius:8px;text-decoration:none;font-weight:700;font-size:1rem;display:inline-block;">
+                            Accéder à mon espace
+                        </a>
+                    </div>
+
+                    <div style="border-top:1px solid #1e2a3a;padding-top:1.5rem;margin-top:1.5rem;">
+                        <p style="color:#aab0bc;font-size:.9rem;line-height:1.6;">
+                            🔒 <strong style="color:#fff;">Sécurité :</strong> L'authentification à deux facteurs (2FA) est activée par défaut sur votre compte pour protéger vos données.
+                        </p>
+                        <p style="color:#aab0bc;font-size:.9rem;line-height:1.6;">
+                            💡 <strong style="color:#fff;">Astuce :</strong> Complétez votre profil pour augmenter vos chances d'être remarqué par les recruteurs.
+                        </p>
+                    </div>
+
+                    <p style="color:#555;font-size:12px;text-align:center;margin-top:2rem;">TalentFlow — Plateforme de Gestion du Recrutement</p>
+                </td>
+            </tr>
+        </table>
+    </td></tr>
+</table>
+</body>
+</html>

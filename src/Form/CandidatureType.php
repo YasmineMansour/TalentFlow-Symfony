@@ -30,6 +30,7 @@ class CandidatureType extends AbstractType
                 'label' => 'Entreprise',
                 'attr' => ['placeholder' => 'Nom de l\'entreprise', 'class' => 'form-control', 'minlength' => 2, 'maxlength' => 150],
                 'disabled' => $isCandidat,
+                'mapped' => !$isCandidat,
             ])
             ->add('typeContrat', ChoiceType::class, [
                 'label' => 'Type de contrat',
@@ -43,6 +44,7 @@ class CandidatureType extends AbstractType
                 'placeholder' => '-- Sélectionner --',
                 'attr' => ['class' => 'form-control'],
                 'disabled' => $isCandidat,
+                'mapped' => !$isCandidat,
             ])
             ->add('telephone', TextType::class, [
                 'label' => 'Téléphone',

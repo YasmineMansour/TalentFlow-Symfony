@@ -85,7 +85,7 @@
         <p style="color: var(--tf-gray);"><i class="fas fa-info-circle"></i> Aucun avantage lié à cette offre.</p>
     {% else %}
         <div class="table-responsive">
-            <table class="table table-dark table-hover" style="background: transparent;">
+            <table class="table table-hover tf-table">
                 <thead>
                     <tr style="color: var(--tf-gold);">
                         <th>Nom</th>
@@ -98,7 +98,17 @@
                     {% for av in offre.avantages %}
                     <tr>
                         <td><strong>{{ av.nom }}</strong></td>
-                        <td><span class="badge" style="background: var(--tf-dark-blue);">{{ av.type }}</span></td>
+                        <td>
+                            {% if av.type == 'Financier' %}
+                                <span class="tf-tag-sm tf-tag-green">{{ av.type }}</span>
+                            {% elseif av.type == 'Bien-être' %}
+                                <span class="tf-tag-sm tf-tag-purple">{{ av.type }}</span>
+                            {% elseif av.type == 'Matériel' %}
+                                <span class="tf-tag-sm tf-tag-blue">{{ av.type }}</span>
+                            {% else %}
+                                <span class="tf-tag-sm tf-tag-gray">{{ av.type }}</span>
+                            {% endif %}
+                        </td>
                         <td style="color: var(--tf-gray);">{{ av.description ?? '—' }}</td>
                         <td>
                             <a href="{{ path('avantage_edit', {id: av.id}) }}" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i></a>

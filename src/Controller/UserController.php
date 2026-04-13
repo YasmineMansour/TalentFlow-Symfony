@@ -4,8 +4,11 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\UserType;
+use App\Repository\UserLogRepository;
 use App\Repository\UserRepository;
+use App\Service\AvatarService;
 use App\Service\HaveIBeenPwnedService;
+use App\Service\ProfileCompletionService;
 use App\Service\RoleHierarchyManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -13,13 +16,15 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
-
+                                                                                                                                                                                            
 #[Route('/user')]
 class UserController extends AbstractController
 {
     public function __construct(
         private RoleHierarchyManager $roleHierarchyManager,
         private HaveIBeenPwnedService $haveIBeenPwnedService,
+        private ProfileCompletionService $profileCompletion,
+        private AvatarService $avatarService,
     ) {
     }
     /**
@@ -127,13 +132,24 @@ class UserController extends AbstractController
     }
 
     /**
-     * SHOW - Affichage des détails d'un utilisateur.
+     * SHOW - Affichage des détails d'un utilisateur avec historique de connexion et score profil.
      */
     #[Route('/{id}', name: 'app_user_show', methods: ['GET'])]
-    public function show(User $user): Response
+    public function show(User $user, UserLogRepository $userLogRepository): Response
     {
+        $score   = $this->profileCompletion->getScore($user);
+        $missing = $this->profileCompletion->getMissingFields($user);
+        $color   = $this->profileCompletion->getScoreColor($score);
+        $logs    = $userLogRepository->findRecentByUser($user, 10);
+        $avatar  = $this->avatarService->generateInitialsSvg($user, 80);
+
         return $this->render('user/show.html.twig', [
-            'user' => $user,
+            'user'           => $user,
+            'profileScore'   => $score,
+            'scoreColor'     => $color,
+            'missingFields'  => $missing,
+            'loginHistory'   => $logs,
+            'avatarSvg'      => $avatar,
         ]);
     }
 

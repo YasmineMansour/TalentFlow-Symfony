@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion sans mot de passe — TalentFlow{% endblock %}
+{% block navbar %}{% endblock %}
+
+{% block body %}
+<div class="tf-login-wrapper" style="margin:-2rem;min-height:100vh;padding:2rem;">
+    <div class="tf-login-card">
+        <div class="brand-lg">
+            <h1><i class="fas fa-briefcase"></i> TalentFlow</h1>
+            <p>Connexion sans mot de passe</p>
+        </div>
+
+        {% if error %}
+            <div class="tf-flash tf-flash-error"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+        {% endif %}
+
+        {% if sent %}
+            <div class="tf-flash" style="background:rgba(212,168,67,.15);border-left:4px solid var(--tf-gold);color:var(--tf-gold);padding:1rem 1.2rem;border-radius:6px;">
+                <i class="fas fa-check-circle"></i>
+                <strong>Email envoyé !</strong><br>
+                <small>Si un compte existe pour cet email, vous recevrez un lien valable <strong>15 minutes</strong>. Vérifiez aussi vos spams.</small>
+            </div>
+            <div class="mt-3 text-center">
+                <a href="{{ path('app_login') }}" class="btn-outline-gold">
+                    <i class="fas fa-arrow-left"></i> Retour à la connexion
+                </a>
+            </div>
+        {% else %}
+            <p style="color:var(--tf-gray);font-size:.9rem;margin-bottom:1.5rem;">
+                Saisissez votre adresse email. Vous recevrez un lien unique pour vous connecter sans mot de passe.
+            </p>
+
+            <form method="post" class="tf-form">
+                <input type="hidden" name="_token" value="{{ csrf_token('magic_link') }}">
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">
+                        <i class="fas fa-envelope"></i> Adresse email
+                    </label>
+                    <input type="email" id="email" name="email" class="form-control"
+                           placeholder="votre@email.com" required autofocus>
+                </div>
+
+                <button type="submit" class="btn-gold w-100">
+                    <i class="fas fa-magic"></i> Envoyer le lien de connexion
+                </button>
+            </form>
+
+            <div class="mt-4 text-center" style="border-top:1px solid var(--tf-border);padding-top:1rem;">
+                <a href="{{ path('app_login') }}" style="color:var(--tf-gray);font-size:.85rem;">
+                    <i class="fas fa-key"></i> Connexion avec mot de passe
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

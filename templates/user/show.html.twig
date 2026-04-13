@@ -4,82 +4,202 @@
 {% block page_title %}Fiche Utilisateur{% endblock %}
 
 {% block body %}
-<div class="tf-card" style="max-width: 700px; margin: 0 auto;">
-    <div class="d-flex justify-content-between align-items-start mb-4">
-        <h2 class="tf-title mb-0">
-            <i class="fas fa-user-circle"></i> Fiche Utilisateur
-        </h2>
-        <div class="d-flex gap-2">
+<div class="row g-3">
+
+{# ── Colonne gauche : Profil + Score ── #}
+<div class="col-lg-4">
+
+    {# Avatar + identité #}
+    <div class="tf-card mb-3 text-center">
+        <div style="width:80px;height:80px;margin:0 auto 1rem;" title="{{ user.fullName }}">
+            {{ avatarSvg|raw }}
+        </div>
+        <h4 style="color:var(--tf-gold);margin:.3rem 0 .1rem;">{{ user.fullName }}</h4>
+        {% if user.titrePoste %}
+            <p style="color:var(--tf-gray);font-size:.9rem;margin:0 0 .5rem;">{{ user.titrePoste }}</p>
+        {% endif %}
+        <small style="color:var(--tf-gray);">{{ user.email }}</small><br>
+        {% if 'ROLE_ADMIN' in user.roles %}
+            <span class="badge-role badge-admin mt-2"><i class="fas fa-crown"></i> Administrateur</span>
+        {% elseif 'ROLE_RH' in user.roles %}
+            <span class="badge-role badge-rh mt-2"><i class="fas fa-user-tie"></i> Recruteur RH</span>
+        {% elseif 'ROLE_CANDIDAT' in user.roles %}
+            <span class="badge-role badge-candidat mt-2"><i class="fas fa-user"></i> Candidat</span>
+        {% endif %}
+        <div class="d-flex gap-2 justify-content-center mt-3">
             <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn-gold">
                 <i class="fas fa-edit"></i> Modifier
             </a>
         </div>
     </div>
 
-    {# User header #}
-    <div class="d-flex align-items-center gap-3 mb-4" style="padding: 1.5rem; background: var(--tf-navy); border-radius: 12px; border-left: 4px solid var(--tf-gold);">
-        <span class="tf-avatar" style="width: 65px; height: 65px; font-size: 1.4rem;">
-            {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
-        </span>
-        <div>
-            <h3 style="margin: 0; color: var(--tf-white);">{{ user.fullName }}</h3>
-            <span style="color: var(--tf-gray);">{{ user.email }}</span><br>
-            {% if 'ROLE_ADMIN' in user.roles %}
-                <span class="badge-role badge-admin mt-1"><i class="fas fa-crown"></i> Administrateur</span>
-            {% elseif 'ROLE_RH' in user.roles %}
-                <span class="badge-role badge-rh mt-1"><i class="fas fa-user-tie"></i> Recruteur RH</span>
-            {% elseif 'ROLE_CANDIDAT' in user.roles %}
-                <span class="badge-role badge-candidat mt-1"><i class="fas fa-user"></i> Candidat</span>
-            {% else %}
-                <span class="badge-role mt-1" style="background: var(--tf-gray); color: var(--tf-midnight);">Utilisateur</span>
-            {% endif %}
+    {# Score de complétude du profil #}
+    <div class="tf-card mb-3">
+        <div class="tf-card-header">
+            <h3><i class="fas fa-tasks"></i> Complétude du profil</h3>
         </div>
+        <div style="text-align:center;margin:.5rem 0 1rem;">
+            <span style="font-size:2.5rem;font-weight:700;color:var(--tf-gold);">{{ profileScore }}%</span>
+        </div>
+        <div style="background:var(--tf-border);border-radius:99px;height:10px;overflow:hidden;margin-bottom:1rem;">
+            <div style="height:100%;width:{{ profileScore }}%;background:{% if scoreColor == 'success' %}#2ecc71{% elseif scoreColor == 'warning' %}var(--tf-gold){% else %}#e74c3c{% endif %};border-radius:99px;transition:width .4s ease;"></div>
+        </div>
+        {% if missingFields is not empty %}
+            <p style="color:var(--tf-gray);font-size:.85rem;margin-bottom:.5rem;">Champs manquants :</p>
+            <ul style="margin:0;padding-left:1.2rem;">
+                {% for label in missingFields %}
+                    <li style="color:var(--tf-gray);font-size:.85rem;">{{ label }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p style="color:#2ecc71;font-size:.9rem;"><i class="fas fa-check-circle"></i> Profil complet !</p>
+        {% endif %}
     </div>
 
-    {# User details #}
-    <dl class="tf-detail row">
-        <dt class="col-sm-4"><i class="fas fa-id-card"></i> ID</dt>
-        <dd class="col-sm-8">{{ user.id }}</dd>
+    {# Statut sécurité #}
+    <div class="tf-card">
+        <div class="tf-card-header">
+            <h3><i class="fas fa-shield-alt"></i> Sécurité</h3>
+        </div>
+        <dl class="tf-detail row" style="font-size:.9rem;">
+            <dt class="col-7"><i class="fas fa-lock"></i> 2FA</dt>
+            <dd class="col-5">
+                {% if user.twoFactorEnabled %}
+                    <span style="color:#2ecc71;"><i class="fas fa-check"></i> Activée</span>
+                {% else %}
+                    <span style="color:#e74c3c;"><i class="fas fa-times"></i> Désactivée</span>
+                {% endif %}
+            </dd>
+            <dt class="col-7"><i class="fas fa-ban"></i> Bloqué</dt>
+            <dd class="col-5">
+                {% if user.blocked %}
+                    <span style="color:#e74c3c;"><i class="fas fa-exclamation"></i> Oui</span>
+                {% else %}
+                    <span style="color:#2ecc71;"><i class="fas fa-check"></i> Non</span>
+                {% endif %}
+            </dd>
+            <dt class="col-7"><i class="fas fa-clock"></i> Dernière connexion</dt>
+            <dd class="col-5" style="color:var(--tf-gray);">
+                {{ user.lastLoginAt ? user.lastLoginAt|date('d/m/Y') : 'Jamais' }}
+            </dd>
+        </dl>
+    </div>
 
-        <dt class="col-sm-4"><i class="fas fa-user"></i> Nom</dt>
-        <dd class="col-sm-8">{{ user.nom }}</dd>
+</div>{# fin col-lg-4 #}
 
-        <dt class="col-sm-4"><i class="fas fa-user"></i> Prénom</dt>
-        <dd class="col-sm-8">{{ user.prenom }}</dd>
+{# ── Colonne droite : Détails + Historique ── #}
+<div class="col-lg-8">
 
-        <dt class="col-sm-4"><i class="fas fa-envelope"></i> Email</dt>
-        <dd class="col-sm-8">{{ user.email }}</dd>
+    {# Infos générales #}
+    <div class="tf-card mb-3">
+        <div class="tf-card-header">
+            <h3><i class="fas fa-id-card"></i> Informations</h3>
+        </div>
+        <dl class="tf-detail row">
+            <dt class="col-sm-4"><i class="fas fa-hashtag"></i> ID</dt>
+            <dd class="col-sm-8">{{ user.id }}</dd>
 
-        <dt class="col-sm-4"><i class="fas fa-phone"></i> Téléphone</dt>
-        <dd class="col-sm-8">{{ user.telephone ?? '—' }}</dd>
+            <dt class="col-sm-4"><i class="fas fa-user"></i> Nom</dt>
+            <dd class="col-sm-8">{{ user.nom }}</dd>
 
-        <dt class="col-sm-4"><i class="fas fa-shield-alt"></i> Rôles</dt>
-        <dd class="col-sm-8">
-            {% for role in user.roles %}
-                <span style="color: var(--tf-gold);">{{ role }}</span>{% if not loop.last %}, {% endif %}
-            {% endfor %}
-        </dd>
+            <dt class="col-sm-4"><i class="fas fa-user"></i> Prénom</dt>
+            <dd class="col-sm-8">{{ user.prenom }}</dd>
 
-        <dt class="col-sm-4"><i class="fas fa-calendar-plus"></i> Créé le</dt>
-        <dd class="col-sm-8">{{ user.createdAt ? user.createdAt|date('d/m/Y à H:i') : '—' }}</dd>
+            <dt class="col-sm-4"><i class="fas fa-envelope"></i> Email</dt>
+            <dd class="col-sm-8">{{ user.email }}</dd>
 
-        <dt class="col-sm-4"><i class="fas fa-calendar-check"></i> Modifié le</dt>
-        <dd class="col-sm-8">{{ user.updatedAt ? user.updatedAt|date('d/m/Y à H:i') : 'Jamais modifié' }}</dd>
-    </dl>
+            <dt class="col-sm-4"><i class="fas fa-phone"></i> Téléphone</dt>
+            <dd class="col-sm-8">{{ user.telephone ?? '—' }}</dd>
 
-    <hr style="border-color: var(--tf-border); margin: 1.5rem 0;">
+            {% if user.titrePoste %}
+            <dt class="col-sm-4"><i class="fas fa-briefcase"></i> Titre</dt>
+            <dd class="col-sm-8">{{ user.titrePoste }}</dd>
+            {% endif %}
 
+            {% if user.bio %}
+            <dt class="col-sm-4"><i class="fas fa-align-left"></i> Bio</dt>
+            <dd class="col-sm-8" style="color:var(--tf-gray);">{{ user.bio }}</dd>
+            {% endif %}
+
+            {% if user.entreprise %}
+            <dt class="col-sm-4"><i class="fas fa-building"></i> Entreprise</dt>
+            <dd class="col-sm-8">{{ user.entreprise.nom }}</dd>
+            {% endif %}
+
+            <dt class="col-sm-4"><i class="fas fa-calendar-plus"></i> Créé le</dt>
+            <dd class="col-sm-8">{{ user.createdAt ? user.createdAt|date('d/m/Y à H:i') : '—' }}</dd>
+
+            <dt class="col-sm-4"><i class="fas fa-calendar-check"></i> Modifié le</dt>
+            <dd class="col-sm-8">{{ user.updatedAt ? user.updatedAt|date('d/m/Y à H:i') : '—' }}</dd>
+        </dl>
+    </div>
+
+    {# Historique de connexion #}
+    <div class="tf-card mb-3">
+        <div class="tf-card-header">
+            <h3><i class="fas fa-history"></i> Historique de connexion</h3>
+            <span style="color:var(--tf-gray);font-size:.8rem;">10 dernières</span>
+        </div>
+        {% if loginHistory is empty %}
+            <p style="color:var(--tf-gray);padding:1rem 0;"><i class="fas fa-info-circle"></i> Aucune connexion enregistrée.</p>
+        {% else %}
+            <div class="table-responsive">
+                <table class="tf-table" style="font-size:.85rem;">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>IP</th>
+                            <th>Navigateur</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in loginHistory %}
+                        <tr>
+                            <td style="color:var(--tf-gray);">{{ log.loggedAt|date('d/m/Y H:i') }}</td>
+                            <td style="font-family:monospace;color:var(--tf-gold);">{{ log.ipAddress }}</td>
+                            <td>{{ log.browser ?? '—' }}</td>
+                            <td>
+                                {% if log.successful %}
+                                    <span style="color:#2ecc71;"><i class="fas fa-check-circle"></i> Succès</span>
+                                {% else %}
+                                    <span style="color:#e74c3c;"><i class="fas fa-times-circle"></i> Échec</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+
+    {# Actions #}
     <div class="d-flex justify-content-between">
         <a href="{{ path('app_user_index') }}" class="btn-outline-gold">
-            <i class="fas fa-arrow-left"></i> Retour à la liste
+            <i class="fas fa-arrow-left"></i> Retour
         </a>
-        <form method="post" action="{{ path('app_user_delete', {'id': user.id}) }}" 
-              onsubmit="event.preventDefault(); confirmDelete(this, '{{ user.fullName|e('js') }}');">
-            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
-            <button type="submit" class="btn-danger-tf">
-                <i class="fas fa-trash"></i> Supprimer cet utilisateur
-            </button>
-        </form>
+        {% if is_granted('ROLE_ADMIN') %}
+        <div class="d-flex gap-2 align-items-center">
+            {# Switch User (Impersonation) #}
+            <a href="{{ path('app_dashboard', {'_switch_user': user.email}) }}"
+               class="btn-outline-gold"
+               title="Voir le site en tant que cet utilisateur"
+               onclick="return confirm('Vous allez vous connecter en tant que {{ user.fullName|e('js') }}. Confirmer ?')">
+                <i class="fas fa-eye"></i> Se connecter en tant que lui
+            </a>
+            <form method="post" action="{{ path('app_user_delete', {'id': user.id}) }}"
+                  onsubmit="event.preventDefault(); confirmDelete(this, '{{ user.fullName|e('js') }}');">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+                <button type="submit" class="btn-danger-tf">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+            </form>
+        </div>
+        {% endif %}
     </div>
-</div>
+
+</div>{# fin col-lg-8 #}
+</div>{# fin row #}
 {% endblock %}
+
