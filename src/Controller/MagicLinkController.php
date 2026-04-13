@@ -115,7 +115,7 @@ class MagicLinkController extends AbstractController
         );
 
         $email = (new TemplatedEmail())
-            ->from(new Address('no-reply@talentflow.app', 'TalentFlow'))
+            ->from(new Address('nouralouini004@gmail.com', 'TalentFlow'))
             ->to(new Address($user->getEmail(), $user->getFullName()))
             ->subject('🔗 Votre lien de connexion — TalentFlow')
             ->htmlTemplate('email/magic_link.html.twig')

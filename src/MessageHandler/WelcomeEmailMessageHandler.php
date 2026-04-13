@@ -35,7 +35,7 @@ final class WelcomeEmailMessageHandler
         }
 
         $email = (new TemplatedEmail())
-            ->from(new Address('no-reply@talentflow.app', 'TalentFlow'))
+            ->from(new Address('nouralouini004@gmail.com', 'TalentFlow'))
             ->to(new Address($user->getEmail(), $user->getFullName()))
             ->subject('🎉 Bienvenue sur TalentFlow !')
             ->htmlTemplate('email/welcome.html.twig')

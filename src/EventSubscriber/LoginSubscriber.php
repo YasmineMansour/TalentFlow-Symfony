@@ -139,7 +139,7 @@ class LoginSubscriber implements EventSubscriberInterface
     {
         try {
             $email = (new TemplatedEmail())
-                ->from(new Address('no-reply@talentflow.app', 'TalentFlow Sécurité'))
+                ->from(new Address('nouralouini004@gmail.com', 'TalentFlow Sécurité'))
                 ->to(new Address($user->getEmail(), $user->getFullName()))
                 ->subject('⚠️ Nouvelle connexion détectée — TalentFlow')
                 ->htmlTemplate('email/suspicious_login.html.twig')

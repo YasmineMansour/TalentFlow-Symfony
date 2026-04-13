@@ -124,6 +124,9 @@
                 </div>
                 {% endif %}
                 <div class="tf-item-card-actions">
+                    <a href="{{ path('app_mon_entretien', {'id': entretien.id}) }}" class="btn btn-sm btn-outline-info" title="Voir la salle Meet">
+                        <i class="fas fa-video"></i>
+                    </a>
                     <a href="{{ path('app_entretien_edit', {'id': entretien.id}) }}" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i> Modifier</a>
                     <form method="post" action="{{ path('app_entretien_delete', {'id': entretien.id}) }}" style="display:inline;" onsubmit="event.preventDefault(); confirmDelete(this, 'entretien #{{ entretien.id }}');">
                         <input type="hidden" name="_token" value="{{ csrf_token('delete_entretien_' ~ entretien.id) }}">

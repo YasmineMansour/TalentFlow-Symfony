@@ -6,6 +6,7 @@ use App\Entity\DecisionFinale;
 use App\Entity\Entretien;
 use App\Repository\CandidatureRepository;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Twig\Environment;
 
@@ -40,7 +41,7 @@ class RecruitmentService
 
         $this->mailer->send(
             (new Email())
-                ->from('noreply@talentflow.local')
+                ->from(new Address('nouralouini004@gmail.com', 'TalentFlow RH'))
                 ->to($recipientEmail)
                 ->subject('Confirmation de votre entretien – TalentFlow')
                 ->html($html)
@@ -83,7 +84,7 @@ class RecruitmentService
 
         $this->mailer->send(
             (new Email())
-                ->from('noreply@talentflow.local')
+                ->from(new Address('nouralouini004@gmail.com', 'TalentFlow RH'))
                 ->to($recipientEmail)
                 ->subject($subject)
                 ->html($html)

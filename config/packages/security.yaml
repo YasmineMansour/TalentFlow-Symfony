@@ -53,6 +53,7 @@ security:
         - { path: ^/user, roles: ROLE_ADMIN }
         - { path: ^/avatar, roles: PUBLIC_ACCESS }
         - { path: ^/magic-link, roles: PUBLIC_ACCESS }
+        - { path: ^/mon-entretien, roles: ROLE_USER }
 
     role_hierarchy:
         ROLE_RH: ROLE_USER

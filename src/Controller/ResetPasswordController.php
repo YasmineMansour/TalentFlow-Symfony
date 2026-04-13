@@ -72,7 +72,7 @@ class ResetPasswordController extends AbstractController
                 // Envoyer l'email de réinitialisation via Gmail SMTP
                 try {
                     $email = (new TemplatedEmail())
-                        ->from(new Address('yasminemansour912@gmail.com', 'TalentFlow'))
+                        ->from(new Address('nouralouini004@gmail.com', 'TalentFlow'))
                         ->to(new Address($user->getEmail(), $user->getFullName()))
                         ->subject('🔐 Réinitialisation de votre mot de passe — TalentFlow')
                         ->htmlTemplate('email/reset_password.html.twig')
