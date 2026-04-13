@@ -43,6 +43,26 @@ class PostRepository extends ServiceEntityRepository
     }
 
     /**
+     * Public: all posts ordered by date, with optional search.
+     * @return Post[]
+     */
+    public function findPublicPosts(string $search = '', int $limit = 30): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->leftJoin('p.author', 'a')
+            ->addSelect('a')
+            ->orderBy('p.createdAt', 'DESC')
+            ->setMaxResults($limit);
+
+        if ($search !== '') {
+            $qb->andWhere('p.title LIKE :q OR p.content LIKE :q OR a.nom LIKE :q')
+               ->setParameter('q', '%' . $search . '%');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
      * @return Post[]
      */
     public function searchAndFilter(string $query = '', string $sort = 'recent', string $author = ''): array

@@ -6,6 +6,7 @@ use App\Entity\Comment;
 use App\Entity\Post;
 use App\Entity\User;
 use App\Entity\Vote;
+use App\Form\CommentType;
 use App\Form\PostType;
 use App\Repository\PostRepository;
 use App\Repository\VoteRepository;
@@ -419,8 +420,13 @@ class PostController extends AbstractController
     #[Route('/{id}', name: 'post_show', methods: ['GET'])]
     public function show(Post $post): Response
     {
+        $comment = new Comment();
+        $comment->setPost($post);
+        $commentForm = $this->createForm(CommentType::class, $comment);
+
         return $this->render('post/show.html.twig', [
             'post' => $post,
+            'commentForm' => $commentForm,
         ]);
     }
 

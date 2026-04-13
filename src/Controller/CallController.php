@@ -51,6 +51,11 @@ class CallController extends AbstractController
             $body = json_decode($request->getContent(), true);
             $peerId = $body['peerId'] ?? '';
         }
+        $mode = $request->request->get('mode', '');
+        if (!$mode) {
+            $body = $body ?? json_decode($request->getContent(), true);
+            $mode = $body['mode'] ?? '';
+        }
 
         $file = $this->callFile($conversation->getId());
         $data = [];
@@ -62,6 +67,7 @@ class CallController extends AbstractController
         $data['peers'][$userId] = [
             'peerId' => $peerId,
             'time' => time(),
+            'mode' => $mode,
         ];
 
         file_put_contents($file, json_encode($data));
@@ -92,10 +98,12 @@ class CallController extends AbstractController
         $myId = $user->getId();
         $remotePeerId = null;
         $active = false;
+        $remoteMode = null;
 
         foreach ($peers as $uid => $info) {
             if ((int)$uid !== $myId && ($info['time'] ?? 0) > time() - 60) {
                 $remotePeerId = $info['peerId'] ?? null;
+                $remoteMode = $info['mode'] ?? null;
                 $active = true;
                 break;
             }
@@ -104,6 +112,7 @@ class CallController extends AbstractController
         return new JsonResponse([
             'active' => $active,
             'remotePeerId' => $remotePeerId,
+            'mode' => $remoteMode,
         ]);
     }
 
@@ -127,7 +136,7 @@ class CallController extends AbstractController
             @unlink($file);
 
             // Build call message
-            $type = ($status === 'missed') ? 'call_missed' : 'call_ended';
+            $type = ($status === 'missed' && $duration === 0) ? 'call_missed' : 'call_ended';
             $content = json_encode([
                 'mode' => $mode,
                 'duration' => $duration,

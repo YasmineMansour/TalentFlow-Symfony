@@ -1,7 +1,7 @@
-{% extends 'base_dashboard.html.twig' %}
+{% extends is_granted('ROLE_ADMIN') ? 'base_dashboard.html.twig' : 'base_navbar.html.twig' %}
 
-{% block title %}Forum - Feed{% endblock %}
-{% block page_title %}Feed{% endblock %}
+{% block title %}Forum{% endblock %}
+{% block page_title %}{% endblock %}
 
 {% block stylesheets %}
 <style>
@@ -10,11 +10,11 @@
         max-width: 1200px;
         margin: 0 auto;
         display: flex;
-        gap: 1rem;
+        gap: 0.8rem;
         align-items: flex-start;
     }
     .ln-feed-left {
-        width: 220px;
+        width: 200px;
         flex-shrink: 0;
         position: sticky;
         top: 76px;
@@ -22,16 +22,15 @@
     .ln-feed-main {
         flex: 1;
         min-width: 0;
-        max-width: 620px;
     }
     .ln-feed-sidebar {
-        width: 280px;
+        width: 250px;
         flex-shrink: 0;
         position: sticky;
         top: 76px;
         display: flex;
         flex-direction: column;
-        gap: 0.8rem;
+        gap: 0.6rem;
     }
     @media (max-width: 1100px) {
         .ln-feed-left { display: none; }
@@ -119,8 +118,8 @@
         background: var(--tf-card-bg);
         border: 1px solid var(--tf-border);
         border-radius: 12px;
-        padding: 1rem 1.2rem;
-        margin-bottom: 1rem;
+        padding: 0.7rem 1rem;
+        margin-bottom: 0.8rem;
     }
     .ln-start-post-top {
         display: flex;
@@ -128,15 +127,15 @@
         gap: 0.8rem;
     }
     .ln-start-post-top .ln-avatar {
-        width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+        width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
         background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
         color: var(--tf-midnight); display: flex; align-items: center; justify-content: center;
-        font-weight: 700; font-size: 1rem;
+        font-weight: 700; font-size: 0.85rem;
     }
     .ln-start-post-btn {
-        flex: 1; padding: 0.7rem 1.2rem; border-radius: 35px;
+        flex: 1; padding: 0.55rem 1rem; border-radius: 35px;
         border: 1px solid var(--tf-border); background: transparent;
-        color: var(--tf-gray); font-size: 0.9rem; text-align: left;
+        color: var(--tf-gray); font-size: 0.82rem; text-align: left;
         cursor: pointer; transition: background 0.2s, border-color 0.2s;
         text-decoration: none; display: block;
     }
@@ -169,8 +168,8 @@
         border-color: var(--tf-gold);
     }
     body.light-mode .ln-filter-chip { border-color: #dddfe2; color: #65676b; }
-    body.light-mode .ln-filter-chip:hover { border-color: var(--tf-gold); color: #1c1e21; }
-    body.light-mode .ln-filter-chip.active { background: var(--tf-gold); color: #1a1a2e; border-color: var(--tf-gold); }
+    body.light-mode .ln-filter-chip:hover { border-color: #2563eb; color: #1c1e21; }
+    body.light-mode .ln-filter-chip.active { background: #2563eb; color: #ffffff; border-color: #2563eb; }
     .ln-result-count {
         font-size: 0.72rem; color: var(--tf-gray); white-space: nowrap; flex-shrink: 0;
     }
@@ -194,24 +193,24 @@
     .ln-post-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.25); }
 
     .ln-post-header {
-        display: flex; align-items: flex-start; gap: 0.8rem;
-        padding: 1rem 1.2rem 0;
+        display: flex; align-items: flex-start; gap: 0.6rem;
+        padding: 0.7rem 1rem 0;
     }
     .ln-post-header .ln-avatar {
-        width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+        width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
         background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
         color: var(--tf-midnight); display: flex; align-items: center; justify-content: center;
-        font-weight: 700; font-size: 1rem;
+        font-weight: 700; font-size: 0.85rem;
     }
     .ln-post-author-info { flex: 1; min-width: 0; }
     .ln-post-author-name {
-        font-weight: 700; font-size: 0.92rem; color: var(--tf-white);
+        font-weight: 700; font-size: 0.84rem; color: var(--tf-white);
         text-decoration: none; display: block;
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .ln-post-author-name:hover { color: var(--tf-gold); text-decoration: underline; }
     .ln-post-author-role {
-        font-size: 0.78rem; color: var(--tf-gray); margin-top: 0.1rem;
+        font-size: 0.72rem; color: var(--tf-gray); margin-top: 0.05rem;
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .ln-post-time {
@@ -229,14 +228,14 @@
 
     /* Post body */
     .ln-post-title {
-        padding: 0.6rem 1.2rem 0;
-        font-size: 1rem; font-weight: 700; color: var(--tf-gold);
+        padding: 0.4rem 1rem 0;
+        font-size: 0.9rem; font-weight: 700; color: var(--tf-gold);
     }
     .ln-post-title a { color: var(--tf-gold); text-decoration: none; }
     .ln-post-title a:hover { text-decoration: underline; }
     .ln-post-content {
-        padding: 0.4rem 1.2rem 0.8rem;
-        font-size: 0.88rem; color: var(--tf-light, #ccc); line-height: 1.6;
+        padding: 0.3rem 1rem 0.6rem;
+        font-size: 0.8rem; color: var(--tf-light, #ccc); line-height: 1.5;
     }
     .ln-post-content-text {
         overflow: hidden; display: -webkit-box;
@@ -251,7 +250,7 @@
     /* Stats row */
     .ln-post-stats {
         display: flex; justify-content: space-between; align-items: center;
-        padding: 0.4rem 1.2rem; font-size: 0.78rem; color: var(--tf-gray);
+        padding: 0.3rem 1rem; font-size: 0.72rem; color: var(--tf-gray);
     }
     .ln-post-stats-left { display: flex; align-items: center; gap: 0.4rem; }
     .ln-post-stats-left .ln-reaction-icons { display: flex; }
@@ -278,13 +277,13 @@
     }
     .ln-action-btn {
         flex: 1; display: flex; align-items: center; justify-content: center;
-        gap: 0.5rem; padding: 0.7rem 0; border: none; background: none;
-        color: var(--tf-gray); font-size: 0.82rem; font-weight: 600;
+        gap: 0.4rem; padding: 0.5rem 0; border: none; background: none;
+        color: var(--tf-gray); font-size: 0.75rem; font-weight: 600;
         cursor: pointer; border-radius: 8px; transition: background 0.2s, color 0.2s;
         text-decoration: none;
     }
     .ln-action-btn:hover { background: rgba(255,255,255,0.06); color: var(--tf-white); }
-    .ln-action-btn i { font-size: 1.05rem; }
+    .ln-action-btn i { font-size: 0.9rem; }
 
     /* Vote buttons */
     .ln-vote-group {
@@ -294,8 +293,8 @@
     }
     .ln-vote-btn {
         display: flex; align-items: center; justify-content: center;
-        gap: 0.35rem; padding: 0.7rem 0.8rem; border: none; background: none;
-        color: var(--tf-gray); font-size: 0.82rem; font-weight: 600;
+        gap: 0.25rem; padding: 0.5rem 0.6rem; border: none; background: none;
+        color: var(--tf-gray); font-size: 0.75rem; font-weight: 600;
         cursor: pointer; border-radius: 8px; transition: background 0.15s, color 0.15s;
     }
     .ln-vote-btn:hover { background: rgba(255,255,255,0.06); }
@@ -303,9 +302,9 @@
     .ln-vote-btn.downvote:hover { color: #e74c3c; }
     .ln-vote-btn.upvote.voted { color: #0a66c2; }
     .ln-vote-btn.downvote.voted { color: #e74c3c; }
-    .ln-vote-btn i { font-size: 1.1rem; }
+    .ln-vote-btn i { font-size: 0.95rem; }
     .ln-vote-count {
-        font-size: 0.82rem; font-weight: 700; color: var(--tf-white);
+        font-size: 0.75rem; font-weight: 700; color: var(--tf-white);
         min-width: 20px; text-align: center; padding: 0 0.1rem;
     }
 
@@ -641,6 +640,59 @@
         .topbar-filter-chips { display: none; }
     }
 
+    /* ── Delete confirmation modal ── */
+    .forum-confirm-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+        z-index: 10000; display: flex; align-items: center; justify-content: center;
+        animation: forumFadeIn 0.15s ease-out;
+    }
+    @keyframes forumFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .forum-confirm-box {
+        background: var(--tf-card-bg); border: 1px solid var(--tf-border);
+        border-radius: 14px; padding: 1.8rem 2rem; max-width: 380px; width: 90%;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.4); text-align: center;
+        animation: forumModalSlide 0.2s ease-out;
+    }
+    @keyframes forumModalSlide {
+        from { opacity: 0; transform: scale(0.92) translateY(10px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .forum-confirm-icon {
+        width: 52px; height: 52px; border-radius: 50%;
+        background: rgba(231,76,60,0.12); color: #e74c3c;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: 1.4rem; margin-bottom: 1rem;
+    }
+    .forum-confirm-title {
+        font-size: 1.05rem; font-weight: 700; color: var(--tf-white); margin-bottom: 0.4rem;
+    }
+    .forum-confirm-text {
+        font-size: 0.85rem; color: var(--tf-gray); margin-bottom: 1.4rem; line-height: 1.4;
+    }
+    .forum-confirm-actions { display: flex; gap: 0.7rem; justify-content: center; }
+    .forum-confirm-cancel {
+        padding: 0.55rem 1.4rem; border-radius: 8px; border: 1px solid var(--tf-border);
+        background: transparent; color: var(--tf-white); font-weight: 600; font-size: 0.88rem;
+        cursor: pointer; transition: all 0.15s;
+    }
+    .forum-confirm-cancel:hover { background: rgba(255,255,255,0.05); border-color: var(--tf-gold); }
+    .forum-confirm-delete {
+        padding: 0.55rem 1.4rem; border-radius: 8px; border: none;
+        background: #e74c3c; color: white; font-weight: 600; font-size: 0.88rem;
+        cursor: pointer; transition: all 0.15s;
+    }
+    .forum-confirm-delete:hover { background: #c0392b; }
+    body.light-mode .forum-confirm-box,
+    [data-theme="light"] .forum-confirm-box { background: #fff; border-color: #dddfe2; }
+    body.light-mode .forum-confirm-title,
+    [data-theme="light"] .forum-confirm-title { color: #1c1e21; }
+    body.light-mode .forum-confirm-text,
+    [data-theme="light"] .forum-confirm-text { color: #65676b; }
+    body.light-mode .forum-confirm-cancel,
+    [data-theme="light"] .forum-confirm-cancel { border-color: #dddfe2; color: #1c1e21; }
+    body.light-mode .forum-confirm-cancel:hover,
+    [data-theme="light"] .forum-confirm-cancel:hover { background: #f0f2f5; }
+
     /* ── Light mode overrides for feed ── */
     body.light-mode .ln-post-card,
     body.light-mode .ln-start-post {
@@ -648,8 +700,8 @@
     }
     body.light-mode .ln-post-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
     body.light-mode .ln-post-author-name { color: #1c1e21; }
-    body.light-mode .ln-post-author-name:hover { color: var(--tf-gold-dark); }
-    body.light-mode .ln-post-title a { color: var(--tf-gold-dark); }
+    body.light-mode .ln-post-author-name:hover { color: #2563eb; }
+    body.light-mode .ln-post-title a { color: #2563eb; }
     body.light-mode .ln-post-content { color: #333; }
     body.light-mode .ln-post-actions { border-color: #dddfe2; }
     body.light-mode .ln-vote-btn { color: #65676b; }
@@ -658,15 +710,15 @@
     body.light-mode .ln-action-btn { color: #65676b; }
     body.light-mode .ln-action-btn:hover { background: rgba(0,0,0,0.04); color: #1c1e21; }
     body.light-mode .ln-start-post-btn { border-color: #dddfe2; color: #65676b; }
-    body.light-mode .ln-start-post-btn:hover { background: #f0f2f5; border-color: var(--tf-gold); color: #1c1e21; }
+    body.light-mode .ln-start-post-btn:hover { background: #f0f2f5; border-color: #2563eb; color: #1c1e21; }
     body.light-mode .ln-sort-bar hr { border-color: #dddfe2; }
     body.light-mode .ln-dropdown-menu { background: #fff; border-color: #dddfe2; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
     body.light-mode .ln-dropdown-item { color: #1c1e21; }
-    body.light-mode .ln-dropdown-item:hover { background: #f0f2f5; color: var(--tf-gold-dark); }
+    body.light-mode .ln-dropdown-item:hover { background: #f0f2f5; color: #2563eb; }
     body.light-mode .ln-dropdown-item.danger { color: #e74c3c; }
     body.light-mode .ln-post-stats { color: #65676b; }
     body.light-mode .ln-post-stats-right button { color: #65676b; }
-    body.light-mode .ln-post-stats-right button:hover { color: var(--tf-gold-dark); }
+    body.light-mode .ln-post-stats-right button:hover { color: #2563eb; }
     body.light-mode .ln-empty { color: #65676b; }
     body.light-mode .ln-empty i { color: #ccc; }
 
@@ -681,7 +733,7 @@
     body.light-mode .modal-field select { background: #f0f2f5; border-color: #dddfe2; color: #1c1e21; }
     body.light-mode .modal-field input:focus,
     body.light-mode .modal-field textarea:focus,
-    body.light-mode .modal-field select:focus { border-color: var(--tf-gold); }
+    body.light-mode .modal-field select:focus { border-color: #2563eb; }
     body.light-mode .modal-new-post-footer { border-color: #dddfe2; }
     body.light-mode .modal-btn-cancel { color: #65676b; border-color: #dddfe2; }
     body.light-mode .modal-close { color: #65676b; }
@@ -690,7 +742,7 @@
     /* Light mode: detail modal */
     body.light-mode .modal-detail-left { border-color: #dddfe2; }
     body.light-mode .mdl-author-name { color: #1c1e21; }
-    body.light-mode .mdl-post-title { color: var(--tf-gold-dark); }
+    body.light-mode .mdl-post-title { color: #2563eb; }
     body.light-mode .mdl-post-content { color: #333; }
     body.light-mode .mdl-post-meta { border-color: #dddfe2; color: #65676b; }
     body.light-mode .mdl-comments-header { color: #1c1e21; border-color: #dddfe2; }
@@ -699,8 +751,8 @@
     body.light-mode .mdl-comment-text { color: #333; }
     body.light-mode .mdl-comment-form { border-color: #dddfe2; }
     body.light-mode .mdl-comment-form textarea { background: #f0f2f5; border-color: #dddfe2; color: #1c1e21; }
-    body.light-mode .mdl-comment-form textarea:focus { border-color: var(--tf-gold); }
-    body.light-mode .mdl-comment-edit-area { background: #fff; border-color: var(--tf-gold); color: #1c1e21; }
+    body.light-mode .mdl-comment-form textarea:focus { border-color: #2563eb; }
+    body.light-mode .mdl-comment-edit-area { background: #fff; border-color: #2563eb; color: #1c1e21; }
     body.light-mode .mdl-comment-dropdown { background: #fff; border-color: #dddfe2; }
     body.light-mode .mdl-comment-dropdown-item { color: #1c1e21; }
     body.light-mode .mdl-comment-dropdown-item:hover { background: #f0f2f5; }
@@ -804,10 +856,10 @@
     /* Light mode sidebar overrides */
     body.light-mode .sidebar-widget { background: #fff; border-color: #dddfe2; }
     body.light-mode .sidebar-widget-title { color: #1c1e21; }
-    body.light-mode .sidebar-stat-card { background: rgba(212,168,67,0.08); border-color: rgba(212,168,67,0.2); }
+    body.light-mode .sidebar-stat-card { background: rgba(37,99,235,0.06); border-color: rgba(37,99,235,0.15); }
     body.light-mode .sidebar-stat-value { color: #1c1e21; }
     body.light-mode .sidebar-stat-label { color: #65676b; }
-    body.light-mode .sidebar-ad { background: linear-gradient(135deg, rgba(212,168,67,0.06), rgba(212,168,67,0.02)); border-color: rgba(212,168,67,0.3); }
+    body.light-mode .sidebar-ad { background: linear-gradient(135deg, rgba(37,99,235,0.05), rgba(37,99,235,0.02)); border-color: rgba(37,99,235,0.25); }
 
     /* ── Media Toolbar (Create/Edit modals) ── */
     .modal-media-toolbar {
@@ -988,7 +1040,7 @@
 </button>
 <div class="topbar-search-expanded" id="searchExpanded">
     <i class="fas fa-search" style="color:var(--tf-gray); font-size:0.85rem; flex-shrink:0;"></i>
-    <input type="text" class="topbar-search-input" id="feedSearch"
+    <input type="text" class="topbar-search-input" id="feedSearchTopbar"
            placeholder="Rechercher un post, un auteur..." autocomplete="off">
     <div class="topbar-filter-chips">
         <button class="ln-filter-chip active" data-sort="recent"><i class="fas fa-clock"></i> Récents</button>
@@ -996,11 +1048,29 @@
         <button class="ln-filter-chip" data-sort="oldest"><i class="fas fa-history"></i> Anciens</button>
         <button class="ln-filter-chip" data-sort="comments"><i class="fas fa-comments"></i> Commentés</button>
     </div>
-    <span class="ln-result-count" id="resultCount"></span>
+    <span class="ln-result-count" id="resultCountTopbar"></span>
 </div>
 {% endblock %}
 
 {% block body %}
+{% if not is_granted('ROLE_ADMIN') %}
+<div style="display:flex; justify-content:center; margin-bottom:0.8rem;">
+<div class="ln-inline-search" style="display:flex; align-items:center; gap:0.5rem; background:var(--tf-card-bg); border:1px solid var(--tf-border); border-radius:10px; padding:0.35rem 0.8rem; max-width:700px; width:100%;">
+    <i class="fas fa-search" style="color:var(--tf-gray); font-size:0.75rem;"></i>
+    <input type="text" class="topbar-search-input" id="feedSearch"
+           placeholder="Rechercher un post, un auteur..." autocomplete="off"
+           style="flex:1; min-width:100px; background:transparent; border:none; color:var(--tf-white,#f5f5f5); font-size:0.78rem; outline:none;">
+    <div class="topbar-filter-chips" style="display:flex; gap:0.25rem;">
+        <button class="ln-filter-chip active" data-sort="recent"><i class="fas fa-clock"></i> Récents</button>
+        <button class="ln-filter-chip" data-sort="top"><i class="fas fa-fire"></i> Top</button>
+        <button class="ln-filter-chip" data-sort="oldest"><i class="fas fa-history"></i> Anciens</button>
+        <button class="ln-filter-chip" data-sort="comments"><i class="fas fa-comments"></i> Commentés</button>
+    </div>
+    <span class="ln-result-count" id="resultCount"></span>
+</div>
+</div>
+{% endif %}
+
 <div class="ln-feed-wrapper">
 
 {# ── Left Sidebar: Rules ── #}
@@ -1099,9 +1169,9 @@
                                     <i class="fas fa-pen"></i> Modifier
                                 </button>
                                 <div class="ln-dropdown-sep"></div>
-                                <form method="post" action="{{ path('post_delete', {id: post.id}) }}" onsubmit="return confirm('Supprimer ce post ?')">
+                                <form method="post" action="{{ path('post_delete', {id: post.id}) }}" class="post-delete-form">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ post.id) }}">
-                                    <button type="submit" class="ln-dropdown-item danger">
+                                    <button type="button" class="ln-dropdown-item danger post-delete-btn">
                                         <i class="fas fa-trash-alt"></i> Supprimer
                                     </button>
                                 </form>
@@ -1429,6 +1499,18 @@
 </div>
 {% endblock %}
 {% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+/* Sync body.light-mode class with [data-theme] attribute (needed for navbar layout) */
+(function(){
+    function sync(){
+        var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        document.body.classList.toggle('light-mode', isLight);
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+})();
+</script>
 <script>
 (function() {
     /* ── Forum Rules Toggle ── */
@@ -1449,12 +1531,12 @@
     }
 
     /* ── Refs ── */
-    const searchInput = document.getElementById('feedSearch');
+    const searchInput = document.getElementById('feedSearch') || document.getElementById('feedSearchTopbar');
     const filterChips = document.querySelectorAll('.ln-filter-chip');
     const feedContainer = document.getElementById('feedContainer');
     const noResults = document.getElementById('noResults');
     const feedLoading = document.getElementById('feedLoading');
-    const resultCount = document.getElementById('resultCount');
+    const resultCount = document.getElementById('resultCount') || document.getElementById('resultCountTopbar');
     const searchUrl = '{{ path("post_search") }}';
     const createUrl = '{{ path("post_create_ajax") }}';
     const isAdmin = {{ is_granted('ROLE_ADMIN') ? 'true' : 'false' }};
@@ -1668,9 +1750,9 @@
                                 <i class="fas fa-pen"></i> Modifier
                             </button>
                             <div class="ln-dropdown-sep"></div>
-                            <form method="post" action="${esc(p.deleteUrl)}" onsubmit="return confirm('Supprimer ce post ?')">
+                            <form method="post" action="${esc(p.deleteUrl)}" class="post-delete-form">
                                 <input type="hidden" name="_token" value="${esc(p.deleteToken)}">
-                                <button type="submit" class="ln-dropdown-item danger">
+                                <button type="button" class="ln-dropdown-item danger post-delete-btn">
                                     <i class="fas fa-trash-alt"></i> Supprimer
                                 </button>
                             </form>
@@ -1962,13 +2044,37 @@
         });
     }
 
+    /* ── Styled Confirm Modal ── */
+    function showForumConfirm(title, text, onConfirm) {
+        document.querySelectorAll('.forum-confirm-overlay').forEach(el => el.remove());
+        const overlay = document.createElement('div');
+        overlay.className = 'forum-confirm-overlay';
+        overlay.innerHTML = `
+            <div class="forum-confirm-box">
+                <div class="forum-confirm-icon"><i class="fas fa-trash-alt"></i></div>
+                <div class="forum-confirm-title">${title}</div>
+                <div class="forum-confirm-text">${text}</div>
+                <div class="forum-confirm-actions">
+                    <button class="forum-confirm-cancel">Annuler</button>
+                    <button class="forum-confirm-delete"><i class="fas fa-trash"></i> Supprimer</button>
+                </div>
+            </div>`;
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+        overlay.querySelector('.forum-confirm-cancel').addEventListener('click', () => overlay.remove());
+        overlay.querySelector('.forum-confirm-delete').addEventListener('click', () => { overlay.remove(); onConfirm(); });
+        const onKey = e => { if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', onKey); } };
+        document.addEventListener('keydown', onKey);
+    }
+
     /* ── Comment Delete ── */
     function handleCommentDelete(e) {
         const btn = e.currentTarget;
         const id = btn.dataset.id;
         const token = btn.dataset.token;
-        if (!confirm('Supprimer ce commentaire ?')) return;
-
+        showForumConfirm('Supprimer ce commentaire ?', 'Cette action est irréversible. Le commentaire sera définitivement supprimé.', () => performCommentDelete(id, token));
+    }
+    function performCommentDelete(id, token) {
         fetch('/post/comment/' + id + '/delete-ajax', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
@@ -2134,6 +2240,14 @@
         document.querySelectorAll('.open-edit-modal').forEach(el => {
             el.removeEventListener('click', handleOpenEdit);
             el.addEventListener('click', handleOpenEdit);
+        });
+        // Post delete buttons
+        document.querySelectorAll('.post-delete-btn').forEach(btn => {
+            btn.onclick = function(e) {
+                e.preventDefault();
+                const form = this.closest('.post-delete-form');
+                showForumConfirm('Supprimer ce post ?', 'Cette action est irréversible. Le post et tous ses commentaires seront définitivement supprimés.', () => form.submit());
+            };
         });
     }
 
@@ -2483,9 +2597,10 @@
 
     // ── Chart.js: Sidebar Charts ──
     (function initSidebarCharts() {
+        if (typeof Chart === 'undefined') return; // Chart.js not loaded
         const postsPerDay = {{ postsPerDay|json_encode|raw }};
         const topAuthors = {{ topAuthors|json_encode|raw }};
-        const isLight = document.body.classList.contains('light-mode');
+        const isLight = document.body.classList.contains('light-mode') || document.documentElement.getAttribute('data-theme') === 'light';
         const gridColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
         const textColor = isLight ? '#65676b' : '#b0b3b8';
 
