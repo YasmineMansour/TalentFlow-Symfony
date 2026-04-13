@@ -4,7 +4,7 @@
     <script>(function(){var t=localStorage.getItem('tf-theme');if(!t)t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');})()</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vérification 2FA - TalentFlow</title>
+    <title>Vérification 2FA — TalentFlow</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -20,64 +20,97 @@
             --tf-gray: #a0a0b0;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #0d1117 0%, #1a1a2e 30%, #16213e 60%, #0f3460 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
+        body { font-family: 'Inter', sans-serif; min-height: 100vh; background: #0d1117; color: var(--tf-white); overflow-x: hidden; }
 
-        .bg-particles {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            overflow: hidden; z-index: 0;
+        /* ─── NAVBAR ─── */
+        .tf-navbar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(13, 17, 23, 0.9); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(212,168,67,0.1);
+            padding: 0.8rem 2rem;
+            display: flex; align-items: center; justify-content: space-between;
         }
-        .bg-particles span {
-            position: absolute; width: 4px; height: 4px;
-            background: rgba(212, 168, 67, 0.3); border-radius: 50%;
-            animation: float 15s infinite;
+        .tf-navbar-brand {
+            display: flex; align-items: center; gap: 0.6rem;
+            text-decoration: none; color: var(--tf-gold); font-weight: 800; font-size: 1.3rem;
         }
-        .bg-particles span:nth-child(1) { left: 10%; animation-delay: 0s; animation-duration: 20s; }
-        .bg-particles span:nth-child(2) { left: 20%; animation-delay: 2s; width: 6px; height: 6px; }
-        .bg-particles span:nth-child(3) { left: 35%; animation-delay: 4s; animation-duration: 18s; }
-        .bg-particles span:nth-child(4) { left: 50%; animation-delay: 1s; width: 3px; height: 3px; }
-        .bg-particles span:nth-child(5) { left: 65%; animation-delay: 3s; animation-duration: 22s; }
-        .bg-particles span:nth-child(6) { left: 75%; animation-delay: 5s; width: 5px; height: 5px; }
-        .bg-particles span:nth-child(7) { left: 85%; animation-delay: 7s; }
-        .bg-particles span:nth-child(8) { left: 90%; animation-delay: 6s; animation-duration: 25s; }
-        @keyframes float {
-            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        .tf-navbar-brand i { font-size: 1.1rem; }
+        .tf-navbar-links { display: flex; align-items: center; gap: 1.5rem; }
+        .tf-navbar-links a {
+            color: var(--tf-gray); text-decoration: none; font-size: 0.85rem;
+            font-weight: 500; transition: color 0.2s;
         }
+        .tf-navbar-links a:hover { color: var(--tf-gold); }
 
-        .tfa-container {
-            position: relative; z-index: 1;
-            width: 100%; max-width: 460px; padding: 1rem;
-        }
-        .tfa-card {
-            background: rgba(22, 33, 62, 0.85);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(212, 168, 67, 0.2);
-            border-radius: 20px;
-            padding: 2.5rem 2rem;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(212,168,67,0.05);
-            animation: cardAppear 0.6s ease;
-        }
-        @keyframes cardAppear {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        /* ─── SPLIT LAYOUT ─── */
+        .tf-page { display: flex; min-height: 100vh; padding-top: 60px; }
 
-        .shield-icon {
-            width: 90px; height: 90px; border-radius: 50%;
+        /* Left: Info Panel */
+        .tf-info-panel {
+            flex: 1; display: flex; flex-direction: column; justify-content: center;
+            padding: 4rem 5rem;
+            background: linear-gradient(160deg, #0d1117 0%, #1a1a2e 50%, #0f3460 100%);
+            position: relative; overflow: hidden;
+        }
+        .tf-info-panel::before {
+            content: ''; position: absolute; top: -50%; right: -30%;
+            width: 600px; height: 600px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(212,168,67,0.06) 0%, transparent 70%);
+        }
+        .tf-info-panel::after {
+            content: ''; position: absolute; bottom: -40%; left: -20%;
+            width: 500px; height: 500px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(15,52,96,0.2) 0%, transparent 70%);
+        }
+        .tf-info-content { position: relative; z-index: 1; }
+        .tf-info-content h1 {
+            font-size: 2.8rem; font-weight: 900; line-height: 1.15; margin-bottom: 1rem;
+        }
+        .tf-info-content h1 span { color: var(--tf-gold); }
+        .tf-info-content .tf-tagline {
+            font-size: 1.1rem; color: var(--tf-gray); line-height: 1.7; margin-bottom: 2.5rem; max-width: 480px;
+        }
+        .tf-features { display: flex; flex-direction: column; gap: 1.2rem; }
+        .tf-feature {
+            display: flex; align-items: center; gap: 1rem;
+            padding: 0.8rem 1.2rem; border-radius: 12px;
+            background: rgba(22,33,62,0.5); border: 1px solid rgba(212,168,67,0.08);
+            transition: all 0.3s;
+        }
+        .tf-feature:hover { border-color: rgba(212,168,67,0.2); background: rgba(22,33,62,0.7); }
+        .tf-feature-icon {
+            width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
+            background: linear-gradient(135deg, rgba(212,168,67,0.15), rgba(15,52,96,0.3));
+            display: flex; align-items: center; justify-content: center;
+            color: var(--tf-gold); font-size: 1rem;
+        }
+        .tf-feature-text h4 { font-size: 0.85rem; font-weight: 700; color: var(--tf-white); margin-bottom: 0.15rem; }
+        .tf-feature-text p { font-size: 0.75rem; color: var(--tf-gray); margin: 0; }
+
+        .tf-stats {
+            display: flex; gap: 2rem; margin-top: 2.5rem; padding-top: 2rem;
+            border-top: 1px solid rgba(212,168,67,0.08);
+        }
+        .tf-stat { text-align: center; }
+        .tf-stat-num { font-size: 1.6rem; font-weight: 800; color: var(--tf-gold); }
+        .tf-stat-label { font-size: 0.7rem; color: var(--tf-gray); text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Right: 2FA Form Panel */
+        .tf-login-panel {
+            width: 520px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            padding: 2rem 3rem;
+            background: rgba(22,33,62,0.4);
+            border-left: 1px solid rgba(212,168,67,0.08);
+        }
+        .tf-login-box { width: 100%; max-width: 380px; }
+        .tf-login-header { text-align: center; margin-bottom: 1.5rem; }
+        .tf-login-header .icon-circle {
+            width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 1rem;
             background: linear-gradient(135deg, rgba(212,168,67,0.2), rgba(15,52,96,0.4));
             border: 2px solid var(--tf-gold);
-            display: inline-flex; align-items: center; justify-content: center;
-            margin-bottom: 1.2rem;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; color: var(--tf-gold);
             box-shadow: 0 0 30px rgba(212,168,67,0.15);
             animation: pulse 2s ease-in-out infinite;
         }
@@ -85,138 +118,244 @@
             0%, 100% { box-shadow: 0 0 20px rgba(212,168,67,0.15); }
             50% { box-shadow: 0 0 40px rgba(212,168,67,0.3); }
         }
-        .shield-icon i { font-size: 2.2rem; color: var(--tf-gold); }
-
-        .brand-title {
-            font-size: 1.4rem; font-weight: 800; color: var(--tf-gold); margin-bottom: 0.3rem;
-        }
-        .brand-subtitle {
-            font-size: 0.85rem; color: var(--tf-gray); letter-spacing: 0.5px;
-        }
+        .tf-login-header h2 { font-size: 1.4rem; font-weight: 800; color: var(--tf-white); margin-bottom: 0.2rem; }
+        .tf-login-header p { font-size: 0.8rem; color: var(--tf-gray); }
 
         .info-text {
-            color: #b0b0c0; font-size: 0.88rem; line-height: 1.6;
-            margin: 1.2rem 0; text-align: center;
+            color: #b0b0c0; font-size: 0.85rem; line-height: 1.6;
+            margin: 1rem 0 1.2rem; text-align: center;
+            padding: 0.8rem; background: rgba(212,168,67,0.05);
+            border: 1px solid rgba(212,168,67,0.1); border-radius: 10px;
         }
         .info-text strong { color: var(--tf-gold-light); }
-        .info-text small { color: #8a8aa0; }
+        .info-text small { color: #8a8aa0; display: block; margin-top: 0.25rem; }
 
         .form-label {
-            color: var(--tf-gold); font-weight: 600; font-size: 0.85rem;
-            display: flex; align-items: center; gap: 0.4rem;
+            color: var(--tf-gold); font-weight: 600; font-size: 0.8rem;
+            display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.4rem;
         }
         .form-control {
-            background: rgba(26,26,46,0.8);
-            border: 1px solid rgba(212,168,67,0.15);
+            background: rgba(13,17,23,0.7); border: 1px solid rgba(212,168,67,0.12);
             color: var(--tf-gold-light); border-radius: 10px;
-            padding: 0.85rem 1rem; font-size: 1.5rem;
-            letter-spacing: 8px; font-weight: bold;
+            padding: 0.85rem 1rem; font-size: 1.8rem;
+            letter-spacing: 10px; font-weight: 800;
             text-align: center; transition: all 0.3s;
         }
         .form-control:focus {
-            background: rgba(26,26,46,0.95);
-            border-color: var(--tf-gold);
-            box-shadow: 0 0 0 3px rgba(212,168,67,0.1);
-            color: var(--tf-gold-light);
+            background: rgba(13,17,23,0.9); border-color: var(--tf-gold);
+            box-shadow: 0 0 0 3px rgba(212,168,67,0.08); color: var(--tf-gold-light);
         }
-        .form-control::placeholder { color: #4a4a60; letter-spacing: 12px; font-size: 1.2rem; }
+        .form-control::placeholder { color: #3a3a55; letter-spacing: 14px; font-size: 1.4rem; }
 
         .btn-verify {
             background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
-            color: var(--tf-midnight); border: none; padding: 0.8rem;
-            border-radius: 10px; font-weight: 700; font-size: 1rem;
+            color: var(--tf-midnight); border: none; padding: 0.75rem;
+            border-radius: 10px; font-weight: 700; font-size: 0.95rem;
             width: 100%; cursor: pointer; transition: all 0.3s;
             display: flex; align-items: center; justify-content: center; gap: 0.5rem;
         }
         .btn-verify:hover {
             background: linear-gradient(135deg, var(--tf-gold-light), var(--tf-gold));
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(212,168,67,0.25);
+            transform: translateY(-1px); box-shadow: 0 6px 18px rgba(212,168,67,0.2);
         }
 
         .tf-alert {
-            padding: 0.8rem 1rem; border-radius: 10px; margin-bottom: 1rem;
-            font-size: 0.85rem; display: flex; align-items: flex-start; gap: 0.5rem;
-            background: rgba(192,57,43,0.12); border: 1px solid rgba(231,76,60,0.3); color: #e74c3c;
+            padding: 0.7rem 0.9rem; border-radius: 10px; margin-bottom: 0.8rem;
+            font-size: 0.8rem; display: flex; align-items: flex-start; gap: 0.5rem;
+            background: rgba(192,57,43,0.1); border: 1px solid rgba(231,76,60,0.25); color: #e74c3c;
         }
 
-        .logout-link {
-            color: #e07070; text-decoration: none; font-size: 0.85rem; transition: color 0.2s;
-        }
+        .tf-divider { border-top: 1px solid rgba(212,168,67,0.08); margin: 1.2rem 0; }
+        .logout-link { color: #e07070; text-decoration: none; font-size: 0.8rem; transition: color 0.2s; }
         .logout-link:hover { color: #ff6b6b; }
+        .tf-footer-note { text-align: center; color: var(--tf-gray); font-size: 0.72rem; }
 
-        .footer-divider {
-            border-top: 1px solid rgba(212,168,67,0.1);
-            margin-top: 1.5rem; padding-top: 1rem;
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 992px) {
+            .tf-page { flex-direction: column; }
+            .tf-info-panel { padding: 3rem 2rem; min-height: auto; }
+            .tf-info-content h1 { font-size: 2rem; }
+            .tf-login-panel { width: 100%; border-left: none; border-top: 1px solid rgba(212,168,67,0.08); padding: 2rem; }
+            .tf-stats { gap: 1.2rem; }
         }
+
+        /* ==================== LIGHT MODE ==================== */
+        [data-theme="light"] body { background: #f4f6fb; color: #1a1a2e; }
+        [data-theme="light"] .tf-navbar { background: rgba(255,255,255,0.95); border-bottom-color: #e2e6ef; }
+        [data-theme="light"] .tf-navbar-brand { color: var(--tf-gold); }
+        [data-theme="light"] .tf-navbar-links a { color: #5a5f7a; }
+        [data-theme="light"] .tf-navbar-links a:hover { color: var(--tf-gold); }
+        [data-theme="light"] .tf-info-panel { background: linear-gradient(135deg, #e8ecf4, #dfe3ed); }
+        [data-theme="light"] .tf-info-content h1 { color: #1a1a2e; }
+        [data-theme="light"] .tf-info-content .tf-tagline { color: #5a5f7a; }
+        [data-theme="light"] .tf-feature { background: rgba(255,255,255,0.6); border-color: #e2e6ef; }
+        [data-theme="light"] .tf-feature:hover { background: rgba(255,255,255,0.85); border-color: rgba(212,168,67,0.3); }
+        [data-theme="light"] .tf-feature-text h4 { color: #1a1a2e; }
+        [data-theme="light"] .tf-feature-text p { color: #5a5f7a; }
+        [data-theme="light"] .tf-stat-label { color: #7a7f9a; }
+        [data-theme="light"] .tf-stats { border-top-color: rgba(212,168,67,0.2); }
+        [data-theme="light"] .tf-login-panel { background: #ffffff; border-left-color: #e2e6ef; }
+        [data-theme="light"] .tf-login-header h2 { color: #1a1a2e; }
+        [data-theme="light"] .tf-login-header p { color: #5a5f7a; }
+        [data-theme="light"] .tf-login-header .icon-circle { background: linear-gradient(135deg, rgba(212,168,67,0.15), rgba(212,168,67,0.05)); }
+        [data-theme="light"] .info-text { color: #5a5f7a; background: rgba(212,168,67,0.06); border-color: rgba(212,168,67,0.2); }
+        [data-theme="light"] .info-text small { color: #8b90a5; }
+        [data-theme="light"] .form-control { background: #f4f6fb; border-color: #d5d9e8; color: #1a1a2e; }
+        [data-theme="light"] .form-control:focus { background: #ffffff; border-color: var(--tf-gold); color: #1a1a2e; }
+        [data-theme="light"] .form-control::placeholder { color: #b0b5cc; }
+        [data-theme="light"] .tf-divider { border-top-color: #e2e6ef; }
+        [data-theme="light"] .logout-link { color: #b05050; }
+        [data-theme="light"] .logout-link:hover { color: #e04040; }
+        [data-theme="light"] .tf-footer-note { color: #7a7f9a; }
+
+        .tf-theme-btn-login { width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(212,168,67,0.3); background: transparent; color: var(--tf-gray); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; transition: all 0.2s; }
+        .tf-theme-btn-login:hover { background: rgba(212,168,67,0.1); color: var(--tf-gold); border-color: var(--tf-gold); transform: rotate(15deg); }
     </style>
 </head>
 <body>
-    <div class="bg-particles">
-        <span></span><span></span><span></span><span></span>
-        <span></span><span></span><span></span><span></span>
-    </div>
+    <!-- NAVBAR -->
+    <nav class="tf-navbar">
+        <a href="{{ path('app_login') }}" class="tf-navbar-brand">
+            <i class="fas fa-briefcase"></i> TalentFlow
+        </a>
+        <div class="tf-navbar-links">
+            <a href="{{ path('app_login') }}"><i class="fas fa-arrow-left"></i> Connexion</a>
+            <button class="tf-theme-btn-login" onclick="TFTheme.toggle()" aria-label="Changer le thème" title="Mode clair/sombre">
+                <i class="fas fa-sun" id="theme-icon-sun"></i>
+                <i class="fas fa-moon" id="theme-icon-moon" style="display:none;"></i>
+            </button>
+        </div>
+    </nav>
 
-    <div class="tfa-container">
-        <div class="tfa-card">
-            <div class="text-center">
-                <div class="shield-icon">
-                    <i class="fas fa-shield-alt"></i>
+    <div class="tf-page">
+        <!-- LEFT: INFO PANEL -->
+        <div class="tf-info-panel">
+            <div class="tf-info-content">
+                <h1>Votre accès<br><span>sécurisé</span></h1>
+                <p class="tf-tagline">
+                    La double authentification protège votre compte contre les accès non autorisés,
+                    même si votre mot de passe est compromis.
+                </p>
+
+                <div class="tf-features">
+                    <div class="tf-feature">
+                        <div class="tf-feature-icon"><i class="fas fa-shield-alt"></i></div>
+                        <div class="tf-feature-text">
+                            <h4>Protection renforcée</h4>
+                            <p>Couche de sécurité supplémentaire sur votre compte</p>
+                        </div>
+                    </div>
+                    <div class="tf-feature">
+                        <div class="tf-feature-icon"><i class="fas fa-envelope"></i></div>
+                        <div class="tf-feature-text">
+                            <h4>Code par email</h4>
+                            <p>Un code unique envoyé à votre adresse email</p>
+                        </div>
+                    </div>
+                    <div class="tf-feature">
+                        <div class="tf-feature-icon"><i class="fas fa-clock"></i></div>
+                        <div class="tf-feature-text">
+                            <h4>Validité limitée</h4>
+                            <p>Code à usage unique, valable quelques minutes</p>
+                        </div>
+                    </div>
+                    <div class="tf-feature">
+                        <div class="tf-feature-icon"><i class="fas fa-user-lock"></i></div>
+                        <div class="tf-feature-text">
+                            <h4>Accès personnel</h4>
+                            <p>Seul vous pouvez valider votre connexion</p>
+                        </div>
+                    </div>
                 </div>
-                <h2 class="brand-title">Vérification de sécurité</h2>
-                <p class="brand-subtitle">Authentification à deux facteurs</p>
+
+                <div class="tf-stats">
+                    <div class="tf-stat">
+                        <div class="tf-stat-num">6</div>
+                        <div class="tf-stat-label">Chiffres</div>
+                    </div>
+                    <div class="tf-stat">
+                        <div class="tf-stat-num">1×</div>
+                        <div class="tf-stat-label">Usage</div>
+                    </div>
+                    <div class="tf-stat">
+                        <div class="tf-stat-num">2FA</div>
+                        <div class="tf-stat-label">Sécurité</div>
+                    </div>
+                </div>
             </div>
+        </div>
 
-            {% if authenticationError %}
-                <div class="tf-alert mt-3">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <div>{{ authenticationError|trans(authenticationErrorData, 'SchebTwoFactorBundle') }}</div>
-                </div>
-            {% endif %}
-
-            <div class="info-text">
-                <i class="fas fa-envelope" style="color: var(--tf-gold);"></i>
-                Un code de vérification à <strong>6 chiffres</strong> a été envoyé à votre adresse email.
-                <br><small>Vérifiez votre boîte de réception et vos spams.</small>
-            </div>
-
-            <form method="post" action="{{ path('2fa_login_check') }}">
-                <div class="mb-3">
-                    <label for="inputCode" class="form-label">
-                        <i class="fas fa-key"></i> Code de vérification
-                    </label>
-                    <input type="text" name="_auth_code" id="inputCode"
-                           class="form-control"
-                           placeholder="● ● ● ●"
-                           required autofocus
-                           autocomplete="one-time-code"
-                           maxlength="6"
-                           pattern="[0-9]{6}"
-                           inputmode="numeric">
+        <!-- RIGHT: 2FA FORM -->
+        <div class="tf-login-panel">
+            <div class="tf-login-box">
+                <div class="tf-login-header">
+                    <div class="icon-circle">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h2>Vérification de sécurité</h2>
+                    <p>Authentification à deux facteurs</p>
                 </div>
 
-                {% if isCsrfProtectionEnabled %}
-                    <input type="hidden" name="{{ csrfParameterName }}" value="{{ csrf_token(csrfTokenId) }}">
+                {% if authenticationError %}
+                    <div class="tf-alert">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <div>{{ authenticationError|trans(authenticationErrorData, 'SchebTwoFactorBundle') }}</div>
+                    </div>
                 {% endif %}
 
-                <button class="btn-verify mt-2" type="submit">
-                    <i class="fas fa-check-circle"></i> Vérifier le code
-                </button>
-            </form>
+                <div class="info-text">
+                    <i class="fas fa-envelope" style="color: var(--tf-gold);"></i>
+                    Un code à <strong>6 chiffres</strong> a été envoyé à votre adresse email.
+                    <small>Vérifiez votre boîte de réception et vos spams.</small>
+                </div>
 
-            <div class="text-center footer-divider">
-                <a href="{{ logoutPath }}" class="logout-link">
-                    <i class="fas fa-sign-out-alt"></i> Annuler et se déconnecter
-                </a>
+                <form method="post" action="{{ path('2fa_login_check') }}">
+                    <div class="mb-3">
+                        <label for="inputCode" class="form-label">
+                            <i class="fas fa-key"></i> Code de vérification
+                        </label>
+                        <input type="text" name="_auth_code" id="inputCode"
+                               class="form-control"
+                               placeholder="······"
+                               required autofocus
+                               autocomplete="one-time-code"
+                               maxlength="6"
+                               pattern="[0-9]{6}"
+                               inputmode="numeric">
+                    </div>
+
+                    {% if isCsrfProtectionEnabled %}
+                        <input type="hidden" name="{{ csrfParameterName }}" value="{{ csrf_token(csrfTokenId) }}">
+                    {% endif %}
+
+                    <button class="btn-verify mt-1" type="submit">
+                        <i class="fas fa-check-circle"></i> Vérifier le code
+                    </button>
+                </form>
+
+                <div class="tf-divider"></div>
+
+                <div class="text-center">
+                    <a href="{{ logoutPath }}" class="logout-link">
+                        <i class="fas fa-sign-out-alt"></i> Annuler et se déconnecter
+                    </a>
+                </div>
+
+                <div class="tf-divider"></div>
+                <div class="tf-footer-note">
+                    <i class="fas fa-lock"></i> Session sécurisée — Ne partagez jamais ce code
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        const codeInput = document.getElementById('inputCode');
-        codeInput.addEventListener('input', function() {
+        document.getElementById('inputCode').addEventListener('input', function() {
             this.value = this.value.replace(/[^0-9]/g, '');
         });
+
+        var TFTheme={toggle:function(){var c=document.documentElement.getAttribute('data-theme')||'dark';var n=c==='dark'?'light':'dark';localStorage.setItem('tf-theme',n);document.documentElement.setAttribute('data-theme',n);document.documentElement.classList.toggle('dark',n==='dark');TFTheme._icons();},_icons:function(){var t=document.documentElement.getAttribute('data-theme');var s=document.getElementById('theme-icon-sun');var m=document.getElementById('theme-icon-moon');if(s&&m){s.style.display=t==='dark'?'':'none';m.style.display=t==='dark'?'none':'';}}};
+        TFTheme._icons();
     </script>
 </body>
 </html>

@@ -152,9 +152,10 @@ class CandidatureType extends AbstractType
                     'label' => 'Statut',
                     'choices' => [
                         'En attente' => 'En attente',
+                        'Validée RH' => 'Validée RH',
+                        'Entretien' => 'Entretien',
                         'Acceptée' => 'Acceptée',
                         'Refusée' => 'Refusée',
-                        'Entretien' => 'Entretien',
                     ],
                     'attr' => ['class' => 'form-control'],
                 ])

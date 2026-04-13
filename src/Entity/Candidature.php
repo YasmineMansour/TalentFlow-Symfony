@@ -64,10 +64,14 @@ class Candidature
     #[ORM\Column(length: 30)]
     #[Assert\NotBlank(message: 'Le statut ne peut pas être vide.')]
     #[Assert\Choice(
-        choices: ['En attente', 'Acceptée', 'Refusée', 'Entretien'],
+        choices: ['En attente', 'Validée RH', 'Entretien', 'Acceptée', 'Refusée'],
         message: 'Statut invalide.'
     )]
     private ?string $statut = 'En attente';
+
+    #[ORM\Column(type: Types::SMALLINT, nullable: true)]
+    #[Assert\Range(min: 0, max: 100, notInRangeMessage: 'Le score de matching doit être entre {{ min }} et {{ max }}.')]
+    private ?int $matchingScore = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
     #[Assert\NotNull(message: 'La date de candidature ne peut pas être vide.')]
@@ -182,12 +186,16 @@ class Candidature
     public function getStatutBadgeClass(): string
     {
         return match ($this->statut) {
+            'Validée RH' => 'info',
             'Acceptée' => 'success',
             'Refusée' => 'danger',
             'Entretien' => 'warning',
             default => 'secondary',
         };
     }
+
+    public function getMatchingScore(): ?int { return $this->matchingScore; }
+    public function setMatchingScore(?int $matchingScore): static { $this->matchingScore = $matchingScore; return $this; }
 
     /** @return Collection<int, PieceJointe> */
     public function getPiecesJointes(): Collection { return $this->piecesJointes; }

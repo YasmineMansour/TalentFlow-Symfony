@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\DecisionFinale;
 use App\Entity\Entretien;
+use App\Entity\Candidature;
 use App\Repository\CandidatureRepository;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
@@ -81,6 +82,40 @@ class RecruitmentService
         $subject = $decision->getDecision() === 'ACCEPTE'
             ? 'Félicitations ! Votre candidature a été retenue – TalentFlow'
             : 'Résultat de votre candidature – TalentFlow';
+
+        $this->mailer->send(
+            (new Email())
+                ->from(new Address('nouralouini004@gmail.com', 'TalentFlow RH'))
+                ->to($recipientEmail)
+                ->subject($subject)
+                ->html($html)
+        );
+    }
+
+    /**
+     * Envoie un email automatique lors d'un changement de statut de candidature.
+     */
+    public function sendCandidatureStatusNotification(Candidature $candidature, ?string $fromStatus = null): void
+    {
+        $recipientEmail = $candidature->getEmail() ?? $candidature->getCandidat()?->getEmail();
+        if ($recipientEmail === null) {
+            return;
+        }
+
+        $status = (string) $candidature->getStatut();
+        $subject = match ($status) {
+            'Validée RH' => 'Votre candidature est validee par le service RH - TalentFlow',
+            'Entretien' => 'Invitation a l\'entretien - TalentFlow',
+            'Acceptée' => 'Felicitations, votre candidature est acceptee - TalentFlow',
+            'Refusée' => 'Resultat de votre candidature - TalentFlow',
+            default => 'Mise a jour de votre candidature - TalentFlow',
+        };
+
+        $html = $this->twig->render('email/candidature_status_notification.html.twig', [
+            'candidature' => $candidature,
+            'fromStatus' => $fromStatus,
+            'toStatus' => $status,
+        ]);
 
         $this->mailer->send(
             (new Email())
