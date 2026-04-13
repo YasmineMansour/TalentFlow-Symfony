@@ -6,6 +6,7 @@ use App\Entity\Candidature;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
@@ -50,6 +51,11 @@ class CandidatureType extends AbstractType
                 'label' => 'Téléphone',
                 'required' => false,
                 'attr' => ['placeholder' => '+216 XX XXX XXX', 'class' => 'form-control', 'maxlength' => 20],
+            ])
+            ->add('email', EmailType::class, [
+                'label' => 'Email du candidat',
+                'required' => true,
+                'attr' => ['placeholder' => 'email@exemple.com', 'class' => 'form-control', 'maxlength' => 180],
             ])
             ->add('niveauEtudes', ChoiceType::class, [
                 'label' => 'Niveau d\'études',

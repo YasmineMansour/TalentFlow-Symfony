@@ -7,6 +7,7 @@ use App\Form\EntretienType;
 use App\Repository\CandidatureRepository;
 use App\Repository\DecisionFinaleRepository;
 use App\Repository\EntretienRepository;
+use App\Service\EntretienStatusService;
 use App\Service\RecruitmentService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -46,15 +47,30 @@ class EntretienController extends AbstractController
         $candidatures = $candidatureRepository->findBy([], ['createdAt' => 'DESC']);
         $choices = [];
         foreach ($candidatures as $c) {
-            $label = sprintf('#%d — %s (%s)', $c->getId(), $c->getTitrePoste(), $c->getEntreprise());
+            $email = $c->getEmail() ?? ($c->getCandidat()?->getEmail() ?? 'sans email');
+            $label = sprintf('#%d — %s (%s) — %s', $c->getId(), $c->getTitrePoste(), $c->getEntreprise(), $email);
             $choices[$label] = $c->getId();
         }
         return $choices;
     }
 
-    #[Route('/', name: 'app_entretien_index', methods: ['GET'])]
-    public function index(Request $request, EntretienRepository $entretienRepository, DecisionFinaleRepository $decisionFinaleRepository, CandidatureRepository $candidatureRepository): Response
+    private function getCandidaturesDates(CandidatureRepository $candidatureRepository): string
     {
+        $candidatures = $candidatureRepository->findBy([], ['createdAt' => 'DESC']);
+        $map = [];
+        foreach ($candidatures as $c) {
+            if ($c->getDateEntretienSouhaitee() !== null) {
+                $map[(string) $c->getId()] = $c->getDateEntretienSouhaitee()->format('Y-m-d');
+            }
+        }
+        return json_encode($map, JSON_THROW_ON_ERROR);
+    }
+
+    #[Route('/', name: 'app_entretien_index', methods: ['GET'])]
+    public function index(Request $request, EntretienRepository $entretienRepository, DecisionFinaleRepository $decisionFinaleRepository, CandidatureRepository $candidatureRepository, EntretienStatusService $entretienStatusService): Response
+    {
+        // Marque automatiquement les entretiens passés comme réalisés
+        $entretienStatusService->markPastEntretiensAsRealised();
         $search = trim((string) $request->query->get('search', ''));
         $statut = trim((string) $request->query->get('statut', ''));
         $type = trim((string) $request->query->get('type', ''));
@@ -121,6 +137,7 @@ class EntretienController extends AbstractController
         return $this->render('entretien/new.html.twig', [
             'form' => $form,
             'entretien' => $entretien,
+            'candidatures_dates' => $this->getCandidaturesDates($candidatureRepository),
         ]);
     }
 
@@ -148,6 +165,7 @@ class EntretienController extends AbstractController
         return $this->render('entretien/edit.html.twig', [
             'form' => $form,
             'entretien' => $entretien,
+            'candidatures_dates' => $this->getCandidaturesDates($candidatureRepository),
         ]);
     }
 

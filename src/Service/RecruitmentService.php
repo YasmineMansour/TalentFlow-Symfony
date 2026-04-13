@@ -28,7 +28,7 @@ class RecruitmentService
             return;
         }
 
-        $recipientEmail = $candidature->getCandidat()?->getEmail();
+        $recipientEmail = $candidature->getEmail() ?? $candidature->getCandidat()?->getEmail();
         if ($recipientEmail === null) {
             return;
         }
@@ -67,7 +67,7 @@ class RecruitmentService
             return;
         }
 
-        $recipientEmail = $candidature->getCandidat()?->getEmail();
+        $recipientEmail = $candidature->getEmail() ?? $candidature->getCandidat()?->getEmail();
         if ($recipientEmail === null) {
             return;
         }

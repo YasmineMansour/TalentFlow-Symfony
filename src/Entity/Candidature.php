@@ -118,6 +118,12 @@ class Candidature
     #[Assert\PositiveOrZero(message: 'L\'expérience doit être positive.')]
     private ?int $anneesExperience = null;
 
+    #[ORM\Column(length: 180, nullable: true)]
+    #[Assert\NotBlank(message: 'L\'email est obligatoire pour soumettre une candidature.')]
+    #[Assert\Email(message: 'L\'email {{ value }} n\'est pas valide.')]
+    #[Assert\Length(max: 180)]
+    private ?string $email = null;
+
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -231,4 +237,7 @@ class Candidature
 
     public function getAnneesExperience(): ?int { return $this->anneesExperience; }
     public function setAnneesExperience(?int $anneesExperience): static { $this->anneesExperience = $anneesExperience; return $this; }
+
+    public function getEmail(): ?string { return $this->email; }
+    public function setEmail(?string $email): static { $this->email = $email; return $this; }
 }

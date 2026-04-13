@@ -6,6 +6,29 @@
         <small class="form-hint"><i class="fas fa-filter"></i> La liste propose les entretiens réalisés disponibles</small>
     </div>
 
+    <div id="score-display-box" style="display:none; margin-bottom:18px; padding:14px 16px; background:rgba(212,168,67,.12); border:1px solid rgba(212,168,67,.4); border-radius:6px;">
+        <div style="font-size:0.85rem; color:var(--tf-gray); margin-bottom:8px;">
+            <i class="fas fa-calculator" style="color:var(--tf-gold);"></i> <strong>Score calculé</strong>
+        </div>
+        <div style="display:flex; gap:16px; flex-wrap:wrap;">
+            <div>
+                <span style="color:var(--tf-gray); font-size:0.8rem;">Note technique :</span>
+                <span id="score-tech" style="color:var(--tf-gold); font-weight:bold; font-size:0.95rem;margin-left:4px;">—</span>
+                <span style="color:var(--tf-gray); font-size:0.8rem;">/ 20 &times; 0.7</span>
+            </div>
+            <div>
+                <span style="color:var(--tf-gray); font-size:0.8rem;">Note communication :</span>
+                <span id="score-com" style="color:var(--tf-gold); font-weight:bold; font-size:0.95rem;margin-left:4px;">—</span>
+                <span style="color:var(--tf-gray); font-size:0.8rem;">/ 20 &times; 0.3</span>
+            </div>
+            <div style="border-left:1px solid rgba(212,168,67,.4); padding-left:16px;">
+                <span style="color:var(--tf-gray); font-size:0.8rem;">Total :</span>
+                <span id="score-final" style="color:var(--tf-gold); font-weight:bold; font-size:1.1rem;margin-left:4px;">—</span>
+                <span style="color:var(--tf-gray); font-size:0.8rem;">/ 20</span>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-md-6 mb-3">
             {{ form_label(form.decision) }}
@@ -29,3 +52,50 @@
         <i class="fas {{ button_icon|default('fa-save') }}"></i> {{ button_label|default('Enregistrer') }}
     </button>
 {{ form_end(form) }}
+
+<script>
+(function() {
+    const entretienSelect = document.querySelector('#{{ form.entretien.vars.id }}');
+    const scoreBox = document.getElementById('score-display-box');
+    const scoreTechSpan = document.getElementById('score-tech');
+    const scoreComSpan = document.getElementById('score-com');
+    const scoreFinalSpan = document.getElementById('score-final');
+    const scoreInput = document.querySelector('#{{ form.score.vars.id }}');
+
+    async function loadScoreForEntretien(entretienId) {
+        if (!entretienId) {
+            scoreBox.style.display = 'none';
+            return;
+        }
+
+        try {
+            const response = await fetch(`{{ path('app_decision_finale_api_entretien_score', {'id': 0}) }}`.replace('/0', '/' + entretienId));
+            const data = await response.json();
+
+            if (data.score !== null) {
+                scoreTechSpan.textContent = data.noteTechnique ?? '—';
+                scoreComSpan.textContent = data.noteCommunication ?? '—';
+                scoreFinalSpan.textContent = data.score.toFixed(2);
+                scoreBox.style.display = '';
+
+                // Pré-remplir le champ score si vide
+                if (!scoreInput.value) {
+                    scoreInput.value = data.score;
+                }
+            } else {
+                scoreBox.style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement du score:', error);
+            scoreBox.style.display = 'none';
+        }
+    }
+
+    if (entretienSelect) {
+        entretienSelect.addEventListener('change', function() {
+            loadScoreForEntretien(this.value);
+        });
+        loadScoreForEntretien(entretienSelect.value);
+    }
+})();
+</script>

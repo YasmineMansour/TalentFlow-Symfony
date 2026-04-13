@@ -256,6 +256,23 @@ class DecisionFinaleController extends AbstractController
         return $this->redirectToRoute('app_decision_finale_index');
     }
 
+    #[Route('/api/entretien/{id}/score', name: 'app_decision_finale_api_entretien_score', methods: ['GET'])]
+    public function apiEntretienScore(int $id, EntretienRepository $entretienRepository): Response
+    {
+        $entretien = $entretienRepository->find($id);
+        if ($entretien === null) {
+            return $this->json(['error' => 'Entretien non trouvé'], 404);
+        }
+
+        $score = $entretien->getScoreFinal();
+
+        return $this->json([
+            'score' => $score,
+            'noteTechnique' => $entretien->getNoteTechnique(),
+            'noteCommunication' => $entretien->getNoteCommunication(),
+        ]);
+    }
+
     private function normalizeDecision(DecisionFinale $decisionFinale): void
     {
         $now = new \DateTime();
@@ -268,8 +285,14 @@ class DecisionFinaleController extends AbstractController
             $decisionFinale->setCreatedAt($now);
         }
 
-        if ($decisionFinale->getScore() === null) {
-            $decisionFinale->setScore($decisionFinale->getEntretien()?->getScoreFinal());
+        // Calcule automatiquement le score à partir du score final de l'entretien
+        // (si l'entretien a des notes technique et communication)
+        $entretien = $decisionFinale->getEntretien();
+        if ($entretien !== null) {
+            $scoreFinal = $entretien->getScoreFinal();
+            if ($scoreFinal !== null) {
+                $decisionFinale->setScore($scoreFinal);
+            }
         }
 
         $decisionFinale->setUpdatedAt($now);

@@ -53,8 +53,8 @@
             </div>
 
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                {% set decisions = [['', 'Toutes', 'fa-list'], ['ACCEPTE', 'Acceptées', 'fa-check'], ['REFUSE', 'Refusées', 'fa-times'], ['EN_ATTENTE', 'En attente', 'fa-hourglass-half']] %}
-                {% for d in decisions %}
+                {% set decisionFilters = [['', 'Toutes', 'fa-list'], ['ACCEPTE', 'Acceptées', 'fa-check'], ['REFUSE', 'Refusées', 'fa-times'], ['EN_ATTENTE', 'En attente', 'fa-hourglass-half']] %}
+                {% for d in decisionFilters %}
                 <button type="button"
                     onclick="setDecisionFilter('{{ d[0] }}')"
                     id="btn-dec-{{ d[0] ? d[0] : 'all' }}"
