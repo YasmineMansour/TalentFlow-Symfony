@@ -103,11 +103,26 @@
                     {% if entretien.scoreFinal is not null %}
                         <span class="tf-tag-sm tf-tag-gray">{{ entretien.niveau }}</span>
                     {% endif %}
+                    {% if entretien.scoreFinal is not null %}
+                        {% set sug = entretien.decisionSuggestion %}
+                        {% set sugColor = sug == 'ACCEPTE' ? 'green' : (sug == 'REFUSE' ? 'red' : 'yellow') %}
+                        <span class="tf-tag-sm tf-tag-{{ sugColor }}" title="Décision suggérée par le score">
+                            <i class="fas fa-lightbulb"></i> {{ sug }}
+                        </span>
+                    {% endif %}
                 </div>
                 <div class="tf-item-card-meta" style="font-size:0.78rem;">
                     <span><i class="fas fa-laptop-code"></i> Tech: {{ entretien.noteTechnique ?? '—' }}</span>
                     <span><i class="fas fa-comments"></i> Com: {{ entretien.noteCommunication ?? '—' }}</span>
                 </div>
+                {% if entretien.type == 'EN_LIGNE' %}
+                <div style="margin: 8px 0;">
+                    <a href="{{ entretien.meetUrl }}" target="_blank" rel="noopener noreferrer"
+                       class="btn btn-sm btn-outline-info" style="font-size:0.8rem;">
+                        <i class="fas fa-video"></i> Rejoindre Meet
+                    </a>
+                </div>
+                {% endif %}
                 <div class="tf-item-card-actions">
                     <a href="{{ path('app_entretien_edit', {'id': entretien.id}) }}" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i> Modifier</a>
                     <form method="post" action="{{ path('app_entretien_delete', {'id': entretien.id}) }}" style="display:inline;" onsubmit="event.preventDefault(); confirmDelete(this, 'entretien #{{ entretien.id }}');">

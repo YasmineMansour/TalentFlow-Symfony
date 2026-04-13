@@ -7,6 +7,7 @@ use App\Form\EntretienType;
 use App\Repository\CandidatureRepository;
 use App\Repository\DecisionFinaleRepository;
 use App\Repository\EntretienRepository;
+use App\Service\RecruitmentService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -81,7 +82,7 @@ class EntretienController extends AbstractController
     }
 
     #[Route('/new', name: 'app_entretien_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, EntretienRepository $entretienRepository, CandidatureRepository $candidatureRepository): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, EntretienRepository $entretienRepository, CandidatureRepository $candidatureRepository, RecruitmentService $recruitmentService): Response
     {
         $entretien = new Entretien();
 
@@ -104,6 +105,13 @@ class EntretienController extends AbstractController
             } else {
                 $entityManager->persist($entretien);
                 $entityManager->flush();
+
+                try {
+                    $recruitmentService->sendEntretienConfirmation($entretien);
+                } catch (\Throwable) {
+                    // Email non bloquant
+                }
+
                 $this->addFlash('success', 'L\'entretien a été créé avec succès.');
 
                 return $this->redirectToRoute('app_entretien_index');

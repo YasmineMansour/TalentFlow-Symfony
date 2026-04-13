@@ -7,6 +7,7 @@ use App\Form\DecisionFinaleType;
 use App\Repository\CandidatureRepository;
 use App\Repository\DecisionFinaleRepository;
 use App\Repository\EntretienRepository;
+use App\Service\RecruitmentService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -67,7 +68,7 @@ class DecisionFinaleController extends AbstractController
     }
 
     #[Route('/new', name: 'app_decision_finale_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, RecruitmentService $recruitmentService): Response
     {
         $decisionFinale = new DecisionFinale();
         $decisionFinale->setDateDecision(new \DateTime());
@@ -79,6 +80,12 @@ class DecisionFinaleController extends AbstractController
             $this->normalizeDecision($decisionFinale);
             $entityManager->persist($decisionFinale);
             $entityManager->flush();
+
+            try {
+                $recruitmentService->sendDecisionNotification($decisionFinale);
+            } catch (\Throwable) {
+                // Email non bloquant
+            }
 
             $this->addFlash('success', 'La décision finale a été créée.');
 
@@ -189,7 +196,7 @@ class DecisionFinaleController extends AbstractController
     }
 
     #[Route('/{id}/status', name: 'app_decision_finale_update_status', methods: ['POST'])]
-    public function updateStatus(Request $request, DecisionFinale $decisionFinale, EntityManagerInterface $entityManager): Response
+    public function updateStatus(Request $request, DecisionFinale $decisionFinale, EntityManagerInterface $entityManager, RecruitmentService $recruitmentService): Response
     {
         if (!$this->isCsrfTokenValid('update_status_decision_' . $decisionFinale->getId(), $request->request->get('_token'))) {
             $this->addFlash('error', 'Jeton CSRF invalide.');
@@ -223,6 +230,12 @@ class DecisionFinaleController extends AbstractController
         }
 
         $entityManager->flush();
+
+        try {
+            $recruitmentService->sendDecisionNotification($decisionFinale);
+        } catch (\Throwable) {
+            // Email non bloquant
+        }
 
         $this->addFlash('success', sprintf('La décision #%d a été mise à jour en %s.', $decisionFinale->getId(), $status));
 
