@@ -28,19 +28,49 @@
     </div>
 
     <div class="row">
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-3" id="field-lieu">
             {{ form_label(form.lieu) }}
             {{ form_widget(form.lieu) }}
             {{ form_errors(form.lieu) }}
             <small class="form-hint"><i class="fas fa-map-marker-alt"></i> Recommandé pour un entretien présentiel</small>
         </div>
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-3" id="field-lien" style="display:none;">
             {{ form_label(form.lien) }}
             {{ form_widget(form.lien) }}
             {{ form_errors(form.lien) }}
-            <small class="form-hint"><i class="fas fa-video"></i> Recommandé pour un entretien en ligne</small>
+            <small class="form-hint"><i class="fas fa-video"></i> Lien personnalisé (optionnel — un lien Jitsi est généré automatiquement)</small>
+        </div>
+        <div class="col-md-6 mb-3" id="field-meet-auto" style="display:none;">
+            <label class="form-label"><i class="fas fa-video"></i> Lien Meet</label>
+            <div style="padding: 8px 14px; background: rgba(212,168,67,.1); border: 1px solid rgba(212,168,67,.4); border-radius: 6px; font-size:0.88rem;">
+                <i class="fas fa-check-circle" style="color:var(--tf-gold);"></i>
+                Un lien <strong>Jitsi Meet</strong> sera généré automatiquement après enregistrement.
+            </div>
         </div>
     </div>
+<script>
+(function() {
+    const typeSelect = document.querySelector('#{{ form.type.vars.id }}');
+    const fieldLieu  = document.getElementById('field-lieu');
+    const fieldLien  = document.getElementById('field-lien');
+    const fieldAuto  = document.getElementById('field-meet-auto');
+    const lienInput  = document.querySelector('#{{ form.lien.vars.id }}');
+
+    function updateFields() {
+        const val = typeSelect ? typeSelect.value : '';
+        fieldLieu.style.display  = (val === 'EN_LIGNE') ? 'none' : '';
+        fieldLien.style.display  = 'none';
+        fieldAuto.style.display  = (val === 'EN_LIGNE') ? '' : 'none';
+        // Vider le lien pour éviter l'erreur de validation URL
+        if (val === 'EN_LIGNE' && lienInput) { lienInput.value = ''; }
+    }
+
+    if (typeSelect) {
+        typeSelect.addEventListener('change', updateFields);
+        updateFields();
+    }
+})();
+</script>
 
     <div class="row">
         <div class="col-md-6 mb-3">

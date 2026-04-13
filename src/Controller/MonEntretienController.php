@@ -15,6 +15,12 @@ class MonEntretienController extends AbstractController
     #[Route('/mon-entretien/{id}', name: 'app_mon_entretien', methods: ['GET'])]
     public function show(Entretien $entretien, CandidatureRepository $candidatureRepository): Response
     {
+        // Page uniquement disponible pour les entretiens EN_LIGNE
+        if ($entretien->getType() !== 'EN_LIGNE') {
+            $this->addFlash('info', 'Cette page est réservée aux entretiens en ligne. Consultez votre email pour les détails de votre entretien.');
+            return $this->redirectToRoute('app_dashboard');
+        }
+
         $user = $this->getUser();
 
         // RH et admin peuvent voir tous les entretiens

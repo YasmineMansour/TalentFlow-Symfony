@@ -172,6 +172,8 @@ class EntretienController extends AbstractController
 
         if ($entretien->getType() === 'EN_LIGNE') {
             $entretien->setLieu(null);
+            // Lien non nécessaire : URL Jitsi générée automatiquement via getMeetUrl()
+            $entretien->setLien(null);
         }
 
         if ($entretien->getType() === 'PRESENTIEL') {
