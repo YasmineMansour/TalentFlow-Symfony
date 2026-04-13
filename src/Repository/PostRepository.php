@@ -22,6 +22,8 @@ class PostRepository extends ServiceEntityRepository
     public function findAllOrderedByDate(): array
     {
         return $this->createQueryBuilder('p')
+            ->leftJoin('p.author', 'a')
+            ->addSelect('a')
             ->orderBy('p.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
@@ -68,21 +70,33 @@ class PostRepository extends ServiceEntityRepository
     }
 
     /**
-     * Public: all posts ordered by date, with optional search.
      * @return Post[]
      */
-    public function findPublicPosts(string $search = '', int $limit = 30): array
+    public function searchAndFilter(string $query = '', string $sort = 'recent', string $author = ''): array
     {
         $qb = $this->createQueryBuilder('p')
             ->leftJoin('p.author', 'a')
-            ->addSelect('a')
-            ->orderBy('p.createdAt', 'DESC')
-            ->setMaxResults($limit);
+            ->addSelect('a');
 
-        if ($search !== '') {
-            $qb->andWhere('p.title LIKE :q OR p.content LIKE :q OR a.nom LIKE :q')
-               ->setParameter('q', '%' . $search . '%');
+        if ($query !== '') {
+            $qb->andWhere('p.title LIKE :q OR p.content LIKE :q OR a.nom LIKE :q OR a.prenom LIKE :q')
+               ->setParameter('q', '%' . $query . '%');
         }
+
+        if ($author !== '') {
+            $qb->andWhere('CONCAT(a.prenom, \' \', a.nom) LIKE :author')
+               ->setParameter('author', '%' . $author . '%');
+        }
+
+        match ($sort) {
+            'top' => $qb->orderBy('p.upvotes', 'DESC'),
+            'oldest' => $qb->orderBy('p.createdAt', 'ASC'),
+            'comments' => $qb->leftJoin('p.comments', 'c')
+                             ->groupBy('p.id')
+                             ->addGroupBy('a.id')
+                             ->orderBy('COUNT(c.id)', 'DESC'),
+            default => $qb->orderBy('p.createdAt', 'DESC'),
+        };
 
         return $qb->getQuery()->getResult();
     }

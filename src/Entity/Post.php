@@ -25,9 +25,7 @@ class Post
     #[Assert\Length(min: 3, max: 255, minMessage: 'Le titre doit contenir au moins {{ limit }} caractères')]
     private ?string $title = null;
 
-    #[ORM\Column(type: Types::TEXT)]
-    #[Assert\NotBlank(message: 'Le contenu ne peut pas être vide')]
-    #[Assert\Length(min: 10, max: 10000, minMessage: 'Le contenu doit contenir au moins {{ limit }} caractères', maxMessage: 'Le contenu ne peut pas dépasser {{ limit }} caractères')]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $content = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
@@ -44,6 +42,9 @@ class Post
     #[ORM\Column(length: 500, nullable: true)]
     #[Assert\Length(max: 500, maxMessage: 'Le chemin de l\'image ne peut pas dépasser {{ limit }} caractères.')]
     private ?string $imagePath = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $audioPath = null;
 
     /** @var Collection<int, Comment> */
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'post', cascade: ['remove'], orphanRemoval: true)]
@@ -67,7 +68,7 @@ class Post
     public function setTitle(string $title): static { $this->title = $title; return $this; }
 
     public function getContent(): ?string { return $this->content; }
-    public function setContent(string $content): static { $this->content = $content; return $this; }
+    public function setContent(?string $content): static { $this->content = $content; return $this; }
 
     public function getAuthor(): ?User { return $this->author; }
     public function setAuthor(?User $author): static { $this->author = $author; return $this; }
@@ -75,13 +76,16 @@ class Post
     public function getUpvotes(): int { return $this->upvotes; }
     public function setUpvotes(int $upvotes): static { $this->upvotes = $upvotes; return $this; }
     public function incrementUpvotes(): static { $this->upvotes++; return $this; }
-    public function decrementUpvotes(): static { $this->upvotes = max(0, $this->upvotes - 1); return $this; }
+    public function decrementUpvotes(): static { $this->upvotes--; return $this; }
 
     public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
     public function setCreatedAt(\DateTimeImmutable $createdAt): static { $this->createdAt = $createdAt; return $this; }
 
     public function getImagePath(): ?string { return $this->imagePath; }
     public function setImagePath(?string $imagePath): static { $this->imagePath = $imagePath; return $this; }
+
+    public function getAudioPath(): ?string { return $this->audioPath; }
+    public function setAudioPath(?string $audioPath): static { $this->audioPath = $audioPath; return $this; }
 
     /** @return Collection<int, Comment> */
     public function getComments(): Collection { return $this->comments; }
