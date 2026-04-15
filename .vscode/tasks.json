@@ -1,0 +1,32 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Start TalentFlow Server",
+            "type": "shell",
+            "command": "& \"C:\\xampp\\php\\php.exe\" -S 127.0.0.1:8000 -t public",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false,
+                "clear": false
+            },
+            "problemMatcher": {
+                "owner": "custom",
+                "pattern": {
+                    "regexp": "^(.*)$",
+                    "message": 1
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".*",
+                    "endsPattern": "Development Server .* started"
+                }
+            }
+        }
+    ]
+}

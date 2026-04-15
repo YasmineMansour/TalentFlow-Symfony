@@ -19,16 +19,11 @@ class DecisionFinaleRepository extends ServiceEntityRepository
     public function search(string $search = '', string $decision = '', $entreprise = null): array
     {
         $qb = $this->createQueryBuilder('d')
-            ->join('d.entretien', 'e')
-            ->addSelect('e')
-            ->leftJoin('App\Entity\Candidature', 'c', 'WITH', 'c.id = e.candidatureId')
-            ->leftJoin('c.offre', 'o')
-            ->leftJoin('o.entreprise', 'ent')
             ->orderBy('d.dateDecision', 'DESC');
 
         if ($search !== '') {
             if (ctype_digit($search)) {
-                $qb->andWhere('d.id = :exact OR e.id = :exact OR e.candidatureId = :exact')->setParameter('exact', (int) $search);
+                $qb->andWhere('d.id = :exact')->setParameter('exact', (int) $search);
             } else {
                 $qb->andWhere('d.decision LIKE :query OR d.motif LIKE :query')->setParameter('query', '%' . $search . '%');
             }
@@ -38,11 +33,24 @@ class DecisionFinaleRepository extends ServiceEntityRepository
             $qb->andWhere('d.decision = :decision')->setParameter('decision', $decision);
         }
 
+        /** @var DecisionFinale[] $results */
+        $results = $qb->getQuery()->getResult();
+
+        // Filtre entreprise en PHP
         if ($entreprise !== null) {
-            $qb->andWhere('ent.id = :entrepriseId')->setParameter('entrepriseId', $entreprise->getId());
+            $em = $this->getEntityManager();
+            $results = array_values(array_filter($results, function (DecisionFinale $d) use ($entreprise, $em) {
+                $entretien = $d->getEntretien();
+                if ($entretien === null) return false;
+                $candidature = $em->getRepository(\App\Entity\Candidature::class)
+                    ->find($entretien->getCandidatureId() ?? 0);
+                if ($candidature === null) return false;
+                $offre = $candidature->getOffre();
+                return $offre !== null && $offre->getEntreprise()?->getId() === $entreprise->getId();
+            }));
         }
 
-        return $qb->getQuery()->getResult();
+        return $results;
     }
 
     public function countByDecision(string $decision): int
@@ -64,7 +72,6 @@ class DecisionFinaleRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('d')
             ->join('d.entretien', 'e')
-            ->addSelect('e')
             ->andWhere('d.decision = :decision')
             ->andWhere('d.score IS NOT NULL')
             ->setParameter('decision', 'EN_ATTENTE')

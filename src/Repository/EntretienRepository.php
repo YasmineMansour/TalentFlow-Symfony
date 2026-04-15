@@ -19,14 +19,7 @@ class EntretienRepository extends ServiceEntityRepository
     public function search(string $search = '', string $statut = '', string $type = '', $entreprise = null): array
     {
         $qb = $this->createQueryBuilder('e')
-            ->leftJoin('e.decisionFinale', 'd')
-            ->addSelect('d')
             ->orderBy('e.dateHeure', 'DESC');
-
-        // Join candidature via candidatureId (pas une relation Doctrine)
-        $qb->leftJoin('App\Entity\Candidature', 'c', 'WITH', 'c.id = e.candidatureId')
-            ->leftJoin('c.offre', 'o')
-            ->leftJoin('o.entreprise', 'ent');
 
         if ($search !== '') {
             if (ctype_digit($search)) {
@@ -45,11 +38,21 @@ class EntretienRepository extends ServiceEntityRepository
             $qb->andWhere('e.type = :type')->setParameter('type', $type);
         }
 
+        $results = $qb->getQuery()->getResult();
+
+        // Filtre entreprise en PHP pour éviter les joins DQL sur entités non mappées
         if ($entreprise !== null) {
-            $qb->andWhere('ent.id = :entrepriseId')->setParameter('entrepriseId', $entreprise->getId());
+            $em = $this->getEntityManager();
+            $results = array_values(array_filter($results, function (\App\Entity\Entretien $e) use ($entreprise, $em) {
+                $candidature = $em->getRepository(\App\Entity\Candidature::class)
+                    ->find($e->getCandidatureId() ?? 0);
+                if ($candidature === null) return false;
+                $offre = $candidature->getOffre();
+                return $offre !== null && $offre->getEntreprise()?->getId() === $entreprise->getId();
+            }));
         }
 
-        return $qb->getQuery()->getResult();
+        return $results;
     }
 
     public function existsConflictAtDateHeure(\DateTimeInterface $dateHeure, ?int $excludeId = null): bool

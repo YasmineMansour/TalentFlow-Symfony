@@ -247,4 +247,30 @@ class Entretien
 
         return sprintf('Entretien #%d | Candidature #%d | %s', $this->id ?? 0, $this->candidatureId ?? 0, $date);
     }
+
+    /**
+     * Retourne l'URL Jitsi Meet pour cet entretien (type EN_LIGNE uniquement).
+     */
+    public function getMeetUrl(): string
+    {
+        return 'https://meet.jit.si/talentflow-entretien-' . ($this->id ?? 'preview');
+    }
+
+    /**
+     * Retourne la décision suggérée basée sur le score calculé.
+     */
+    public function getDecisionSuggestion(): string
+    {
+        $score = $this->getScoreFinal();
+
+        if ($score === null) {
+            return 'Notes manquantes';
+        }
+
+        return match (true) {
+            $score >= 14 => 'ACCEPTE',
+            $score < 10  => 'REFUSE',
+            default      => 'EN_ATTENTE',
+        };
+    }
 }

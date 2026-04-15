@@ -1,7 +1,7 @@
 {% extends 'base_public.html.twig' %}
 
-{% block title %}Inscription - TalentFlow{% endblock %}
-{% block meta_description %}Créez votre compte TalentFlow gratuitement et accédez aux offres d'emploi, postulez et suivez vos candidatures.{% endblock %}
+{% block title %}{{ 'public.register.page_title'|trans }}{% endblock %}
+{% block meta_description %}{{ 'public.register.meta_description'|trans }}{% endblock %}
 
 {% block body %}
 <section class="tf-section" style="max-width:520px; padding-top:2rem;">
@@ -10,8 +10,8 @@
             <div style="width:60px;height:60px;border-radius:var(--tf-radius-lg);background:var(--tf-gold-bg);color:var(--tf-gold);display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto 1rem;">
                 <i class="fas fa-user-plus" aria-hidden="true"></i>
             </div>
-            <h1 style="font-size:1.5rem; font-weight:800;">Créer un compte</h1>
-            <p style="color:var(--tf-text-secondary); font-size:0.9rem;">Inscrivez-vous comme candidat pour postuler aux offres</p>
+            <h1 style="font-size:1.5rem; font-weight:800;">{{ 'public.register.title'|trans }}</h1>
+            <p style="color:var(--tf-text-secondary); font-size:0.9rem;">{{ 'public.register.subtitle'|trans }}</p>
         </div>
 
         {% if errors|length > 0 %}
@@ -30,45 +30,80 @@
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
                 <div class="tf-form-group">
-                    <label class="tf-label" for="reg-nom">Nom <span style="color:var(--tf-red);">*</span></label>
+                    <label class="tf-label" for="reg-nom">{{ 'common.name'|trans }} <span style="color:var(--tf-red);">*</span></label>
                     <input type="text" id="reg-nom" name="nom" value="{{ data.nom }}" class="tf-input" required autocomplete="family-name" aria-required="true">
                 </div>
                 <div class="tf-form-group">
-                    <label class="tf-label" for="reg-prenom">Prénom <span style="color:var(--tf-red);">*</span></label>
+                    <label class="tf-label" for="reg-prenom">{{ 'common.first_name'|trans }} <span style="color:var(--tf-red);">*</span></label>
                     <input type="text" id="reg-prenom" name="prenom" value="{{ data.prenom }}" class="tf-input" required autocomplete="given-name" aria-required="true">
                 </div>
             </div>
 
             <div class="tf-form-group">
-                <label class="tf-label" for="reg-email">Email <span style="color:var(--tf-red);">*</span></label>
+                <label class="tf-label" for="reg-email">{{ 'common.email'|trans }} <span style="color:var(--tf-red);">*</span></label>
                 <input type="email" id="reg-email" name="email" value="{{ data.email }}" class="tf-input" required autocomplete="email" aria-required="true">
             </div>
 
             <div class="tf-form-group">
-                <label class="tf-label" for="reg-tel">Téléphone</label>
+                <label class="tf-label" for="reg-tel">{{ 'common.phone'|trans }}</label>
                 <input type="tel" id="reg-tel" name="telephone" value="{{ data.telephone }}" class="tf-input" autocomplete="tel">
             </div>
 
             <div class="tf-form-group">
-                <label class="tf-label" for="reg-pass">Mot de passe <span style="color:var(--tf-red);">*</span></label>
+                <label class="tf-label" for="reg-pass">{{ 'page.login.password'|trans }} <span style="color:var(--tf-red);">*</span></label>
                 <input type="password" id="reg-pass" name="password" class="tf-input" required autocomplete="new-password" minlength="8" aria-required="true" aria-describedby="pass-hint">
-                <div id="pass-hint" style="font-size:0.78rem; color:var(--tf-text-muted); margin-top:0.3rem;">Au moins 8 caractères</div>
+                <div id="pass-hint" style="font-size:0.78rem; color:var(--tf-text-muted); margin-top:0.3rem;">{{ 'public.register.password_hint'|trans }}</div>
             </div>
 
             <div class="tf-form-group">
-                <label class="tf-label" for="reg-confirm">Confirmer le mot de passe <span style="color:var(--tf-red);">*</span></label>
+                <label class="tf-label" for="reg-confirm">{{ 'public.register.confirm_password'|trans }} <span style="color:var(--tf-red);">*</span></label>
                 <input type="password" id="reg-confirm" name="confirm_password" class="tf-input" required autocomplete="new-password" aria-required="true">
             </div>
 
+            <div class="tf-form-group" style="margin-top:0.75rem;">
+                <label style="display:flex; align-items:flex-start; gap:0.75rem; color:var(--tf-text-secondary); cursor:pointer; line-height:1.45;">
+                    <input type="checkbox" name="remember_me" value="1" {{ data.remember_me ? 'checked' }} style="margin-top:0.25rem; accent-color:var(--tf-gold);">
+                    <span>
+                        <strong style="color:var(--tf-text-primary);">{{ 'page.login.remember_me'|trans }}</strong><br>
+                        {{ 'public.register.remember_help'|trans }}
+                    </span>
+                </label>
+            </div>
+
             <button type="submit" class="tf-btn tf-btn-gold tf-btn-lg" style="width:100%; margin-top:0.5rem;">
-                <i class="fas fa-user-plus" aria-hidden="true"></i> Créer mon compte
+                <i class="fas fa-user-plus" aria-hidden="true"></i> {{ 'public.register.create_account'|trans }}
             </button>
         </form>
 
         <div style="text-align:center; margin-top:1.5rem; color:var(--tf-text-secondary); font-size:0.9rem;">
-            Déjà un compte ?
-            <a href="{{ path('app_login') }}" style="color:var(--tf-gold); text-decoration:none; font-weight:600;">Se connecter</a>
+            {{ 'public.register.already_account'|trans }}
+            <a href="{{ path('app_login') }}" style="color:var(--tf-gold); text-decoration:none; font-weight:600;">{{ 'page.login.submit'|trans }}</a>
         </div>
     </div>
 </section>
+
+<script>
+(function() {
+    var form = document.querySelector('form[action="{{ path('app_register') }}"]');
+    if (!form || !window.sessionStorage) {
+        return;
+    }
+
+    form.addEventListener('submit', function() {
+        var rememberInput = form.querySelector('input[name="remember_me"]');
+        var shouldRemember = rememberInput && rememberInput.checked;
+
+        if (!shouldRemember) {
+            sessionStorage.removeItem('tf-register-prefill');
+            return;
+        }
+
+        sessionStorage.setItem('tf-register-prefill', JSON.stringify({
+            email: form.querySelector('input[name="email"]').value || '',
+            password: form.querySelector('input[name="password"]').value || '',
+            remember: true
+        }));
+    });
+})();
+</script>
 {% endblock %}

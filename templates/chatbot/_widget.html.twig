@@ -1,0 +1,381 @@
+{# Chatbot Widget - TalentFlow #}
+<div id="tf-chatbot-widget">
+    {# Floating button #}
+    <button id="tf-chatbot-toggle" title="{{ 'chatbot.widget.title'|trans }}" aria-label="{{ 'chatbot.widget.open'|trans }}">
+        <i class="fas fa-robot" id="tf-chatbot-icon-open"></i>
+        <i class="fas fa-times" id="tf-chatbot-icon-close" style="display:none;"></i>
+    </button>
+
+    {# Chat window #}
+    <div id="tf-chatbot-window" style="display:none;">
+        <div id="tf-chatbot-header">
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+                <i class="fas fa-robot"></i>
+                <span><strong>{{ 'chatbot.widget.title'|trans }}</strong></span>
+            </div>
+            <button id="tf-chatbot-minimize" title="{{ 'chatbot.widget.minimize'|trans }}"><i class="fas fa-minus"></i></button>
+        </div>
+        <div id="tf-chatbot-messages">
+            <div class="tf-chat-msg tf-chat-bot">
+                <div class="tf-chat-bubble">
+                    {{ 'chatbot.widget.welcome'|trans|raw }}
+                </div>
+            </div>
+        </div>
+        <div id="tf-chatbot-input-area">
+            <input type="text" id="tf-chatbot-input" placeholder="{{ 'chatbot.widget.placeholder'|trans }}" autocomplete="off" maxlength="500">
+            <button id="tf-chatbot-send" title="{{ 'chatbot.widget.send'|trans }}"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+</div>
+
+<style>
+#tf-chatbot-widget {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#tf-chatbot-toggle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--tf-gold, #d4a843), var(--tf-gold-dark, #b8922f));
+    border: none;
+    color: #1a1a2e;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(212,168,67,.4);
+    transition: all .3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#tf-chatbot-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 28px rgba(212,168,67,.6);
+}
+
+#tf-chatbot-window {
+    position: absolute;
+    bottom: 70px;
+    right: 0;
+    width: 380px;
+    max-width: calc(100vw - 32px);
+    height: 520px;
+    max-height: calc(100vh - 120px);
+    background: var(--tf-card-bg, #1e2a3a);
+    border: 1px solid var(--tf-border, #2a3a4e);
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: tfChatSlideUp .3s ease;
+}
+
+@keyframes tfChatSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+#tf-chatbot-header {
+    padding: 0.8rem 1rem;
+    background: linear-gradient(135deg, var(--tf-gold, #d4a843), var(--tf-gold-dark, #b8922f));
+    color: #1a1a2e;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+#tf-chatbot-header i { font-size: 1.1rem; }
+#tf-chatbot-minimize {
+    background: none;
+    border: none;
+    color: #1a1a2e;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background .2s;
+}
+#tf-chatbot-minimize:hover { background: rgba(0,0,0,.1); }
+
+#tf-chatbot-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+#tf-chatbot-messages::-webkit-scrollbar { width: 6px; }
+#tf-chatbot-messages::-webkit-scrollbar-track { background: transparent; }
+#tf-chatbot-messages::-webkit-scrollbar-thumb { background: var(--tf-border, #2a3a4e); border-radius: 3px; }
+
+.tf-chat-msg {
+    display: flex;
+    max-width: 90%;
+}
+.tf-chat-msg.tf-chat-bot { align-self: flex-start; }
+.tf-chat-msg.tf-chat-user { align-self: flex-end; }
+
+.tf-chat-bubble {
+    padding: 0.6rem 0.9rem;
+    border-radius: 12px;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    word-break: break-word;
+}
+.tf-chat-bot .tf-chat-bubble {
+    background: rgba(212,168,67,.1);
+    border: 1px solid rgba(212,168,67,.2);
+    color: var(--tf-text, #f5f5f5);
+}
+.tf-chat-user .tf-chat-bubble {
+    background: var(--tf-gold, #d4a843);
+    color: #1a1a2e;
+    font-weight: 500;
+}
+
+.tf-chat-typing {
+    display: flex;
+    gap: 4px;
+    padding: 0.6rem 0.9rem;
+}
+.tf-chat-typing span {
+    width: 8px;
+    height: 8px;
+    background: var(--tf-gold, #d4a843);
+    border-radius: 50%;
+    animation: tfTypingDot 1.2s infinite;
+}
+.tf-chat-typing span:nth-child(2) { animation-delay: .15s; }
+.tf-chat-typing span:nth-child(3) { animation-delay: .3s; }
+@keyframes tfTypingDot {
+    0%, 80%, 100% { opacity: .3; transform: scale(.8); }
+    40% { opacity: 1; transform: scale(1); }
+}
+
+#tf-chatbot-input-area {
+    padding: 0.75rem;
+    border-top: 1px solid var(--tf-border, #2a3a4e);
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    background: var(--tf-card-bg, #1e2a3a);
+}
+#tf-chatbot-input {
+    flex: 1;
+    padding: 0.6rem 0.9rem;
+    border: 1px solid var(--tf-border, #2a3a4e);
+    border-radius: 24px;
+    background: rgba(255,255,255,.05);
+    color: var(--tf-text, #f5f5f5);
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color .2s;
+}
+#tf-chatbot-input::placeholder { color: var(--tf-gray, #a0a0b0); }
+#tf-chatbot-input:focus { border-color: var(--tf-gold, #d4a843); }
+#tf-chatbot-send {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: var(--tf-gold, #d4a843);
+    color: #1a1a2e;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .2s;
+    flex-shrink: 0;
+}
+#tf-chatbot-send:hover { background: var(--tf-gold-light, #e8c96d); }
+
+/* Light mode adjustments */
+body.light-mode #tf-chatbot-window,
+[data-theme="light"] #tf-chatbot-window {
+    background: #ffffff;
+    border-color: #dddfe2;
+}
+body.light-mode #tf-chatbot-input-area,
+[data-theme="light"] #tf-chatbot-input-area {
+    background: #ffffff;
+    border-top-color: #dddfe2;
+}
+body.light-mode #tf-chatbot-input,
+[data-theme="light"] #tf-chatbot-input {
+    background: #f5f6f7;
+    border-color: #dddfe2;
+    color: #1c1e21;
+}
+body.light-mode .tf-chat-bot .tf-chat-bubble,
+[data-theme="light"] .tf-chat-bot .tf-chat-bubble {
+    background: rgba(212,168,67,.08);
+    border-color: rgba(212,168,67,.15);
+    color: #1c1e21;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    #tf-chatbot-window {
+        width: calc(100vw - 16px);
+        right: -16px;
+        bottom: 64px;
+        height: 70vh;
+        border-radius: 12px;
+    }
+}
+</style>
+
+<script>
+(function() {
+    const i18n = {
+        botError: "{{ 'chatbot.widget.error'|trans|e('js') }}",
+        botUnavailable: "{{ 'chatbot.widget.unavailable'|trans|e('js') }}",
+        connectionError: "{{ 'chatbot.widget.connection_error'|trans|e('js') }}"
+    };
+
+    const widget = document.getElementById('tf-chatbot-widget');
+    if (!widget || widget.dataset.bound === 'true') {
+        return;
+    }
+
+    widget.dataset.bound = 'true';
+
+    const toggle = document.getElementById('tf-chatbot-toggle');
+    const win = document.getElementById('tf-chatbot-window');
+    const minimize = document.getElementById('tf-chatbot-minimize');
+    const input = document.getElementById('tf-chatbot-input');
+    const sendBtn = document.getElementById('tf-chatbot-send');
+    const msgContainer = document.getElementById('tf-chatbot-messages');
+    const iconOpen = document.getElementById('tf-chatbot-icon-open');
+    const iconClose = document.getElementById('tf-chatbot-icon-close');
+    if (!toggle || !win || !minimize || !input || !sendBtn || !msgContainer || !iconOpen || !iconClose) {
+        return;
+    }
+
+    let isOpen = false;
+    let isSending = false;
+
+    function toggleChat() {
+        isOpen = !isOpen;
+        win.style.display = isOpen ? 'flex' : 'none';
+        iconOpen.style.display = isOpen ? 'none' : '';
+        iconClose.style.display = isOpen ? '' : 'none';
+        if (isOpen) {
+            input.focus();
+            scrollToBottom();
+        }
+    }
+
+    toggle.addEventListener('click', toggleChat);
+    minimize.addEventListener('click', toggleChat);
+
+    function scrollToBottom() {
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+    }
+
+    function addMessage(text, isUser) {
+        const div = document.createElement('div');
+        div.className = 'tf-chat-msg ' + (isUser ? 'tf-chat-user' : 'tf-chat-bot');
+        const bubble = document.createElement('div');
+        bubble.className = 'tf-chat-bubble';
+        bubble.innerHTML = isUser ? escapeHtml(text) : formatMarkdown(text);
+        div.appendChild(bubble);
+        msgContainer.appendChild(div);
+        scrollToBottom();
+    }
+
+    function showTyping() {
+        const div = document.createElement('div');
+        div.className = 'tf-chat-msg tf-chat-bot';
+        div.id = 'tf-typing';
+        div.innerHTML = '<div class="tf-chat-typing"><span></span><span></span><span></span></div>';
+        msgContainer.appendChild(div);
+        scrollToBottom();
+    }
+
+    function removeTyping() {
+        const el = document.getElementById('tf-typing');
+        if (el) el.remove();
+    }
+
+    function setSendingState(sending) {
+        isSending = sending;
+        input.disabled = sending;
+        sendBtn.disabled = sending;
+        sendBtn.style.opacity = sending ? '0.7' : '1';
+        sendBtn.style.cursor = sending ? 'wait' : 'pointer';
+    }
+
+    function escapeHtml(text) {
+        const d = document.createElement('div');
+        d.textContent = text;
+        return d.innerHTML;
+    }
+
+    function formatMarkdown(text) {
+        // Convert markdown-like syntax to HTML
+        return text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" style="color:var(--tf-gold);text-decoration:underline;">$1</a>')
+            .replace(/\n/g, '<br>')
+            .replace(/• /g, '&bull; ');
+    }
+
+    async function sendMessage() {
+        const text = input.value.trim();
+        if (!text || isSending) return;
+
+        input.value = '';
+        addMessage(text, true);
+        showTyping();
+        setSendingState(true);
+
+        try {
+            const resp = await fetch('{{ path("app_chatbot_message") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text })
+            });
+
+            const contentType = resp.headers.get('content-type') || '';
+            let data = null;
+            if (contentType.includes('application/json')) {
+                data = await resp.json();
+            }
+
+            removeTyping();
+            if (!resp.ok) {
+                addMessage((data && data.response) || i18n.botError, false);
+            } else {
+                addMessage((data && data.response) || i18n.botUnavailable, false);
+            }
+        } catch (e) {
+            removeTyping();
+            addMessage(i18n.connectionError, false);
+        } finally {
+            setSendingState(false);
+            if (isOpen) {
+                input.focus();
+            }
+        }
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+})();
+</script>

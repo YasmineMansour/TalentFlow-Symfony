@@ -9,9 +9,14 @@
         <h2 class="tf-title mb-0">
             <i class="fas fa-users"></i> Gestion des Utilisateurs
         </h2>
-        <a href="{{ path('app_user_new') }}" class="btn-gold">
-            <i class="fas fa-user-plus"></i> Nouvel Utilisateur
-        </a>
+        <div class="d-flex gap-2">
+            <a href="{{ path('app_user_export_pdf', {'search': search, 'role': role}) }}" class="btn-outline-gold">
+                <i class="fas fa-file-pdf"></i> Export PDF
+            </a>
+            <a href="{{ path('app_user_new') }}" class="btn-gold">
+                <i class="fas fa-user-plus"></i> Nouvel Utilisateur
+            </a>
+        </div>
     </div>
 
     {# Search and filter bar #}
@@ -64,6 +69,12 @@
                     {% else %}
                         <span class="tf-tag-sm tf-tag-gray">Utilisateur</span>
                     {% endif %}
+
+                    {% if user.isActive %}
+                        <span class="tf-tag-sm" style="background:rgba(39,174,96,.15);color:#27ae60;"><i class="fas fa-check-circle"></i> Actif</span>
+                    {% else %}
+                        <span class="tf-tag-sm" style="background:rgba(231,76,60,.15);color:#e74c3c;"><i class="fas fa-ban"></i> Désactivé</span>
+                    {% endif %}
                 </div>
                 <div class="tf-item-card-meta">
                     {% if user.telephone %}
@@ -74,6 +85,22 @@
                 <div class="tf-item-card-actions">
                     <a href="{{ path('app_user_show', {'id': user.id}) }}" class="btn btn-sm btn-outline-light"><i class="fas fa-eye"></i></a>
                     <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i></a>
+                    {% if user.id != app.user.id %}
+                    <form method="post" action="{{ path('app_user_toggle_active', {'id': user.id}) }}"
+                          onsubmit="event.preventDefault(); confirmToggleActive(this, '{{ user.fullName|e('js') }}', {{ user.isActive ? 'true' : 'false' }});"
+                          style="display: inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('toggle_active' ~ user.id) }}">
+                        {% if user.isActive %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Désactiver le compte">
+                                <i class="fas fa-user-slash"></i>
+                            </button>
+                        {% else %}
+                            <button type="submit" class="btn btn-sm btn-outline-success" title="Réactiver le compte">
+                                <i class="fas fa-user-check"></i>
+                            </button>
+                        {% endif %}
+                    </form>
+                    {% endif %}
                     <form method="post" action="{{ path('app_user_delete', {'id': user.id}) }}" 
                           onsubmit="event.preventDefault(); confirmDelete(this, '{{ user.fullName|e('js') }}');"
                           style="display: inline;">
@@ -94,4 +121,28 @@
         </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+function confirmToggleActive(formEl, name, isCurrentlyActive) {
+    if (isCurrentlyActive) {
+        showConfirmModal({
+            title: 'Désactiver le compte',
+            message: 'Voulez-vous vraiment désactiver le compte de <strong style="color:#e74c3c">' + name + '</strong> ?<br><small style="color:#a0a0b0">L\'utilisateur ne pourra plus se connecter.</small>',
+            icon: 'fa-user-slash', iconClass: 'danger', btnClass: 'btn-confirm-danger',
+            confirmIcon: 'fa-user-slash', confirmText: 'Oui, désactiver',
+            onConfirm: function() { formEl.submit(); }
+        });
+    } else {
+        showConfirmModal({
+            title: 'Réactiver le compte',
+            message: 'Voulez-vous réactiver le compte de <strong style="color:#27ae60">' + name + '</strong> ?',
+            icon: 'fa-user-check', iconClass: 'success', btnClass: 'btn-confirm-gold',
+            confirmIcon: 'fa-user-check', confirmText: 'Oui, réactiver',
+            onConfirm: function() { formEl.submit(); }
+        });
+    }
+}
+</script>
 {% endblock %}

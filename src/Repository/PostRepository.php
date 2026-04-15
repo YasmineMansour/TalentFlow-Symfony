@@ -42,21 +42,20 @@ class PostRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    /**
-     * Public: all posts ordered by date, with optional search.
-     * @return Post[]
-     */
-    public function findPublicPosts(string $search = '', int $limit = 30): array
+        /**
+        * @return Post[]
+        */
+    public function findPublicPosts(string $search = ''): array
     {
         $qb = $this->createQueryBuilder('p')
             ->leftJoin('p.author', 'a')
             ->addSelect('a')
-            ->orderBy('p.createdAt', 'DESC')
-            ->setMaxResults($limit);
+            ->orderBy('p.createdAt', 'DESC');
 
         if ($search !== '') {
-            $qb->andWhere('p.title LIKE :q OR p.content LIKE :q OR a.nom LIKE :q')
-               ->setParameter('q', '%' . $search . '%');
+            $qb
+                ->andWhere('p.title LIKE :search OR p.content LIKE :search OR a.nom LIKE :search OR a.prenom LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
         }
 
         return $qb->getQuery()->getResult();

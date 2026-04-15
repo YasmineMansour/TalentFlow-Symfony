@@ -2,7 +2,7 @@
 
 {% block title %}TalentFlow - Messages{% endblock %}
 
-{% block page_title %}Messages{% endblock %}
+{% block page_title %}{% endblock %}
 
 {% block stylesheets %}
 <style>
@@ -471,9 +471,9 @@
     .dm-back-btn:hover { background: rgba(212,168,67,0.1); }
 
     /* Light mode */
-    body.light-mode .dm-msg-row.other .dm-msg-bubble { background: #f0f2f5; border-color: #dddfe2; }
-    body.light-mode .dm-conv-item:hover { background: #f0f2f5; }
-    body.light-mode .dm-conv-item.active { background: rgba(212,168,67,0.08); }
+    [data-theme="light"] .dm-msg-row.other .dm-msg-bubble { background: #f0f2f5; border-color: #dddfe2; }
+    [data-theme="light"] .dm-conv-item:hover { background: #f0f2f5; }
+    [data-theme="light"] .dm-conv-item.active { background: rgba(212,168,67,0.08); }
 
     /* ── Message actions (edit/delete) ── */
     .dm-msg-actions {
@@ -614,9 +614,9 @@
         cursor: pointer; transition: all 0.15s;
     }
     .dm-confirm-delete:hover { background: #c0392b; }
-    body.light-mode .dm-confirm-box { background: #fff; }
-    body.light-mode .dm-confirm-cancel { border-color: #dddfe2; color: #1c1e21; }
-    body.light-mode .dm-confirm-cancel:hover { background: #f0f2f5; }
+    [data-theme="light"] .dm-confirm-box { background: #fff; }
+    [data-theme="light"] .dm-confirm-cancel { border-color: #dddfe2; color: #1c1e21; }
+    [data-theme="light"] .dm-confirm-cancel:hover { background: #f0f2f5; }
 
     /* ── Notification toast ── */
     .dm-notif-toast {

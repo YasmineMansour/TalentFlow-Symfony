@@ -46,7 +46,7 @@
 <section class="tf-section" style="max-width:900px;">
     <div style="margin-bottom:1.5rem;">
         <a href="{{ path('public_offres') }}" style="color:var(--tf-text-muted); text-decoration:none; font-size:0.9rem; display:inline-flex; align-items:center; gap:0.4rem; transition: color 0.2s;">
-            <i class="fas fa-arrow-left" aria-hidden="true"></i> Retour aux offres
+            <i class="fas fa-arrow-left" aria-hidden="true"></i> {{ 'public.offer.back_to_offers'|trans }}
         </a>
     </div>
 
@@ -65,11 +65,11 @@
             <div class="tf-offre-tags" style="margin-bottom:1.5rem;">
                 <span class="tf-tag tf-tag-gold">{{ offre.typeContrat }}</span>
                 {% if offre.modeTravail == 'REMOTE' %}
-                    <span class="tf-tag tf-tag-green">Télétravail</span>
+                    <span class="tf-tag tf-tag-green">{{ 'public.mode.remote'|trans }}</span>
                 {% elseif offre.modeTravail == 'HYBRID' %}
-                    <span class="tf-tag tf-tag-blue">Hybride</span>
+                    <span class="tf-tag tf-tag-blue">{{ 'public.mode.hybrid'|trans }}</span>
                 {% else %}
-                    <span class="tf-tag tf-tag-purple">Présentiel</span>
+                    <span class="tf-tag tf-tag-purple">{{ 'public.mode.onsite'|trans }}</span>
                 {% endif %}
                 {% if offre.categorie %}
                     <span class="tf-tag tf-tag-orange">{{ offre.categorie.nom }}</span>
@@ -81,30 +81,30 @@
         <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:1rem; margin-bottom:2rem; padding:1.25rem; background:var(--tf-bg-alt); border-radius:var(--tf-radius);">
             <div>
                 <div style="font-size:0.78rem; color:var(--tf-text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.25rem;">
-                    <i class="fas fa-map-marker-alt" aria-hidden="true"></i> Localisation
+                    <i class="fas fa-map-marker-alt" aria-hidden="true"></i> {{ 'public.offer.location'|trans }}
                 </div>
-                <div style="font-weight:600;">{{ offre.localisation|default('Non précisé') }}</div>
+                <div style="font-weight:600;">{{ offre.localisation|default('public.home.location_unspecified'|trans) }}</div>
             </div>
             <div>
                 <div style="font-size:0.78rem; color:var(--tf-text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.25rem;">
-                    <i class="fas fa-file-contract" aria-hidden="true"></i> Contrat
+                    <i class="fas fa-file-contract" aria-hidden="true"></i> {{ 'public.offer.contract'|trans }}
                 </div>
                 <div style="font-weight:600;">{{ offre.typeContrat }}</div>
             </div>
             <div>
                 <div style="font-size:0.78rem; color:var(--tf-text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.25rem;">
-                    <i class="fas fa-laptop-house" aria-hidden="true"></i> Mode
+                    <i class="fas fa-laptop-house" aria-hidden="true"></i> {{ 'public.offer.mode'|trans }}
                 </div>
                 <div style="font-weight:600;">
-                    {% if offre.modeTravail == 'REMOTE' %}Télétravail
-                    {% elseif offre.modeTravail == 'HYBRID' %}Hybride
-                    {% else %}Présentiel{% endif %}
+                    {% if offre.modeTravail == 'REMOTE' %}{{ 'public.mode.remote'|trans }}
+                    {% elseif offre.modeTravail == 'HYBRID' %}{{ 'public.mode.hybrid'|trans }}
+                    {% else %}{{ 'public.mode.onsite'|trans }}{% endif %}
                 </div>
             </div>
             {% if offre.salaireMin or offre.salaireMax %}
             <div>
                 <div style="font-size:0.78rem; color:var(--tf-text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.25rem;">
-                    <i class="fas fa-coins" aria-hidden="true"></i> Salaire
+                    <i class="fas fa-coins" aria-hidden="true"></i> {{ 'public.offer.salary'|trans }}
                 </div>
                 <div style="font-weight:600; color:var(--tf-gold);">{{ offre.salaireMin }} – {{ offre.salaireMax }} TND</div>
             </div>
@@ -114,15 +114,32 @@
         {# ====== DESCRIPTION ====== #}
         {% if offre.description %}
         <div style="margin-bottom:2rem;">
-            <h2 style="font-size:1.15rem; font-weight:700; margin-bottom:0.75rem; color:var(--tf-text);">Description du poste</h2>
+            <h2 style="font-size:1.15rem; font-weight:700; margin-bottom:0.75rem; color:var(--tf-text);">{{ 'public.offer.description_title'|trans }}</h2>
             <div itemprop="description" style="color:var(--tf-text-secondary); line-height:1.8; white-space:pre-line;">{{ offre.description }}</div>
+        </div>
+        {% endif %}
+
+        {% if offre.localisation %}
+        <div style="margin-bottom:2rem;">
+            <h2 style="font-size:1.15rem; font-weight:700; margin-bottom:0.75rem; color:var(--tf-text);">
+                <i class="fas fa-map-marked-alt" aria-hidden="true"></i> {{ 'public.offer.map_title'|trans }}
+            </h2>
+            <div style="border:1px solid var(--tf-border); border-radius:12px; overflow:hidden; min-height:320px;">
+                <iframe
+                    src="https://www.google.com/maps?q={{ (offre.localisation ~ ', Tunisie')|url_encode }}&output=embed"
+                    style="width:100%; height:320px; border:0;"
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                    title="{{ 'public.offer.map_iframe_title'|trans }}">
+                </iframe>
+            </div>
         </div>
         {% endif %}
 
         {# ====== AVANTAGES ====== #}
         {% if offre.avantages is defined and offre.avantages|length > 0 %}
         <div style="margin-bottom:2rem;">
-            <h2 style="font-size:1.15rem; font-weight:700; margin-bottom:0.75rem; color:var(--tf-text);">Avantages</h2>
+            <h2 style="font-size:1.15rem; font-weight:700; margin-bottom:0.75rem; color:var(--tf-text);">{{ 'public.offer.benefits_title'|trans }}</h2>
             <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
                 {% for avantage in offre.avantages %}
                 <span class="tf-tag tf-tag-green"><i class="fas fa-check" aria-hidden="true"></i> {{ avantage.nom }}</span>
@@ -135,18 +152,18 @@
         <div style="padding-top:1.5rem; border-top:1px solid var(--tf-border); display:flex; gap:1rem; flex-wrap:wrap; align-items:center;">
             {% if app.user and is_granted('ROLE_CANDIDAT') %}
                 <a href="{{ path('app_candidature_new', {offre: offre.id}) }}" class="tf-btn tf-btn-gold tf-btn-lg">
-                    <i class="fas fa-paper-plane" aria-hidden="true"></i> Postuler maintenant
+                    <i class="fas fa-paper-plane" aria-hidden="true"></i> {{ 'public.offer.apply_now'|trans }}
                 </a>
             {% elseif not app.user %}
                 <a href="{{ path('app_login') }}" class="tf-btn tf-btn-gold tf-btn-lg">
-                    <i class="fas fa-sign-in-alt" aria-hidden="true"></i> Connectez-vous pour postuler
+                    <i class="fas fa-sign-in-alt" aria-hidden="true"></i> {{ 'public.offer.login_to_apply'|trans }}
                 </a>
                 <a href="{{ path('app_register') }}" class="tf-btn tf-btn-outline">
-                    <i class="fas fa-user-plus" aria-hidden="true"></i> Créer un compte
+                    <i class="fas fa-user-plus" aria-hidden="true"></i> {{ 'public.offer.create_account'|trans }}
                 </a>
             {% endif %}
             <a href="{{ path('public_offres') }}" class="tf-btn tf-btn-ghost">
-                <i class="fas fa-arrow-left" aria-hidden="true"></i> Autres offres
+                <i class="fas fa-arrow-left" aria-hidden="true"></i> {{ 'public.offer.other_offers'|trans }}
             </a>
         </div>
     </article>

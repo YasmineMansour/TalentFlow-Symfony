@@ -20,6 +20,11 @@ security:
                 check_path: app_login
                 default_target_path: app_dashboard
                 enable_csrf: true
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800
+                path: /
+                remember_me_parameter: _remember_me
             two_factor:
                 auth_form_path: 2fa_login
                 check_path: 2fa_login_check
@@ -31,12 +36,15 @@ security:
             # https://symfony.com/doc/current/security.html#the-firewall
 
             # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
+            switch_user:
+                role: ROLE_ADMIN
+                parameter: _switch_user
 
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
         - { path: ^/$, roles: PUBLIC_ACCESS }
+        - { path: ^/switch-locale, roles: PUBLIC_ACCESS }
         - { path: ^/offres, roles: PUBLIC_ACCESS }
         - { path: ^/forum$, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
@@ -45,12 +53,16 @@ security:
         - { path: ^/reset-password, roles: PUBLIC_ACCESS }
         - { path: ^/css/, roles: PUBLIC_ACCESS }
         - { path: ^/js/, roles: PUBLIC_ACCESS }
+        - { path: ^/chatbot, roles: PUBLIC_ACCESS }
         - { path: ^/2fa, role: IS_AUTHENTICATED_2FA_IN_PROGRESS }
         - { path: ^/dashboard, roles: ROLE_USER }
-        - { path: ^/admin, roles: ROLE_ADMIN }
+    - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/call, roles: ROLE_USER }
         - { path: ^/message, roles: ROLE_USER }
         - { path: ^/user, roles: ROLE_ADMIN }
+        - { path: ^/avatar, roles: PUBLIC_ACCESS }
+        - { path: ^/magic-link, roles: PUBLIC_ACCESS }
+        - { path: ^/mon-entretien, roles: ROLE_USER }
 
     role_hierarchy:
         ROLE_RH: ROLE_USER

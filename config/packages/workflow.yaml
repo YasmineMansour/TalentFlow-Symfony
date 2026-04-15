@@ -1,0 +1,32 @@
+framework:
+    workflows:
+        candidature_process:
+            type: 'state_machine'
+            marking_store:
+                type: 'method'
+                property: 'statut'
+            supports:
+                - App\Entity\Candidature
+            initial_marking: 'En attente'
+            places:
+                - 'En attente'
+                - 'Validée RH'
+                - 'Entretien'
+                - 'Acceptée'
+                - 'Refusée'
+            transitions:
+                validate_rh:
+                    from: 'En attente'
+                    to: 'Validée RH'
+                schedule_interview:
+                    from: 'Validée RH'
+                    to: 'Entretien'
+                accept:
+                    from: 'Entretien'
+                    to: 'Acceptée'
+                reject:
+                    from:
+                        - 'En attente'
+                        - 'Validée RH'
+                        - 'Entretien'
+                    to: 'Refusée'

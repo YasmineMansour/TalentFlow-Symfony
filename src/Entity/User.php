@@ -91,6 +91,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     #[ORM\Column(options: ['default' => false])]
     private bool $blocked = false;
 
+    /**
+     * Indique si le compte est actif. Contrôlé par l'administrateur.
+     */
+    #[ORM\Column(options: ['default' => true])]
+    private bool $isActive = true;
+
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $lastLoginAt = null;
 
@@ -106,6 +112,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     #[ORM\Column(options: ['default' => true])]
     private bool $twoFactorEnabled = true;
 
+    /** Titre professionnel (ex: Développeur PHP, Chef de projet) */
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $titrePoste = null;
+
+    /** Biographie courte visible sur le profil */
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $bio = null;
+
     /** @var Collection<int, Post> */
     #[ORM\OneToMany(targetEntity: Post::class, mappedBy: 'author')]
     private Collection $posts;
@@ -118,11 +132,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     #[ORM\JoinColumn(nullable: true)]
     private ?Entreprise $entreprise = null;
 
+    /** @var Collection<int, UserLog> */
+    #[ORM\OneToMany(targetEntity: UserLog::class, mappedBy: 'user', cascade: ['remove'])]
+    private Collection $userLogs;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->posts = new ArrayCollection();
         $this->comments = new ArrayCollection();
+        $this->userLogs = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -298,6 +317,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
         return $this;
     }
 
+    public function isActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): static
+    {
+        $this->isActive = $isActive;
+        return $this;
+    }
+
     public function getLastLoginAt(): ?\DateTimeImmutable
     {
         return $this->lastLoginAt;
@@ -387,4 +417,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
         $this->entreprise = $entreprise;
         return $this;
     }
+
+    public function getTitrePoste(): ?string { return $this->titrePoste; }
+    public function setTitrePoste(?string $titrePoste): static { $this->titrePoste = $titrePoste; return $this; }
+
+    public function getBio(): ?string { return $this->bio; }
+    public function setBio(?string $bio): static { $this->bio = $bio; return $this; }
+
+    /** @return Collection<int, UserLog> */
+    public function getUserLogs(): Collection { return $this->userLogs; }
 }
