@@ -33,6 +33,7 @@ class RegistrationController extends AbstractController
             'prenom' => '',
             'email' => '',
             'telephone' => '',
+            'remember_me' => false,
         ];
 
         if ($request->isMethod('POST')) {
@@ -41,6 +42,7 @@ class RegistrationController extends AbstractController
                 'prenom' => trim($request->request->get('prenom', '')),
                 'email' => trim($request->request->get('email', '')),
                 'telephone' => trim($request->request->get('telephone', '')),
+                'remember_me' => $request->request->getBoolean('remember_me'),
             ];
             $password = $request->request->get('password', '');
             $confirmPassword = $request->request->get('confirm_password', '');

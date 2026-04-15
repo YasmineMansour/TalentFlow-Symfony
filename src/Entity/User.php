@@ -91,6 +91,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     #[ORM\Column(options: ['default' => false])]
     private bool $blocked = false;
 
+    /**
+     * Indique si le compte est actif. Contrôlé par l'administrateur.
+     */
+    #[ORM\Column(options: ['default' => true])]
+    private bool $isActive = true;
+
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $lastLoginAt = null;
 
@@ -308,6 +314,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     public function setBlocked(bool $blocked): static
     {
         $this->blocked = $blocked;
+        return $this;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): static
+    {
+        $this->isActive = $isActive;
         return $this;
     }
 

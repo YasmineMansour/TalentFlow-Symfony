@@ -1107,6 +1107,80 @@
                 }
             })();
         </script>
+        <script>
+        function showConfirmModal(options) {
+            const old = document.getElementById('tfConfirmModal');
+            if (old) {
+                old.remove();
+            }
+
+            const iconClass = options.iconClass || 'danger';
+            const icon = options.icon || 'fa-exclamation-triangle';
+            const btnClass = options.btnClass || 'btn-confirm-danger';
+            const modal = document.createElement('div');
+            modal.id = 'tfConfirmModal';
+            modal.className = 'tf-modal-backdrop show';
+            modal.innerHTML = `
+                <div class="tf-modal-box">
+                    <div class="tf-modal-icon ${iconClass}"><i class="fas ${icon}"></i></div>
+                    <div class="tf-modal-title">${options.title || 'Confirmation'}</div>
+                    <div class="tf-modal-text">${options.message || ''}</div>
+                    <div class="tf-modal-actions">
+                        <button type="button" class="btn-cancel" id="tfConfirmCancelBtn"><i class="fas fa-times"></i> Annuler</button>
+                        <button type="button" class="${btnClass}" id="tfConfirmBtn"><i class="fas ${options.confirmIcon || icon}"></i> ${options.confirmText || 'Confirmer'}</button>
+                    </div>
+                </div>`;
+
+            document.body.appendChild(modal);
+
+            const closeHandler = function() {
+                closeConfirmModal();
+                document.removeEventListener('keydown', escHandler);
+            };
+
+            const escHandler = function(event) {
+                if (event.key === 'Escape') {
+                    closeHandler();
+                }
+            };
+
+            modal.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    closeHandler();
+                }
+            });
+
+            document.getElementById('tfConfirmCancelBtn').addEventListener('click', closeHandler);
+            document.getElementById('tfConfirmBtn').addEventListener('click', function() {
+                closeHandler();
+                if (typeof options.onConfirm === 'function') {
+                    options.onConfirm();
+                }
+            });
+
+            document.addEventListener('keydown', escHandler);
+        }
+
+        function closeConfirmModal() {
+            const modal = document.getElementById('tfConfirmModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        function confirmDelete(formEl, name) {
+            showConfirmModal({
+                title: 'Supprimer l\'élément',
+                message: 'Voulez-vous vraiment supprimer <strong style="color:#e74c3c">' + name + '</strong> ?<br><small style="color:#a0a0b0">Cette action est irréversible.</small>',
+                icon: 'fa-trash-alt',
+                iconClass: 'danger',
+                btnClass: 'btn-confirm-danger',
+                confirmIcon: 'fa-trash',
+                confirmText: 'Oui, supprimer',
+                onConfirm: function() { formEl.submit(); }
+            });
+        }
+        </script>
         {% if app.user %}
         <script>
         (function(){
@@ -1145,5 +1219,6 @@
         </script>
         {% endif %}
         {% block javascripts %}{% endblock %}
+        {% include 'chatbot/_widget.html.twig' %}
     </body>
 </html>

@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use App\Entity\User;
 use App\Form\UserType;
 use App\Repository\UserLogRepository;
@@ -35,20 +37,30 @@ class UserController extends AbstractController
     {
         $search = $request->query->get('search', '');
         $role = $request->query->get('role', '');
-
-        if (!empty($search)) {
-            $users = $userRepository->searchByName($search);
-        } elseif (!empty($role)) {
-            $users = $userRepository->findByRole($role);
-        } else {
-            $users = $userRepository->findAllOrdered();
-        }
+        $users = $this->resolveFilteredUsers($userRepository, $search, $role);
 
         return $this->render('user/index.html.twig', [
             'users' => $users,
             'search' => $search,
             'role' => $role,
         ]);
+    }
+
+    #[Route('/export/pdf', name: 'app_user_export_pdf', methods: ['GET'])]
+    public function exportPdf(Request $request, UserRepository $userRepository): Response
+    {
+        $search = $request->query->get('search', '');
+        $role = $request->query->get('role', '');
+        $users = $this->resolveFilteredUsers($userRepository, $search, $role);
+
+        $html = $this->renderView('user/export_pdf.html.twig', [
+            'users' => $users,
+            'search' => $search,
+            'role' => $role,
+            'exportedAt' => new \DateTimeImmutable(),
+        ]);
+
+        return $this->createPdfResponse($html, 'utilisateurs-talentflow.pdf', 'landscape');
     }
 
     /**
@@ -151,6 +163,26 @@ class UserController extends AbstractController
             'loginHistory'   => $logs,
             'avatarSvg'      => $avatar,
         ]);
+    }
+
+    #[Route('/{id}/export/pdf', name: 'app_user_export_single_pdf', methods: ['GET'])]
+    public function exportSinglePdf(User $user, UserLogRepository $userLogRepository): Response
+    {
+        $score = $this->profileCompletion->getScore($user);
+        $missing = $this->profileCompletion->getMissingFields($user);
+        $logs = $userLogRepository->findRecentByUser($user, 10);
+
+        $html = $this->renderView('user/export_single_pdf.html.twig', [
+            'user' => $user,
+            'profileScore' => $score,
+            'missingFields' => $missing,
+            'loginHistory' => $logs,
+            'exportedAt' => new \DateTimeImmutable(),
+        ]);
+
+        $filename = sprintf('utilisateur-%d-%s.pdf', $user->getId(), strtolower($user->getNom() ?? 'profil'));
+
+        return $this->createPdfResponse($html, $filename);
     }
 
     /**
@@ -269,5 +301,68 @@ class UserController extends AbstractController
         }
 
         return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    /**
+     * TOGGLE ACTIVE - Activation/désactivation d'un compte utilisateur par l'admin.
+     */
+    #[Route('/{id}/toggle-active', name: 'app_user_toggle_active', methods: ['POST'])]
+    public function toggleActive(Request $request, User $user, EntityManagerInterface $entityManager): Response
+    {
+        /** @var User $currentUser */
+        $currentUser = $this->getUser();
+
+        // Empêcher l'admin de se désactiver lui-même
+        if ($currentUser->getId() === $user->getId()) {
+            $this->addFlash('error', 'Vous ne pouvez pas désactiver votre propre compte.');
+            return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        if ($this->isCsrfTokenValid('toggle_active' . $user->getId(), $request->request->get('_token'))) {
+            $user->setIsActive(!$user->isActive());
+            $user->setUpdatedAt(new \DateTimeImmutable());
+            $entityManager->flush();
+
+            $status = $user->isActive() ? 'activé' : 'désactivé';
+            $this->addFlash('success', 'Le compte de "' . $user->getFullName() . '" a été ' . $status . ' avec succès.');
+        } else {
+            $this->addFlash('error', 'Jeton CSRF invalide.');
+        }
+
+        return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    /**
+     * @return User[]
+     */
+    private function resolveFilteredUsers(UserRepository $userRepository, string $search, string $role): array
+    {
+        if ($search !== '') {
+            return $userRepository->searchByName($search);
+        }
+
+        if ($role !== '') {
+            return $userRepository->findByRole($role);
+        }
+
+        return $userRepository->findAllOrdered();
+    }
+
+    private function createPdfResponse(string $html, string $filename, string $orientation = 'portrait'): Response
+    {
+        $options = new Options();
+        $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isRemoteEnabled', false);
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', $orientation);
+        $dompdf->render();
+
+        $response = new Response($dompdf->output());
+        $response->headers->set('Content-Type', 'application/pdf');
+        $response->headers->set('Content-Disposition', 'attachment; filename="' . $filename . '"');
+
+        return $response;
     }
 }

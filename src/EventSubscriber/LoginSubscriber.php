@@ -54,8 +54,16 @@ class LoginSubscriber implements EventSubscriberInterface
         }
 
         $passport = $event->getPassport();
-        $email = $passport->getUser()->getUserIdentifier();
+        $user = $passport->getUser();
+        $email = $user->getUserIdentifier();
         $ip = $request->getClientIp() ?? '0.0.0.0';
+
+        // Vérifier si le compte est désactivé par l'admin
+        if ($user instanceof User && !$user->isActive()) {
+            throw new CustomUserMessageAuthenticationException(
+                'Votre compte a été désactivé par un administrateur. Veuillez contacter le support.'
+            );
+        }
 
         if ($this->loginTracker->isBlocked($email)) {
             $minutes = $this->loginTracker->getLockoutRemainingMinutes($email);

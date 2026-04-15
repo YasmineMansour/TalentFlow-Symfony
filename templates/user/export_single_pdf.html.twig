@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Fiche utilisateur {{ user.fullName }}</title>
+    <style>
+        body { font-family: DejaVu Sans, sans-serif; color: #1a1a2e; font-size: 12px; }
+        h1 { margin: 0 0 4px; color: #b8922f; font-size: 24px; }
+        h2 { margin: 18px 0 8px; color: #16213e; font-size: 16px; }
+        .sub { color: #4b5563; margin-bottom: 16px; }
+        .card { border: 1px solid #d9dde6; border-radius: 6px; padding: 12px; margin-bottom: 12px; }
+        .grid { width: 100%; border-collapse: collapse; }
+        .grid td { padding: 6px 0; vertical-align: top; }
+        .label { width: 160px; color: #4b5563; font-weight: 700; }
+        table.logs { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        table.logs th, table.logs td { border: 1px solid #d9dde6; padding: 8px; }
+        table.logs th { background: #1a1a2e; color: #ffffff; text-align: left; }
+        .good { color: #1f7a3f; }
+        .bad { color: #b42318; }
+    </style>
+</head>
+<body>
+    <h1>{{ user.fullName }}</h1>
+    <div class="sub">Fiche utilisateur exportée le {{ exportedAt|date('d/m/Y à H:i') }}</div>
+
+    <div class="card">
+        <h2>Informations générales</h2>
+        <table class="grid">
+            <tr><td class="label">ID</td><td>{{ user.id }}</td></tr>
+            <tr><td class="label">Nom</td><td>{{ user.nom }}</td></tr>
+            <tr><td class="label">Prénom</td><td>{{ user.prenom }}</td></tr>
+            <tr><td class="label">Email</td><td>{{ user.email }}</td></tr>
+            <tr><td class="label">Téléphone</td><td>{{ user.telephone ?: '—' }}</td></tr>
+            <tr><td class="label">Rôle</td><td>{{ user.roleLabel }}</td></tr>
+            <tr><td class="label">Statut</td><td>{{ user.isActive ? 'Actif' : 'Désactivé' }}</td></tr>
+            <tr><td class="label">2FA</td><td>{{ user.twoFactorEnabled ? 'Activée' : 'Désactivée' }}</td></tr>
+            <tr><td class="label">Compte bloqué</td><td>{{ user.blocked ? 'Oui' : 'Non' }}</td></tr>
+            <tr><td class="label">Dernière connexion</td><td>{{ user.lastLoginAt ? user.lastLoginAt|date('d/m/Y H:i') : 'Jamais' }}</td></tr>
+            <tr><td class="label">Créé le</td><td>{{ user.createdAt ? user.createdAt|date('d/m/Y H:i') : '—' }}</td></tr>
+            <tr><td class="label">Modifié le</td><td>{{ user.updatedAt ? user.updatedAt|date('d/m/Y H:i') : '—' }}</td></tr>
+            {% if user.titrePoste %}<tr><td class="label">Titre</td><td>{{ user.titrePoste }}</td></tr>{% endif %}
+            {% if user.bio %}<tr><td class="label">Bio</td><td>{{ user.bio }}</td></tr>{% endif %}
+            {% if user.entreprise %}<tr><td class="label">Entreprise</td><td>{{ user.entreprise.nom }}</td></tr>{% endif %}
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>Complétude du profil</h2>
+        <p><strong>Score :</strong> {{ profileScore }}%</p>
+        {% if missingFields is not empty %}
+            <p><strong>Champs manquants :</strong> {{ missingFields|join(', ') }}</p>
+        {% else %}
+            <p>Profil complet.</p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2>Historique de connexion</h2>
+        <table class="logs">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>IP</th>
+                    <th>Navigateur</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in loginHistory %}
+                    <tr>
+                        <td>{{ log.loggedAt|date('d/m/Y H:i') }}</td>
+                        <td>{{ log.ipAddress }}</td>
+                        <td>{{ log.browser ?: '—' }}</td>
+                        <td class="{{ log.successful ? 'good' : 'bad' }}">{{ log.successful ? 'Succès' : 'Échec' }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4">Aucune connexion enregistrée.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

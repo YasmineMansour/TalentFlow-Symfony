@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Export utilisateurs TalentFlow</title>
+    <style>
+        body { font-family: DejaVu Sans, sans-serif; color: #1a1a2e; font-size: 12px; }
+        h1 { margin: 0 0 8px; color: #b8922f; font-size: 24px; }
+        .meta { margin-bottom: 18px; color: #4b5563; }
+        .summary { margin-bottom: 14px; padding: 10px 12px; background: #f8f4e7; border: 1px solid #e4d39d; border-radius: 6px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #d9dde6; padding: 8px; vertical-align: top; }
+        th { background: #1a1a2e; color: #ffffff; text-align: left; }
+        tr:nth-child(even) td { background: #f7f8fb; }
+        .badge { font-weight: 700; }
+        .active { color: #1f7a3f; }
+        .inactive { color: #b42318; }
+    </style>
+</head>
+<body>
+    <h1>Liste des utilisateurs</h1>
+    <div class="meta">Exporté le {{ exportedAt|date('d/m/Y à H:i') }}</div>
+
+    <div class="summary">
+        <strong>Total :</strong> {{ users|length }} utilisateur{{ users|length > 1 ? 's' : '' }}
+        {% if search %}<br><strong>Recherche :</strong> {{ search }}{% endif %}
+        {% if role %}<br><strong>Rôle filtré :</strong> {{ role }}{% endif %}
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nom complet</th>
+                <th>Email</th>
+                <th>Rôle</th>
+                <th>Téléphone</th>
+                <th>Statut</th>
+                <th>Créé le</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.fullName }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.roleLabel }}</td>
+                    <td>{{ user.telephone ?: '—' }}</td>
+                    <td>
+                        <span class="badge {{ user.isActive ? 'active' : 'inactive' }}">
+                            {{ user.isActive ? 'Actif' : 'Désactivé' }}
+                        </span>
+                    </td>
+                    <td>{{ user.createdAt ? user.createdAt|date('d/m/Y H:i') : '—' }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7">Aucun utilisateur trouvé pour les filtres demandés.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
