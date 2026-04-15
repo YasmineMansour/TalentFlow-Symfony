@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <script>(function(){var t=localStorage.getItem('tf-theme');if(!t)t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');})()</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion sans mot de passe — TalentFlow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --tf-midnight:#1a1a2e; --tf-navy:#16213e; --tf-dark-blue:#0f3460; --tf-gold:#d4a843; --tf-gold-light:#e8c96d; --tf-gold-dark:#b8922f; --tf-white:#f5f5f5; --tf-gray:#a0a0b0; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; min-height:100vh; background:#0d1117; color:var(--tf-white); display:flex; flex-direction:column; }
+
+        .tf-navbar { position:fixed; top:0; left:0; right:0; z-index:100; background:rgba(13,17,23,0.9); backdrop-filter:blur(20px); border-bottom:1px solid rgba(212,168,67,0.1); padding:0.8rem 2rem; display:flex; align-items:center; justify-content:space-between; }
+        .tf-navbar-brand { display:flex; align-items:center; gap:0.6rem; text-decoration:none; color:var(--tf-gold); font-weight:800; font-size:1.3rem; }
+        .tf-navbar-links { display:flex; align-items:center; gap:1.5rem; }
+        .tf-navbar-links a { color:var(--tf-gray); text-decoration:none; font-size:0.85rem; font-weight:500; transition:color 0.2s; }
+        .tf-navbar-links a:hover { color:var(--tf-gold); }
+
+        .page-wrapper { flex:1; display:flex; align-items:center; justify-content:center; padding:5rem 1rem 2rem; background:linear-gradient(135deg,#0d1117 0%,#1a1a2e 30%,#16213e 60%,#0f3460 100%); }
+
+        .bg-particles { position:fixed; top:0; left:0; width:100%; height:100%; overflow:hidden; z-index:0; pointer-events:none; }
+        .bg-particles span { position:absolute; width:4px; height:4px; background:rgba(212,168,67,0.3); border-radius:50%; animation:float 15s infinite; }
+        .bg-particles span:nth-child(1){left:10%;animation-delay:0s;animation-duration:20s} .bg-particles span:nth-child(2){left:20%;animation-delay:2s;width:6px;height:6px} .bg-particles span:nth-child(3){left:35%;animation-delay:4s;animation-duration:18s} .bg-particles span:nth-child(4){left:50%;animation-delay:1s;width:3px;height:3px} .bg-particles span:nth-child(5){left:65%;animation-delay:3s;animation-duration:22s} .bg-particles span:nth-child(6){left:75%;animation-delay:5s;width:5px;height:5px}
+        @keyframes float { 0%{transform:translateY(100vh) rotate(0deg);opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{transform:translateY(-100vh) rotate(720deg);opacity:0} }
+
+        .page-container { position:relative; z-index:1; width:100%; max-width:460px; }
+        .page-card { background:rgba(22,33,62,0.85); backdrop-filter:blur(20px); border:1px solid rgba(212,168,67,0.2); border-radius:20px; padding:2.5rem 2rem; box-shadow:0 25px 60px rgba(0,0,0,0.5); animation:cardAppear 0.6s ease; }
+        @keyframes cardAppear { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+
+        .brand-icon { width:70px; height:70px; border-radius:50%; background:linear-gradient(135deg,var(--tf-gold),var(--tf-gold-dark)); display:inline-flex; align-items:center; justify-content:center; font-size:1.8rem; color:var(--tf-midnight); margin-bottom:1rem; box-shadow:0 8px 25px rgba(212,168,67,0.3); }
+        .card-title { font-size:1.4rem; font-weight:800; color:var(--tf-gold); margin-bottom:0.3rem; }
+        .card-subtitle { font-size:0.78rem; color:var(--tf-gray); letter-spacing:1px; }
+
+        .form-label { color:var(--tf-gold); font-weight:600; font-size:0.85rem; display:flex; align-items:center; gap:0.4rem; }
+        .form-control { background:rgba(13,17,23,0.7); border:1px solid rgba(212,168,67,0.12); color:var(--tf-white); border-radius:10px; padding:0.75rem 1rem; font-size:0.95rem; transition:all 0.3s; }
+        .form-control:focus { background:rgba(13,17,23,0.9); border-color:var(--tf-gold); box-shadow:0 0 0 3px rgba(212,168,67,0.08); color:var(--tf-white); }
+        .form-control::placeholder { color:#5a5a70; }
+
+        .btn-gold-standalone { background:linear-gradient(135deg,var(--tf-gold),var(--tf-gold-dark)); color:var(--tf-midnight); border:none; padding:0.8rem; border-radius:10px; font-weight:700; font-size:1rem; width:100%; cursor:pointer; transition:all 0.3s; display:flex; align-items:center; justify-content:center; gap:0.5rem; }
+        .btn-gold-standalone:hover { background:linear-gradient(135deg,var(--tf-gold-light),var(--tf-gold)); transform:translateY(-2px); box-shadow:0 8px 20px rgba(212,168,67,0.25); }
+
+        .tf-alert { padding:0.8rem 1rem; border-radius:10px; margin-bottom:1rem; font-size:0.85rem; display:flex; align-items:flex-start; gap:0.5rem; }
+        .tf-alert-success { background:rgba(212,168,67,0.12); border:1px solid rgba(212,168,67,0.3); color:var(--tf-gold-light); }
+        .tf-alert-error { background:rgba(192,57,43,0.12); border:1px solid rgba(231,76,60,0.3); color:#e74c3c; }
+
+        .info-desc { color:#b0b0c0; font-size:0.88rem; margin-bottom:1.5rem; line-height:1.6; }
+        .back-link { color:var(--tf-gray); text-decoration:none; font-size:0.85rem; transition:color 0.2s; }
+        .back-link:hover { color:var(--tf-gold); }
+        .tf-divider { border-top:1px solid rgba(212,168,67,0.08); margin:1.2rem 0; }
+
+        /* ==================== LIGHT MODE ==================== */
+        [data-theme="light"] body { background:#f4f6fb; color:#1a1a2e; }
+        [data-theme="light"] .tf-navbar { background:rgba(255,255,255,0.95); border-bottom-color:#e2e6ef; }
+        [data-theme="light"] .tf-navbar-brand { color:var(--tf-gold); }
+        [data-theme="light"] .tf-navbar-links a { color:#5a5f7a; }
+        [data-theme="light"] .tf-navbar-links a:hover { color:var(--tf-gold); }
+        [data-theme="light"] .page-wrapper { background:linear-gradient(135deg,#e8ecf4 0%,#dfe3ed 50%,#cdd4e8 100%); }
+        [data-theme="light"] .bg-particles span { background:rgba(212,168,67,0.12); }
+        [data-theme="light"] .page-card { background:rgba(255,255,255,0.92); border-color:rgba(212,168,67,0.25); box-shadow:0 25px 60px rgba(0,0,0,0.08); }
+        [data-theme="light"] .card-title { color:var(--tf-gold); }
+        [data-theme="light"] .card-subtitle { color:#7a7f9a; }
+        [data-theme="light"] .form-control { background:#f4f6fb; border-color:#d5d9e8; color:#1a1a2e; }
+        [data-theme="light"] .form-control:focus { background:#ffffff; border-color:var(--tf-gold); color:#1a1a2e; }
+        [data-theme="light"] .form-control::placeholder { color:#9a9eb8; }
+        [data-theme="light"] .info-desc { color:#5a5f7a; }
+        [data-theme="light"] .back-link { color:#7a7f9a; }
+        [data-theme="light"] .back-link:hover { color:var(--tf-gold); }
+        [data-theme="light"] .tf-divider { border-top-color:#e2e6ef; }
+        [data-theme="light"] .tf-alert-error { background:rgba(220,38,38,0.08); border-color:rgba(220,38,38,0.2); color:#dc2626; }
+        [data-theme="light"] .tf-alert-success { background:rgba(212,168,67,0.08); border-color:rgba(212,168,67,0.25); color:var(--tf-gold); }
+
+        .tf-theme-btn { width:36px; height:36px; border-radius:50%; border:1px solid rgba(212,168,67,0.3); background:transparent; color:var(--tf-gray); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:0.95rem; transition:all 0.2s; }
+        .tf-theme-btn:hover { background:rgba(212,168,67,0.1); color:var(--tf-gold); border-color:var(--tf-gold); transform:rotate(15deg); }
+    </style>
+</head>
+<body>
+    <div class="bg-particles"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+    <nav class="tf-navbar">
+        <a href="{{ path('app_login') }}" class="tf-navbar-brand">
+            <i class="fas fa-briefcase"></i> TalentFlow
+        </a>
+        <div class="tf-navbar-links">
+            <a href="{{ path('app_login') }}"><i class="fas fa-arrow-left"></i> Connexion</a>
+            <button class="tf-theme-btn" onclick="TFTheme.toggle()" aria-label="Changer le thème" title="Mode clair/sombre">
+                <i class="fas fa-sun" id="theme-icon-sun"></i>
+                <i class="fas fa-moon" id="theme-icon-moon" style="display:none;"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="page-wrapper">
+        <div class="page-container">
+            <div class="page-card">
+                <div class="text-center mb-4">
+                    <div class="brand-icon"><i class="fas fa-magic"></i></div>
+                    <h2 class="card-title">Connexion sans mot de passe</h2>
+                    <p class="card-subtitle">Lien de connexion magique</p>
+                </div>
+
+                {% if error is defined and error %}
+                    <div class="tf-alert tf-alert-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <div>{{ error }}</div>
+                    </div>
+                {% endif %}
+
+                {% if sent is defined and sent %}
+                    <div class="tf-alert tf-alert-success">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>Email envoyé !</strong><br>
+                            <small>Si un compte existe pour cet email, vous recevrez un lien valable <strong>15 minutes</strong>. Vérifiez aussi vos spams.</small>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <a href="{{ path('app_login') }}" class="back-link">
+                            <i class="fas fa-arrow-left"></i> Retour à la connexion
+                        </a>
+                    </div>
+                {% else %}
+                    <p class="info-desc">
+                        <i class="fas fa-info-circle" style="color:var(--tf-gold);"></i>
+                        Saisissez votre adresse email. Vous recevrez un lien unique pour vous connecter sans mot de passe.
+                    </p>
+
+                    <form method="post">
+                        <input type="hidden" name="_token" value="{{ csrf_token('magic_link') }}">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope"></i> Adresse email
+                            </label>
+                            <input type="email" id="email" name="email" class="form-control"
+                                   placeholder="votre@email.com" required autofocus>
+                        </div>
+                        <button type="submit" class="btn-gold-standalone">
+                            <i class="fas fa-magic"></i> Envoyer le lien de connexion
+                        </button>
+                    </form>
+
+                    <div class="tf-divider"></div>
+                    <div class="text-center">
+                        <a href="{{ path('app_login') }}" class="back-link">
+                            <i class="fas fa-key"></i> Connexion avec mot de passe
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var TFTheme={toggle:function(){var c=document.documentElement.getAttribute('data-theme')||'dark';var n=c==='dark'?'light':'dark';localStorage.setItem('tf-theme',n);document.documentElement.setAttribute('data-theme',n);document.documentElement.classList.toggle('dark',n==='dark');TFTheme._icons();},_icons:function(){var t=document.documentElement.getAttribute('data-theme');var s=document.getElementById('theme-icon-sun');var m=document.getElementById('theme-icon-moon');if(s&&m){s.style.display=t==='dark'?'':'none';m.style.display=t==='dark'?'none':'';}}};
+        TFTheme._icons();
+    </script>
+</body>
+</html>

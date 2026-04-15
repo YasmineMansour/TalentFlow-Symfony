@@ -1,0 +1,115 @@
+{% extends is_granted('ROLE_RH') ? (is_granted('ROLE_ADMIN') ? 'base_dashboard.html.twig' : 'base_navbar.html.twig') : 'base_navbar.html.twig' %}
+
+{% block title %}Mon Entretien #{{ entretien.id }} – TalentFlow{% endblock %}
+{% block page_title %}Mon Entretien{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center g-4">
+
+    {# ── Colonne infos ── #}
+    <div class="col-lg-4">
+        <div class="tf-card h-100">
+            <h2 class="tf-title"><i class="fas fa-calendar-check"></i> Détails</h2>
+
+            <div class="mb-3">
+                <div style="color: var(--tf-gray); font-size:0.78rem; margin-bottom:4px;">Date & heure</div>
+                <div style="font-size:1.1rem; font-weight:600;">
+                    {{ entretien.dateHeure ? entretien.dateHeure|date('d/m/Y à H:i') : '—' }}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div style="color: var(--tf-gray); font-size:0.78rem; margin-bottom:4px;">Type</div>
+                {% if entretien.type == 'EN_LIGNE' %}
+                    <span class="tf-tag-sm tf-tag-blue"><i class="fas fa-video"></i> En ligne (Jitsi Meet)</span>
+                {% elseif entretien.type == 'PRESENTIEL' %}
+                    <span class="tf-tag-sm tf-tag-green"><i class="fas fa-building"></i> Présentiel</span>
+                {% else %}
+                    <span class="tf-tag-sm tf-tag-yellow"><i class="fas fa-phone"></i> Téléphonique</span>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <div style="color: var(--tf-gray); font-size:0.78rem; margin-bottom:4px;">Statut</div>
+                {% set statColor = entretien.statut == 'REALISE' ? 'green' : (entretien.statut == 'ANNULE' ? 'red' : 'blue') %}
+                <span class="tf-tag-sm tf-tag-{{ statColor }}">{{ entretien.statut }}</span>
+            </div>
+
+            {% if entretien.type == 'PRESENTIEL' and entretien.lieu %}
+            <div class="mb-3">
+                <div style="color: var(--tf-gray); font-size:0.78rem; margin-bottom:4px;">Lieu</div>
+                <div><i class="fas fa-map-marker-alt" style="color:var(--tf-gold);"></i> {{ entretien.lieu }}</div>
+            </div>
+            {% endif %}
+
+            {% if entretien.type == 'TELEPHONIQUE' %}
+            <div class="mb-3" style="padding:12px 16px; background:rgba(212,168,67,.1); border:1px solid rgba(212,168,67,.3); border-radius:8px;">
+                <i class="fas fa-phone" style="color:var(--tf-gold);"></i>
+                Restez disponible sur votre numéro de téléphone.
+            </div>
+            {% endif %}
+
+            {% if entretien.type == 'EN_LIGNE' %}
+            <hr style="border-color: var(--tf-border);">
+            <a href="{{ entretien.meetUrl }}" target="_blank" rel="noopener noreferrer"
+               class="btn-gold d-block text-center" style="margin-top:12px;">
+                <i class="fas fa-external-link-alt"></i> Ouvrir dans un onglet
+            </a>
+            {% endif %}
+
+            {% if is_granted('ROLE_RH') %}
+            <hr style="border-color: var(--tf-border); margin-top:20px;">
+            <a href="{{ path('app_entretien_edit', {'id': entretien.id}) }}" class="btn-outline-gold d-block text-center">
+                <i class="fas fa-edit"></i> Modifier cet entretien
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ── Colonne Meet / Lieu ── #}
+    <div class="col-lg-8">
+        {% if entretien.type == 'EN_LIGNE' %}
+        <div class="tf-card h-100" style="padding:0; overflow:hidden; position:relative; min-height:500px;">
+            <div style="padding:16px 20px; background: var(--tf-dark-blue); display:flex; align-items:center; gap:12px;">
+                <i class="fas fa-video" style="color:var(--tf-gold); font-size:1.2rem;"></i>
+                <span style="font-weight:600;">Entretien en ligne – Jitsi Meet</span>
+                <span class="tf-tag-sm tf-tag-green" style="margin-left:auto;">
+                    <i class="fas fa-circle" style="font-size:0.5rem;"></i> EN DIRECT
+                </span>
+            </div>
+            <iframe
+                src="{{ entretien.meetUrl }}"
+                allow="camera; microphone; fullscreen; display-capture; autoplay"
+                style="width:100%; height:520px; border:none; display:block;"
+                title="Entretien en ligne TalentFlow">
+            </iframe>
+        </div>
+
+        {% elseif entretien.type == 'PRESENTIEL' %}
+        <div class="tf-card h-100 d-flex flex-column justify-content-center align-items-center text-center" style="min-height:300px;">
+            <i class="fas fa-building" style="font-size:3.5rem; color:var(--tf-gold); margin-bottom:20px;"></i>
+            <h3 style="color:var(--tf-white);">Entretien en présentiel</h3>
+            <p style="color:var(--tf-gray); max-width:400px;">
+                Rendez-vous le <strong>{{ entretien.dateHeure ? entretien.dateHeure|date('d/m/Y à H:i') : '—' }}</strong>
+                à l'adresse suivante&nbsp;:
+            </p>
+            <div style="padding:16px 28px; background:rgba(212,168,67,.1); border:1px solid rgba(212,168,67,.4); border-radius:10px; margin-top:12px;">
+                <i class="fas fa-map-marker-alt" style="color:var(--tf-gold); margin-right:8px;"></i>
+                <strong>{{ entretien.lieu ?: 'Adresse à confirmer' }}</strong>
+            </div>
+        </div>
+
+        {% else %}
+        <div class="tf-card h-100 d-flex flex-column justify-content-center align-items-center text-center" style="min-height:300px;">
+            <i class="fas fa-phone" style="font-size:3.5rem; color:var(--tf-gold); margin-bottom:20px;"></i>
+            <h3 style="color:var(--tf-white);">Entretien téléphonique</h3>
+            <p style="color:var(--tf-gray); max-width:400px;">
+                Nous vous appellerons le <strong>{{ entretien.dateHeure ? entretien.dateHeure|date('d/m/Y à H:i') : '—' }}</strong>.<br>
+                Assurez-vous d'être disponible sur votre numéro.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

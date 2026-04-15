@@ -3,10 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\Candidature;
+use App\Entity\CandidatureStatusHistory;
 use App\Entity\PieceJointe;
 use App\Form\CandidatureType;
 use App\Form\PieceJointeType;
 use App\Repository\CandidatureRepository;
+use App\Repository\CandidatureStatusHistoryRepository;
+use App\Service\CandidatureMatchingService;
+use App\Service\CandidatureWorkflowService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -74,7 +78,7 @@ class CandidatureController extends AbstractController
     }
 
     #[Route('/new', name: 'app_candidature_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
+    public function new(Request $request, EntityManagerInterface $em, SluggerInterface $slugger, CandidatureMatchingService $matchingService): Response
     {
         $offreId = $request->query->get('offre');
         $user = $this->getUser();
@@ -125,6 +129,8 @@ class CandidatureController extends AbstractController
                 $candidature->setDateCandidature(new \DateTimeImmutable());
             }
 
+            $candidature->setMatchingScore($matchingService->computeScore($candidature));
+
             // Upload CV
             $cvFile = $form->get('cvFile')->getData();
             if ($cvFile) {
@@ -140,6 +146,16 @@ class CandidatureController extends AbstractController
             }
 
             $em->persist($candidature);
+
+            $history = (new CandidatureStatusHistory())
+                ->setCandidature($candidature)
+                ->setChangedBy($this->getUser())
+                ->setFromStatus(null)
+                ->setToStatus((string) $candidature->getStatut())
+                ->setTransitionName('created')
+                ->setNote('Creation de la candidature.');
+            $em->persist($history);
+
             $em->flush();
             $this->addFlash('success', 'Candidature pour "' . $candidature->getTitrePoste() . '" créée avec succès !');
             return $this->redirectToRoute('app_candidature_index', [], Response::HTTP_SEE_OTHER);
@@ -170,7 +186,14 @@ class CandidatureController extends AbstractController
 
     #[Route('/{id}', name: 'app_candidature_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     #[Route('/{id}/upload', name: 'app_candidature_upload', methods: ['POST'], requirements: ['id' => '\d+'])]
-    public function show(Request $request, Candidature $candidature, EntityManagerInterface $em, SluggerInterface $slugger): Response
+    public function show(
+        Request $request,
+        Candidature $candidature,
+        EntityManagerInterface $em,
+        SluggerInterface $slugger,
+        CandidatureStatusHistoryRepository $historyRepository,
+        CandidatureWorkflowService $workflowService,
+    ): Response
     {
         $pieceJointe = new PieceJointe();
         $form = $this->createForm(PieceJointeType::class, $pieceJointe);
@@ -200,16 +223,37 @@ class CandidatureController extends AbstractController
             }
         }
 
+        $history = $historyRepository->findByCandidatureOrdered($candidature);
+        $acceptedSnapshot = $historyRepository->findAcceptedTransition($candidature);
+        $timeToHireDays = null;
+        if ($acceptedSnapshot !== null && $candidature->getDateCandidature() !== null) {
+            $seconds = $acceptedSnapshot->getChangedAt()?->getTimestamp() - $candidature->getDateCandidature()->getTimestamp();
+            if ($seconds !== null && $seconds >= 0) {
+                $timeToHireDays = round($seconds / 86400, 2);
+            }
+        }
+
         return $this->render('candidature/show.html.twig', [
             'candidature' => $candidature,
             'pieceJointeForm' => $form,
+            'statusHistory' => $history,
+            'availableTransitions' => $workflowService->getEnabledTransitions($candidature),
+            'timeToHireDays' => $timeToHireDays,
         ]);
     }
 
     #[Route('/{id}/edit', name: 'app_candidature_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
-    public function edit(Request $request, Candidature $candidature, EntityManagerInterface $em, SluggerInterface $slugger): Response
+    public function edit(
+        Request $request,
+        Candidature $candidature,
+        EntityManagerInterface $em,
+        SluggerInterface $slugger,
+        CandidatureMatchingService $matchingService,
+        CandidatureWorkflowService $workflowService,
+    ): Response
     {
         $isCandidat = $this->isGranted('ROLE_CANDIDAT') && !$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_RH');
+        $previousStatus = $candidature->getStatut();
 
         $form = $this->createForm(CandidatureType::class, $candidature, [
             'is_candidat' => $isCandidat,
@@ -231,6 +275,29 @@ class CandidatureController extends AbstractController
                 $candidature->setLettreMotivationFilename($newFilename);
             }
 
+            $requestedStatus = $previousStatus;
+            if (!$isCandidat && $form->has('statut')) {
+                $requestedStatus = (string) $form->get('statut')->getData();
+                $candidature->setStatut((string) $previousStatus);
+            }
+
+            if (!$isCandidat && $requestedStatus !== $previousStatus) {
+                try {
+                    /** @var \App\Entity\User|null $actor */
+                    $actor = $this->getUser();
+                    $workflowService->transitionToStatus($candidature, $requestedStatus, $actor);
+                } catch (\Throwable $e) {
+                    $this->addFlash('error', $e->getMessage());
+
+                    return $this->render('candidature/edit.html.twig', [
+                        'candidature' => $candidature,
+                        'form' => $form,
+                        'isCandidat' => $isCandidat,
+                    ]);
+                }
+            }
+
+            $candidature->setMatchingScore($matchingService->computeScore($candidature));
             $candidature->setUpdatedAt(new \DateTimeImmutable());
             $em->flush();
             $this->addFlash('success', 'Candidature modifiée avec succès.');
@@ -282,5 +349,32 @@ class CandidatureController extends AbstractController
         }
 
         return $this->redirectToRoute('app_candidature_show', ['id' => $candidatureId]);
+    }
+
+    #[Route('/{id}/status-transition/{transition}', name: 'app_candidature_transition', methods: ['POST'], requirements: ['id' => '\\d+'])]
+    public function transitionStatus(
+        Request $request,
+        Candidature $candidature,
+        string $transition,
+        EntityManagerInterface $em,
+        CandidatureWorkflowService $workflowService
+    ): Response {
+        $tokenId = sprintf('candidature_transition_%d_%s', $candidature->getId(), $transition);
+        if (!$this->isCsrfTokenValid($tokenId, (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Jeton CSRF invalide.');
+            return $this->redirectToRoute('app_candidature_show', ['id' => $candidature->getId()]);
+        }
+
+        try {
+            /** @var \App\Entity\User|null $actor */
+            $actor = $this->getUser();
+            $workflowService->applyTransition($candidature, $transition, $actor, 'Transition declenchee depuis la fiche candidature.');
+            $em->flush();
+            $this->addFlash('success', 'Statut mis a jour via workflow.');
+        } catch (\Throwable $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
+
+        return $this->redirectToRoute('app_candidature_show', ['id' => $candidature->getId()]);
     }
 }

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mise a jour candidature</title>
+</head>
+<body style="font-family: Arial, sans-serif; color: #1f2937; line-height: 1.6;">
+    <h2 style="margin:0 0 12px 0; color:#1a1a2e;">Mise a jour de votre candidature</h2>
+
+    <p>Bonjour,</p>
+
+    <p>
+        Votre candidature pour le poste <strong>{{ candidature.titrePoste }}</strong>
+        {% if candidature.entreprise %}chez <strong>{{ candidature.entreprise }}</strong>{% endif %}
+        a ete mise a jour.
+    </p>
+
+    <p>
+        {% if fromStatus %}
+            Ancien statut: <strong>{{ fromStatus }}</strong><br>
+        {% endif %}
+        Nouveau statut: <strong>{{ toStatus }}</strong>
+    </p>
+
+    <p>Merci pour votre confiance.<br>L'equipe TalentFlow</p>
+</body>
+</html>

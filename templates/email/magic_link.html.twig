@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Votre lien de connexion — TalentFlow</title>
+</head>
+<body style="margin:0;padding:0;background:#1a1a2e;font-family:'Segoe UI',Tahoma,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+    <tr><td align="center" style="padding:40px 20px;">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background:#16213e;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.3);">
+            <tr>
+                <td style="background:linear-gradient(135deg,#0f3460,#1a1a2e);padding:30px 40px;text-align:center;border-bottom:3px solid #d4a843;">
+                    <h1 style="color:#d4a843;margin:0;font-size:26px;">&#128188; TalentFlow</h1>
+                    <p style="color:#8a8aa0;margin:6px 0 0;font-size:13px;">Connexion sans mot de passe</p>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:40px;">
+                    <p style="color:#e0e0e0;">Bonjour <strong style="color:#D4A843;">{{ user.prenom }}</strong>,</p>
+                    <p style="color:#aab0bc;line-height:1.7;">Vous avez demandé à vous connecter à <strong style="color:#fff;">TalentFlow</strong> sans mot de passe. Cliquez sur le bouton ci-dessous pour accéder directement à votre compte.</p>
+
+                    <div style="text-align:center;margin:2.5rem 0;">
+                        <a href="{{ magicUrl }}" style="background:#D4A843;color:#1e2a3a;padding:1rem 3rem;border-radius:8px;text-decoration:none;font-weight:700;font-size:1.05rem;display:inline-block;letter-spacing:.5px;">
+                            🔗 Accéder à mon compte
+                        </a>
+                    </div>
+
+                    <p style="color:#aab0bc;font-size:.9rem;">Ce lien est valable <strong style="color:#fff;">{{ expiresIn }}</strong> et ne peut être utilisé qu'une seule fois.</p>
+                    <p style="color:#666;font-size:.85rem;">Si vous n'avez pas demandé ce lien, ignorez simplement cet email.</p>
+
+                    <div style="background:#0f3460;border-radius:6px;padding:.8rem 1rem;margin-top:1.5rem;">
+                        <p style="color:#8a8aa0;font-size:.8rem;margin:0;word-break:break-all;">{{ magicUrl }}</p>
+                    </div>
+
+                    <p style="color:#555;font-size:12px;text-align:center;margin-top:2rem;">TalentFlow — Plateforme de Gestion du Recrutement</p>
+                </td>
+            </tr>
+        </table>
+    </td></tr>
+</table>
+</body>
+</html>

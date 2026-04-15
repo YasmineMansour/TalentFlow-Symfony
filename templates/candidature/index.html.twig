@@ -25,7 +25,7 @@
         <div class="col-md-3">
             <select name="statut" class="form-select">
                 <option value="">-- Statut --</option>
-                {% for s in ['En attente', 'Acceptée', 'Refusée', 'Entretien'] %}
+                {% for s in ['En attente', 'Validée RH', 'Entretien', 'Acceptée', 'Refusée'] %}
                     <option value="{{ s }}" {{ statut == s ? 'selected' }}>{{ s }}</option>
                 {% endfor %}
             </select>
@@ -52,6 +52,7 @@
         <div class="tf-item-card-meta">
             <span><i class="fas fa-file-contract"></i> {{ c.typeContrat }}</span>
             <span><i class="fas fa-calendar"></i> {{ c.dateCandidature|date('d/m/Y') }}</span>
+            <span><i class="fas fa-percentage"></i> Matching: {{ c.matchingScore is not null ? c.matchingScore ~ '%' : 'N/A' }}</span>
             {% if c.lieu %}<span><i class="fas fa-map-marker-alt"></i> {{ c.lieu }}</span>{% endif %}
             {% if c.salaireSouhaite %}<span><i class="fas fa-coins"></i> {{ c.salaireSouhaite }} TND</span>{% endif %}
         </div>

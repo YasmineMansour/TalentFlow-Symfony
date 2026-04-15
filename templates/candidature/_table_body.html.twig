@@ -11,6 +11,7 @@
     <div class="tf-item-card-meta">
         <span><i class="fas fa-file-contract"></i> {{ c.typeContrat }}</span>
         <span><i class="fas fa-calendar"></i> {{ c.dateCandidature|date('d/m/Y') }}</span>
+        <span><i class="fas fa-percentage"></i> Matching: {{ c.matchingScore is not null ? c.matchingScore ~ '%' : 'N/A' }}</span>
         {% if c.lieu %}<span><i class="fas fa-map-marker-alt"></i> {{ c.lieu }}</span>{% endif %}
     </div>
     <div class="tf-item-card-tags">

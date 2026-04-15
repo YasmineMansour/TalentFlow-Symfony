@@ -157,6 +157,26 @@
         .tf-footer-login {
             text-align: center; color: var(--tf-gray); font-size: 0.72rem;
         }
+        .tf-remember-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin: 0.9rem 0 1rem;
+        }
+        .tf-remember-check {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            color: var(--tf-gray);
+            font-size: 0.82rem;
+            cursor: pointer;
+        }
+        .tf-remember-check input {
+            accent-color: var(--tf-gold);
+            width: 16px;
+            height: 16px;
+        }
 
         /* ─── STATS BAR ─── */
         .tf-stats {
@@ -326,6 +346,13 @@
                         </div>
                     </div>
 
+                    <div class="tf-remember-row">
+                        <label class="tf-remember-check" for="rememberMe">
+                            <input type="checkbox" name="_remember_me" id="rememberMe" value="1">
+                            <span>Se souvenir de moi</span>
+                        </label>
+                    </div>
+
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
                     <button class="btn-login mt-2" type="submit"
@@ -339,6 +366,12 @@
                 <div class="text-center">
                     <a href="{{ path('app_forgot_password') }}" class="forgot-link">
                         <i class="fas fa-key"></i> Mot de passe oublié ?
+                    </a>
+                </div>
+
+                <div class="text-center mt-2">
+                    <a href="{{ path('app_magic_link') }}" class="forgot-link">
+                        <i class="fas fa-magic"></i> Connexion sans mot de passe
                     </a>
                 </div>
 
@@ -360,6 +393,45 @@
             } else {
                 input.type = 'password';
                 this.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+
+        (function() {
+            if (!window.sessionStorage) {
+                return;
+            }
+
+            var saved = sessionStorage.getItem('tf-register-prefill');
+            if (!saved) {
+                return;
+            }
+
+            try {
+                var data = JSON.parse(saved);
+                var emailInput = document.getElementById('inputEmail');
+                var passwordInput = document.getElementById('inputPassword');
+                var rememberInput = document.getElementById('rememberMe');
+
+                if (emailInput && !emailInput.value && data.email) {
+                    emailInput.value = data.email;
+                }
+
+                if (passwordInput && !passwordInput.value && data.password) {
+                    passwordInput.value = data.password;
+                }
+
+                if (rememberInput && data.remember) {
+                    rememberInput.checked = true;
+                }
+            } catch (error) {
+                sessionStorage.removeItem('tf-register-prefill');
+            }
+        })();
+
+        document.querySelector('form[method="post"]').addEventListener('submit', function() {
+            var rememberInput = document.getElementById('rememberMe');
+            if (rememberInput && !rememberInput.checked && window.sessionStorage) {
+                sessionStorage.removeItem('tf-register-prefill');
             }
         });
 

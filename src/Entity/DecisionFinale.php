@@ -134,4 +134,46 @@ class DecisionFinale
 
         return $this;
     }
+
+    /**
+     * Détecte une incohérence entre le score et la décision enregistrée.
+     */
+    public function hasInconsistency(): bool
+    {
+        if ($this->score === null || $this->decision === 'EN_ATTENTE') {
+            return false;
+        }
+
+        // Score élevé (≥14) mais refusé
+        if ($this->score >= 14 && $this->decision === 'REFUSE') {
+            return true;
+        }
+
+        // Score très faible (<8) mais accepté
+        if ($this->score < 8 && $this->decision === 'ACCEPTE') {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Message d'alerte pour l'incohérence détectée.
+     */
+    public function getInconsistencyMessage(): ?string
+    {
+        if (!$this->hasInconsistency()) {
+            return null;
+        }
+
+        if ($this->score >= 14 && $this->decision === 'REFUSE') {
+            return sprintf('Score élevé (%.1f/20) mais marqué REFUSÉ', $this->score);
+        }
+
+        if ($this->score < 8 && $this->decision === 'ACCEPTE') {
+            return sprintf('Score faible (%.1f/20) mais marqué ACCEPTÉ', $this->score);
+        }
+
+        return null;
+    }
 }

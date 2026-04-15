@@ -45,7 +45,6 @@
                 z-index: 1000;
                 gap: 1rem;
             }
-            .tf-page-title:empty { display: none; }
             .tf-navbar-brand {
                 font-size: 1.4rem;
                 font-weight: 800;
@@ -349,59 +348,41 @@
 
             /* ==================== DARK/LIGHT MODE ==================== */
             [data-theme="light"] {
-                --tf-midnight: #f8f5f0;
+                --tf-midnight: #f4f6fb;
                 --tf-navy: #ffffff;
-                --tf-dark-blue: #e8e4de;
-                --tf-gold: #2563eb;
-                --tf-gold-light: #3b82f6;
-                --tf-gold-dark: #1d4ed8;
+                --tf-dark-blue: #e8ecf4;
                 --tf-white: #1a1a2e;
                 --tf-gray: #5a5f7a;
                 --tf-light: #8b90a5;
                 --tf-card-bg: #ffffff;
                 --tf-border: #e2e6ef;
             }
-            [data-theme="light"] body { background: #f8f5f0; color: #1a1a2e; }
+            [data-theme="light"] body { background: #f4f6fb; color: #1a1a2e; }
             [data-theme="light"] .tf-navbar { background: linear-gradient(90deg, #ffffff 0%, #f8f9fc 100%); border-bottom-color: #e2e6ef; }
-            [data-theme="light"] .tf-navbar-brand { color: #2563eb; }
-            [data-theme="light"] .tf-navbar-brand:hover { color: #3b82f6; }
             [data-theme="light"] .tf-navbar-nav a { color: #5a5f7a; }
-            [data-theme="light"] .tf-navbar-nav a:hover { background: rgba(37,99,235,0.06); color: #2563eb; }
-            [data-theme="light"] .tf-navbar-nav a.active { background: rgba(37,99,235,0.1); color: #2563eb; }
+            [data-theme="light"] .tf-navbar-nav a:hover { background: rgba(201,162,39,0.08); color: var(--tf-gold); }
+            [data-theme="light"] .tf-navbar-nav a.active { background: rgba(201,162,39,0.12); color: var(--tf-gold); }
             [data-theme="light"] .tf-table thead th { background: #f0f2f8; color: #5a5f7a; }
             [data-theme="light"] .tf-table tbody td { color: #1a1a2e; border-bottom-color: #e2e6ef; }
             [data-theme="light"] .tf-table tbody tr:hover td { background: #f8f9fc; }
             [data-theme="light"] .tf-widget { background: #ffffff; border-color: #e2e6ef; }
-            [data-theme="light"] .tf-widget-icon.gold { background: rgba(37,99,235,0.1); color: #2563eb; }
             [data-theme="light"] .tf-search { background: #f0f2f8; border-color: #e2e6ef; color: #1a1a2e; }
             [data-theme="light"] .nav-user span { color: #1a1a2e; }
             [data-theme="light"] .nav-logout { color: #5a5f7a !important; }
             [data-theme="light"] .form-control, [data-theme="light"] .form-select { background: #ffffff; border-color: #e2e6ef; color: #1a1a2e; }
-            [data-theme="light"] .tf-avatar-sm { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
-            [data-theme="light"] .btn-gold { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; }
-            [data-theme="light"] .btn-gold:hover { color: #ffffff; }
-            [data-theme="light"] .btn-outline-gold { border-color: #2563eb; color: #2563eb; }
-            [data-theme="light"] .btn-outline-gold:hover { background: rgba(37,99,235,0.08); color: #2563eb; }
-            [data-theme="light"] .badge-admin { background: rgba(37,99,235,0.15); color: #2563eb; }
-            [data-theme="light"] .badge-rh { background: rgba(37,99,235,0.1); color: #2563eb; }
-            [data-theme="light"] .tf-card-header h3 { color: #2563eb; }
-            [data-theme="light"] .tf-label { color: #2563eb; }
-            [data-theme="light"] .tf-input:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
-            [data-theme="light"] .tf-flash-success { background: rgba(22,163,74,0.08); border-color: rgba(22,163,74,0.2); }
-            [data-theme="light"] .dm-unread-badge { background: #2563eb !important; color: #fff !important; }
 
             .tf-theme-btn { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--tf-border); background: transparent; color: var(--tf-gray); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: all 0.2s; }
-            .tf-theme-btn:hover { background: rgba(37,99,235,0.08); color: var(--tf-gold); border-color: var(--tf-gold); transform: rotate(15deg); }
+            .tf-theme-btn:hover { background: rgba(212,168,67,0.1); color: var(--tf-gold); border-color: var(--tf-gold); transform: rotate(15deg); }
 
             /* ==================== LANGUAGE SWITCHER ==================== */
             .tf-lang-switcher { position: relative; display: inline-flex; }
             .tf-lang-btn { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--tf-border); background: transparent; color: var(--tf-gray); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; transition: all 0.2s; text-transform: uppercase; }
-            .tf-lang-btn:hover { background: rgba(37,99,235,0.08); color: var(--tf-gold); border-color: var(--tf-gold); }
+            .tf-lang-btn:hover { background: rgba(212,168,67,0.1); color: var(--tf-gold); border-color: var(--tf-gold); }
             .tf-lang-dropdown { position: absolute; top: calc(100% + 8px); right: 0; background: var(--tf-card-bg); border: 1px solid var(--tf-border); border-radius: 10px; padding: 0.4rem; min-width: 140px; box-shadow: 0 8px 25px rgba(0,0,0,0.3); display: none; z-index: 9999; }
             .tf-lang-dropdown.show { display: block; }
             .tf-lang-dropdown a { display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 0.8rem; color: var(--tf-gray); text-decoration: none; border-radius: 6px; font-size: 0.85rem; transition: all 0.15s; }
-            .tf-lang-dropdown a:hover { background: rgba(37,99,235,0.06); color: var(--tf-gold); }
-            .tf-lang-dropdown a.active { color: var(--tf-gold); font-weight: 600; background: rgba(37,99,235,0.1); }
+            .tf-lang-dropdown a:hover { background: rgba(212,168,67,0.08); color: var(--tf-gold); }
+            .tf-lang-dropdown a.active { color: var(--tf-gold); font-weight: 600; background: rgba(212,168,67,0.12); }
             .tf-lang-dropdown a .flag-icon { font-size: 1.1rem; }
         </style>
         <link rel="stylesheet" href="/css/cards.css">
@@ -468,7 +449,7 @@
                 <li>
                     <a href="{{ path('message_index') }}" class="{% if 'message' in app.request.attributes.get('_route') %}active{% endif %}" style="position:relative">
                         <i class="fas fa-paper-plane"></i> Messages
-                        <span class="dm-unread-badge" style="display:none;min-width:16px;height:16px;line-height:16px;background:var(--tf-gold);color:var(--tf-midnight);font-size:0.6rem;font-weight:700;border-radius:50%;text-align:center;padding:0 3px;margin-left:4px"></span>
+                        <span class="dm-unread-badge" style="display:none;position:absolute;top:6px;right:6px;min-width:16px;height:16px;line-height:16px;background:var(--tf-gold);color:var(--tf-midnight);font-size:0.6rem;font-weight:700;border-radius:50%;text-align:center;padding:0 3px"></span>
                     </a>
                 </li>
             </ul>
@@ -521,7 +502,7 @@
                 {% endfor %}
             {% endfor %}
 
-            <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--tf-gold); margin-bottom: 1.5rem;" class="tf-page-title">{% block page_title %}{% endblock %}</h1>
+            <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--tf-gold); margin-bottom: 1.5rem;">{% block page_title %}{% endblock %}</h1>
 
             {% block body %}{% endblock %}
         </main>
@@ -602,42 +583,7 @@
         <script>
         var TFTheme={toggle:function(){var c=document.documentElement.getAttribute('data-theme')||'dark';var n=c==='dark'?'light':'dark';localStorage.setItem('tf-theme',n);document.documentElement.setAttribute('data-theme',n);document.documentElement.classList.toggle('dark',n==='dark');TFTheme._icons();},_icons:function(){var t=document.documentElement.getAttribute('data-theme');var s=document.getElementById('theme-icon-sun');var m=document.getElementById('theme-icon-moon');if(s&&m){s.style.display=t==='dark'?'':'none';m.style.display=t==='dark'?'none':'';}}};document.addEventListener('DOMContentLoaded',function(){TFTheme._icons();});
         </script>
-        {% if app.user %}
-        <script>
-        (function(){
-            let prevCount = -1;
-            let audioCtx;
-            function playChime() {
-                try {
-                    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                    [0, 0.15].forEach((d,i) => {
-                        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-                        o.connect(g); g.connect(audioCtx.destination);
-                        o.type='sine'; o.frequency.value = i?1050:830;
-                        g.gain.setValueAtTime(0.15, audioCtx.currentTime+d);
-                        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+d+0.35);
-                        o.start(audioCtx.currentTime+d); o.stop(audioCtx.currentTime+d+0.4);
-                    });
-                } catch(e){}
-            }
-            function poll() {
-                fetch('/message/unread-count').then(r=>r.json()).then(data=>{
-                    const c = data.count || 0;
-                    document.querySelectorAll('.dm-unread-badge').forEach(b=>{
-                        if(c>0){ b.textContent=c>99?'99+':c; b.style.display='inline-flex'; }
-                        else { b.style.display='none'; }
-                    });
-                    if (prevCount >= 0 && c > prevCount) playChime();
-                    prevCount = c;
-                }).catch(()=>{});
-            }
-            if (!window.location.pathname.startsWith('/call')) {
-                poll();
-                setInterval(poll, 8000);
-            }
-        })();
-        </script>
-        {% endif %}
         {% block javascripts %}{% endblock %}
+        {% include 'chatbot/_widget.html.twig' %}
     </body>
 </html>

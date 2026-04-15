@@ -6,6 +6,7 @@ use App\Entity\Candidature;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
@@ -30,6 +31,7 @@ class CandidatureType extends AbstractType
                 'label' => 'Entreprise',
                 'attr' => ['placeholder' => 'Nom de l\'entreprise', 'class' => 'form-control', 'minlength' => 2, 'maxlength' => 150],
                 'disabled' => $isCandidat,
+                'mapped' => !$isCandidat,
             ])
             ->add('typeContrat', ChoiceType::class, [
                 'label' => 'Type de contrat',
@@ -43,11 +45,17 @@ class CandidatureType extends AbstractType
                 'placeholder' => '-- Sélectionner --',
                 'attr' => ['class' => 'form-control'],
                 'disabled' => $isCandidat,
+                'mapped' => !$isCandidat,
             ])
             ->add('telephone', TextType::class, [
                 'label' => 'Téléphone',
                 'required' => false,
                 'attr' => ['placeholder' => '+216 XX XXX XXX', 'class' => 'form-control', 'maxlength' => 20],
+            ])
+            ->add('email', EmailType::class, [
+                'label' => 'Email du candidat',
+                'required' => true,
+                'attr' => ['placeholder' => 'email@exemple.com', 'class' => 'form-control', 'maxlength' => 180],
             ])
             ->add('niveauEtudes', ChoiceType::class, [
                 'label' => 'Niveau d\'études',
@@ -144,9 +152,10 @@ class CandidatureType extends AbstractType
                     'label' => 'Statut',
                     'choices' => [
                         'En attente' => 'En attente',
+                        'Validée RH' => 'Validée RH',
+                        'Entretien' => 'Entretien',
                         'Acceptée' => 'Acceptée',
                         'Refusée' => 'Refusée',
-                        'Entretien' => 'Entretien',
                     ],
                     'attr' => ['class' => 'form-control'],
                 ])

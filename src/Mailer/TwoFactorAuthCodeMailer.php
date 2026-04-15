@@ -27,7 +27,7 @@ class TwoFactorAuthCodeMailer implements AuthCodeMailerInterface
         }
 
         $email = (new TemplatedEmail())
-            ->from(new Address('yasminemansour912@gmail.com', 'TalentFlow'))
+            ->from(new Address('nouralouini004@gmail.com', 'TalentFlow'))
             ->to(new Address($user->getEmailAuthRecipient(), $user->getFullName()))
             ->subject('🔐 Code de vérification — TalentFlow')
             ->htmlTemplate('email/2fa_code.html.twig')

@@ -11,6 +11,11 @@
             {{ form_widget(form.dateHeure) }}
             {{ form_errors(form.dateHeure) }}
             <small class="form-hint"><i class="fas fa-clock"></i> Contrôle de conflit sur le même créneau</small>
+            <div id="preferred-date-hint" style="display:none; margin-top:6px; padding:8px 12px; background:rgba(212,168,67,.12); border:1px solid rgba(212,168,67,.4); border-radius:6px; font-size:0.85rem;">
+                <i class="fas fa-calendar-star" style="color:var(--tf-gold);"></i>
+                <strong>Date souhaitée par le candidat :</strong>
+                <span id="preferred-date-value"></span>
+            </div>
         </div>
     </div>
 
@@ -28,19 +33,72 @@
     </div>
 
     <div class="row">
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-3" id="field-lieu">
             {{ form_label(form.lieu) }}
             {{ form_widget(form.lieu) }}
             {{ form_errors(form.lieu) }}
             <small class="form-hint"><i class="fas fa-map-marker-alt"></i> Recommandé pour un entretien présentiel</small>
         </div>
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-3" id="field-lien" style="display:none;">
             {{ form_label(form.lien) }}
             {{ form_widget(form.lien) }}
             {{ form_errors(form.lien) }}
-            <small class="form-hint"><i class="fas fa-video"></i> Recommandé pour un entretien en ligne</small>
+            <small class="form-hint"><i class="fas fa-video"></i> Lien personnalisé (optionnel — un lien Jitsi est généré automatiquement)</small>
+        </div>
+        <div class="col-md-6 mb-3" id="field-meet-auto" style="display:none;">
+            <label class="form-label"><i class="fas fa-video"></i> Lien Meet</label>
+            <div style="padding: 8px 14px; background: rgba(212,168,67,.1); border: 1px solid rgba(212,168,67,.4); border-radius: 6px; font-size:0.88rem;">
+                <i class="fas fa-check-circle" style="color:var(--tf-gold);"></i>
+                Un lien <strong>Jitsi Meet</strong> sera généré automatiquement après enregistrement.
+            </div>
         </div>
     </div>
+<script>
+(function() {
+    const typeSelect = document.querySelector('#{{ form.type.vars.id }}');
+    const fieldLieu  = document.getElementById('field-lieu');
+    const fieldLien  = document.getElementById('field-lien');
+    const fieldAuto  = document.getElementById('field-meet-auto');
+    const lienInput  = document.querySelector('#{{ form.lien.vars.id }}');
+
+    function updateFields() {
+        const val = typeSelect ? typeSelect.value : '';
+        fieldLieu.style.display  = (val === 'EN_LIGNE') ? 'none' : '';
+        fieldLien.style.display  = 'none';
+        fieldAuto.style.display  = (val === 'EN_LIGNE') ? '' : 'none';
+        // Vider le lien pour éviter l'erreur de validation URL
+        if (val === 'EN_LIGNE' && lienInput) { lienInput.value = ''; }
+    }
+
+    if (typeSelect) {
+        typeSelect.addEventListener('change', updateFields);
+        updateFields();
+    }
+
+    // Afficher la date souhaitée par le candidat
+    const candidatureDates = {{ candidatures_dates|default('{}')|raw }};
+    const candidatureSelect = document.querySelector('#{{ form.candidatureId.vars.id }}');
+    const hintBox   = document.getElementById('preferred-date-hint');
+    const hintValue = document.getElementById('preferred-date-value');
+
+    function updateDateHint() {
+        const id = candidatureSelect ? candidatureSelect.value : '';
+        const date = candidatureDates[id];
+        if (date && hintBox && hintValue) {
+            const d = new Date(date);
+            hintValue.textContent = ' ' + d.toLocaleDateString('fr-FR', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+            hintBox.style.display = '';
+        } else if (hintBox) {
+            hintBox.style.display = 'none';
+        }
+    }
+
+    if (candidatureSelect) {
+        candidatureSelect.addEventListener('change', updateDateHint);
+        updateDateHint();
+    }
+})();
+</script>
 
     <div class="row">
         <div class="col-md-6 mb-3">

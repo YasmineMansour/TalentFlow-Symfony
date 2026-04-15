@@ -21,7 +21,7 @@ class CandidatureRepository extends ServiceEntityRepository
      */
     public function findAllOrdered(string $sortBy = 'createdAt', string $sortDir = 'DESC'): array
     {
-        $allowed = ['titrePoste', 'entreprise', 'typeContrat', 'statut', 'dateCandidature', 'createdAt'];
+        $allowed = ['titrePoste', 'entreprise', 'typeContrat', 'statut', 'matchingScore', 'dateCandidature', 'createdAt'];
         if (!in_array($sortBy, $allowed, true)) {
             $sortBy = 'createdAt';
         }
@@ -92,7 +92,7 @@ class CandidatureRepository extends ServiceEntityRepository
                ->setParameter('candidat', $candidat);
         }
 
-        $allowed = ['titrePoste', 'entreprise', 'typeContrat', 'statut', 'dateCandidature', 'createdAt'];
+        $allowed = ['titrePoste', 'entreprise', 'typeContrat', 'statut', 'matchingScore', 'dateCandidature', 'createdAt'];
         if (!in_array($sortBy, $allowed, true)) {
             $sortBy = 'createdAt';
         }

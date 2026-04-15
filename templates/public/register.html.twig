@@ -60,6 +60,16 @@
                 <input type="password" id="reg-confirm" name="confirm_password" class="tf-input" required autocomplete="new-password" aria-required="true">
             </div>
 
+            <div class="tf-form-group" style="margin-top:0.75rem;">
+                <label style="display:flex; align-items:flex-start; gap:0.75rem; color:var(--tf-text-secondary); cursor:pointer; line-height:1.45;">
+                    <input type="checkbox" name="remember_me" value="1" {{ data.remember_me ? 'checked' }} style="margin-top:0.25rem; accent-color:var(--tf-gold);">
+                    <span>
+                        <strong style="color:var(--tf-text-primary);">Se souvenir de moi</strong><br>
+                        Préremplit la page de connexion après l'inscription avec les informations que vous venez de saisir.
+                    </span>
+                </label>
+            </div>
+
             <button type="submit" class="tf-btn tf-btn-gold tf-btn-lg" style="width:100%; margin-top:0.5rem;">
                 <i class="fas fa-user-plus" aria-hidden="true"></i> Créer mon compte
             </button>
@@ -71,4 +81,29 @@
         </div>
     </div>
 </section>
+
+<script>
+(function() {
+    var form = document.querySelector('form[action="{{ path('app_register') }}"]');
+    if (!form || !window.sessionStorage) {
+        return;
+    }
+
+    form.addEventListener('submit', function() {
+        var rememberInput = form.querySelector('input[name="remember_me"]');
+        var shouldRemember = rememberInput && rememberInput.checked;
+
+        if (!shouldRemember) {
+            sessionStorage.removeItem('tf-register-prefill');
+            return;
+        }
+
+        sessionStorage.setItem('tf-register-prefill', JSON.stringify({
+            email: form.querySelector('input[name="email"]').value || '',
+            password: form.querySelector('input[name="password"]').value || '',
+            remember: true
+        }));
+    });
+})();
+</script>
 {% endblock %}
