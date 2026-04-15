@@ -20,11 +20,16 @@ class ChatbotService
     ) {
     }
 
-    public function handleMessage(string $message, ?User $user): array
+    public function handleMessage(string $message, ?User $user, string $locale = 'fr'): array
     {
         $message = trim($message);
+        $language = str_starts_with(mb_strtolower($locale, 'UTF-8'), 'en') ? 'en' : 'fr';
+
         if ($message === '') {
-            return ['response' => 'Veuillez saisir un message.', 'type' => 'error'];
+            return [
+                'response' => $language === 'en' ? 'Please enter a message.' : 'Veuillez saisir un message.',
+                'type' => 'error',
+            ];
         }
 
         $lower = mb_strtolower($message, 'UTF-8');
@@ -43,9 +48,270 @@ class ChatbotService
         }
 
         // Try to match intent
-        $response = $this->matchIntent($lower, $normalized, $role, $user);
+        $response = $language === 'en'
+            ? $this->matchIntentEn($lower, $normalized, $role, $user)
+            : $this->matchIntent($lower, $normalized, $role, $user);
 
-        return ['response' => $response, 'type' => 'success', 'role' => $role];
+        return ['response' => $response, 'type' => 'success', 'role' => $role, 'locale' => $language];
+    }
+
+    private function matchIntentEn(string $lower, string $normalized, string $role, ?User $user): string
+    {
+        if (preg_match('/^(hello|hi|hey|good\s?(morning|afternoon|evening)|bonjour|salut)/u', $lower)) {
+            return $this->greetEn($role, $user);
+        }
+
+        if ($this->containsIntent($normalized, ['guide', 'journey', 'workflow', 'start', 'steps', 'parcours', 'commencer'])) {
+            return $this->roleBasedGuidanceEn($role);
+        }
+
+        if ($this->containsIntent($normalized, ['help', 'aide', 'how', 'features', 'fonctionnalites'])) {
+            return $this->showHelpEn($role);
+        }
+
+        if ($this->containsIntent($normalized, ['offer', 'offers', 'job', 'jobs', 'position', 'work', 'offre', 'emploi', 'stage', 'internship', 'cdi', 'cdd', 'freelance', 'alternance'])) {
+            return $this->handleOffreSearchEn($lower, $role);
+        }
+
+        if ($this->containsIntent($normalized, ['application', 'applications', 'apply', 'candidature', 'cv', 'resume', 'letter'])) {
+            return $this->handleCandidatureQueryEn($role, $user);
+        }
+
+        if ($this->containsIntent($normalized, ['interview', 'interviews', 'entretien', 'meeting', 'schedule'])) {
+            return $this->handleEntretienQueryEn($role);
+        }
+
+        if ($this->containsIntent($normalized, ['user', 'users', 'account', 'accounts', 'utilisateur', 'compte'])) {
+            return $this->handleUserQueryEn($role);
+        }
+
+        if ($this->containsIntent($normalized, ['statistics', 'stats', 'numbers', 'dashboard', 'statistiques', 'chiffres'])) {
+            return $this->handleStatsQueryEn($role);
+        }
+
+        if ($this->containsIntent($normalized, ['talentflow', 'platform', 'about', 'site'])) {
+            return $this->aboutSiteEn($role);
+        }
+
+        if ($this->containsIntent($normalized, ['navigate', 'navigation', 'menu', 'where', 'page'])) {
+            return $this->navigationGuideEn($role);
+        }
+
+        if ($this->containsIntent($normalized, ['forum', 'post', 'discussion', 'community'])) {
+            return $this->handleForumInfoEn($role);
+        }
+
+        if ($this->containsIntent($normalized, ['message', 'messages', 'chat', 'contact'])) {
+            return "💬 **Messages**: You can use the private messaging module from your dashboard once logged in.";
+        }
+
+        return $this->fallbackEn($role);
+    }
+
+    private function greetEn(string $role, ?User $user): string
+    {
+        $name = $user ? $user->getPrenom() : 'visitor';
+        $intro = "👋 Hello **$name**! I am the TalentFlow assistant.";
+
+        return match ($role) {
+            'admin' => $intro . "\n\nI can help you with global stats, users, offers, applications and interviews.\n👉 Type **admin journey** for a guided workflow.",
+            'rh' => $intro . "\n\nI can help you with offers, applications, interviews and final decisions.\n👉 Type **RH journey** for a guided recruitment workflow.",
+            'candidat' => $intro . "\n\nI can help you find jobs, follow applications and interviews.\n👉 Type **journey** for your personalized steps.",
+            default => $intro . "\n\nI can help you discover offers, create an account and apply.\n👉 Type **visitor journey** to start.",
+        };
+    }
+
+    private function showHelpEn(string $role): string
+    {
+        $base = "🤖 **What I can do:**\n\n";
+
+        return match ($role) {
+            'admin' => $base . "• **admin journey**\n• **statistics**\n• **users**\n• **applications**\n• **interviews**",
+            'rh' => $base . "• **RH journey**\n• **offers**\n• **applications**\n• **interviews**\n• **stats**",
+            'candidat' => $base . "• **journey**\n• **offers** or a domain keyword\n• **my applications**\n• **interviews**",
+            default => $base . "• **visitor journey**\n• **offers**\n• **how to apply**\n• **about TalentFlow**",
+        };
+    }
+
+    private function roleBasedGuidanceEn(string $role): string
+    {
+        return match ($role) {
+            'admin' => "🧭 **Admin Journey:**\n1. Dashboard: [**/dashboard**](/dashboard)\n2. Users: [**/user**](/user)\n3. Offers: [**/offre**](/offre)\n4. Applications: [**/candidature**](/candidature)\n5. Interviews: [**/entretiens**](/entretiens)",
+            'rh' => "🧭 **HR Journey:**\n1. Manage offers: [**/offre**](/offre)\n2. Track applications: [**/candidature**](/candidature)\n3. Organize interviews: [**/entretiens**](/entretiens)\n4. Final decisions: [**/decisions-finales**](/decisions-finales)",
+            'candidat' => "🧭 **Candidate Journey:**\n1. Browse jobs: [**/offres**](/offres)\n2. Apply to positions\n3. Track your applications in dashboard\n4. Check your interviews",
+            default => "🧭 **Visitor Journey:**\n1. Browse jobs: [**/offres**](/offres)\n2. Register: [**/register**](/register)\n3. Login: [**/login**](/login)\n4. Complete profile and apply",
+        };
+    }
+
+    private function handleOffreSearchEn(string $lower, string $role): string
+    {
+        $searchTerms = preg_replace('/(offer|offers|job|jobs|position|work|search|looking|for|in|at|with|the|a|an|offre|emploi|stage|internship|cdi|cdd|freelance|alternance)\s*/u', '', $lower);
+        $searchTerms = trim((string) $searchTerms);
+
+        $typeContrat = '';
+        if (str_contains($lower, 'stage') || str_contains($lower, 'internship')) {
+            $typeContrat = 'Stage';
+        } elseif (str_contains($lower, 'cdi')) {
+            $typeContrat = 'CDI';
+        } elseif (str_contains($lower, 'cdd')) {
+            $typeContrat = 'CDD';
+        } elseif (str_contains($lower, 'freelance')) {
+            $typeContrat = 'Freelance';
+        } elseif (str_contains($lower, 'alternance')) {
+            $typeContrat = 'Alternance';
+        }
+
+        $offres = $this->offreRepository->findPublicByFilters(
+            search: $searchTerms,
+            typeContrat: $typeContrat,
+            limit: 5
+        );
+
+        if (empty($offres)) {
+            return "🔍 No matching offers found. You can still browse all open positions on [**/offres**](/offres).";
+        }
+
+        $msg = "💼 **Offers found** (" . count($offres) . "):\n\n";
+        foreach ($offres as $offre) {
+            $loc = $offre->getLocalisation() ? ' - ' . $offre->getLocalisation() : '';
+            $msg .= "• **" . $offre->getTitre() . "** (" . $offre->getTypeContrat() . ")" . $loc . "\n";
+        }
+
+        $msg .= "\n👉 See all offers on [**/offres**](/offres).";
+        if ($role === 'visitor') {
+            $msg .= "\n📝 Create an account to apply directly.";
+        }
+
+        return $msg;
+    }
+
+    private function handleCandidatureQueryEn(string $role, ?User $user): string
+    {
+        if ($role === 'visitor') {
+            return "📄 **How to apply:**\n1. Register on [**/register**](/register)\n2. Login on [**/login**](/login)\n3. Open an offer and submit your application.";
+        }
+
+        if ($role === 'candidat' && $user) {
+            $candidatures = $this->candidatureRepository->findFiltered(candidat: $user);
+            if (empty($candidatures)) {
+                return "📭 You do not have applications yet. Browse [**/offres**](/offres) and apply.";
+            }
+
+            $msg = "📄 **Your applications** (" . count($candidatures) . "):\n\n";
+            foreach (array_slice($candidatures, 0, 5) as $c) {
+                $msg .= "• **" . $c->getTitrePoste() . "** - " . $this->formatStatutEn($c->getStatut()) . "\n";
+            }
+            return $msg;
+        }
+
+        $stats = $this->candidatureRepository->countByStatut();
+        $total = 0;
+        $msg = "📋 **Applications overview:**\n\n";
+        foreach ($stats as $stat) {
+            $total += $stat['total'];
+            $msg .= "• **" . $this->formatStatutEn($stat['statut']) . "**: " . $stat['total'] . "\n";
+        }
+
+        return "📊 Total applications: **$total**\n\n" . $msg;
+    }
+
+    private function handleEntretienQueryEn(string $role): string
+    {
+        if ($role === 'visitor') {
+            return "🗓️ Interviews are scheduled after your application is shortlisted.";
+        }
+
+        $today = $this->entretienRepository->countToday();
+        $planifie = $this->entretienRepository->countByStatut('PLANIFIE');
+
+        return "🗓️ **Interviews:**\n• Today: **$today**\n• Planned: **$planifie**";
+    }
+
+    private function handleUserQueryEn(string $role): string
+    {
+        if ($role !== 'admin') {
+            return "👤 You can manage your own profile from your dashboard.";
+        }
+
+        $allUsers = $this->userRepository->findAllOrdered();
+        $total = count($allUsers);
+        $actifs = count(array_filter($allUsers, fn($u) => $u->isActive()));
+
+        return "👥 **Users:**\n• Total: **$total**\n• Active: **$actifs**\n• Inactive: **" . ($total - $actifs) . "**";
+    }
+
+    private function handleStatsQueryEn(string $role): string
+    {
+        $offresCount = count($this->offreRepository->findActiveOffers());
+        $candidatureStats = $this->candidatureRepository->countByStatut();
+        $totalCandidatures = 0;
+        foreach ($candidatureStats as $s) {
+            $totalCandidatures += $s['total'];
+        }
+
+        $todayEntretiens = $this->entretienRepository->countToday();
+        $msg = "📊 **TalentFlow statistics:**\n\n";
+        $msg .= "• Active offers: **$offresCount**\n";
+        $msg .= "• Total applications: **$totalCandidatures**\n";
+        $msg .= "• Interviews today: **$todayEntretiens**\n";
+
+        if ($role === 'admin') {
+            $msg .= "• Registered users: **" . count($this->userRepository->findAllOrdered()) . "**\n";
+        }
+
+        return $msg;
+    }
+
+    private function aboutSiteEn(string $role): string
+    {
+        $msg = "🌟 **TalentFlow** is a recruitment platform connecting companies and talents.\n\n";
+        $msg .= "• Job publishing and search\n• Application tracking\n• Interview scheduling\n• Private messaging\n• Community forum\n";
+
+        if ($role === 'visitor') {
+            $msg .= "\n👉 [**/offres**](/offres) | [**/register**](/register) | [**/forum**](/forum)";
+        }
+
+        return $msg;
+    }
+
+    private function navigationGuideEn(string $role): string
+    {
+        return match ($role) {
+            'admin' => "🧭 **Admin navigation:** /dashboard, /user, /offre, /candidature, /entretiens, /decisions-finales, /forum, /message",
+            'rh' => "🧭 **HR navigation:** /dashboard, /offre, /candidature, /entretiens, /decisions-finales, /message, /forum",
+            'candidat' => "🧭 **Candidate navigation:** /dashboard, /offres, /mon-entretien, /message, /forum",
+            default => "🧭 **Public pages:** /, /offres, /forum, /login, /register",
+        };
+    }
+
+    private function handleForumInfoEn(string $role): string
+    {
+        return "💬 **TalentFlow Forum**: discuss with the community at [**/forum**](/forum)" . ($role === 'visitor' ? "\n\nLogin to post and comment." : '.');
+    }
+
+    private function fallbackEn(string $role): string
+    {
+        $msg = "🤔 I did not fully understand. Try one of these:\n";
+
+        return match ($role) {
+            'admin' => $msg . "• admin journey\n• statistics\n• users\n• applications\n• interviews",
+            'rh' => $msg . "• RH journey\n• offers\n• applications\n• interviews\n• stats",
+            'candidat' => $msg . "• journey\n• offers\n• my applications\n• interviews",
+            default => $msg . "• visitor journey\n• offers\n• how to apply\n• about TalentFlow",
+        };
+    }
+
+    private function formatStatutEn(string $statut): string
+    {
+        return match ($statut) {
+            'soumise' => 'Submitted',
+            'en_revision' => 'In review',
+            'entretien' => 'Interview',
+            'acceptee' => 'Accepted',
+            'refusee' => 'Rejected',
+            'retiree' => 'Withdrawn',
+            default => ucfirst($statut),
+        };
     }
 
     private function matchIntent(string $lower, string $normalized, string $role, ?User $user): string

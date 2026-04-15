@@ -20,13 +20,14 @@ class ChatbotController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
         $message = $data['message'] ?? '';
+        $locale = $request->getLocale();
 
         if (mb_strlen($message) > 500) {
             return $this->json(['response' => 'Message trop long (max 500 caractères).', 'type' => 'error']);
         }
 
         $user = $this->getUser();
-        $result = $this->chatbotService->handleMessage($message, $user);
+        $result = $this->chatbotService->handleMessage($message, $user, $locale);
 
         return $this->json($result);
     }
