@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="light">
+<html lang="{{ app.request.locale }}" data-theme="light">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="description" content="{% block meta_description %}TalentFlow - Plateforme de recrutement moderne. Consultez les offres d'emploi, postulez et gérez vos candidatures.{% endblock %}">
+        <meta name="description" content="{% block meta_description %}{{ 'public.meta_description'|trans }}{% endblock %}">
         <meta name="robots" content="index, follow">
         <meta name="theme-color" content="#c9a227">
         <link rel="canonical" href="{% block canonical %}{% endblock %}">
-        <title>{% block title %}TalentFlow - Recrutement Moderne{% endblock %}</title>
+        <title>{% block title %}{{ 'public.title'|trans }}{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>💼</text></svg>">
 
         {# Google Fonts - Inter #}
@@ -28,7 +28,7 @@
             "@type": "WebSite",
             "name": "TalentFlow",
             "url": "{{ app.request.schemeAndHttpHost }}",
-            "description": "Plateforme de recrutement moderne en Tunisie",
+            "description": "{{ 'public.structured_description'|trans }}",
             "potentialAction": {
                 "@type": "SearchAction",
                 "target": "{{ url('public_offres') }}?q={search_term_string}",
@@ -49,14 +49,59 @@
         </script>
 
         {% block stylesheets %}{% endblock %}
+        <style>
+            .tf-lang-switcher { position: relative; display: inline-flex; margin-right: .35rem; }
+            .tf-lang-btn {
+                min-width: 44px;
+                height: 34px;
+                border-radius: 20px;
+                border: 1px solid var(--tf-border, #2a3a4e);
+                background: transparent;
+                color: var(--tf-text-secondary, #a0a0b0);
+                cursor: pointer;
+                font-size: .72rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                padding: 0 .6rem;
+            }
+            .tf-lang-dropdown {
+                position: absolute;
+                top: calc(100% + 8px);
+                right: 0;
+                background: var(--tf-card-bg, #1e2a3a);
+                border: 1px solid var(--tf-border, #2a3a4e);
+                border-radius: 10px;
+                padding: .35rem;
+                min-width: 140px;
+                box-shadow: 0 8px 25px rgba(0,0,0,.3);
+                display: none;
+                z-index: 9999;
+            }
+            .tf-lang-dropdown.show { display: block; }
+            .tf-lang-dropdown a {
+                display: flex;
+                align-items: center;
+                gap: .5rem;
+                padding: .45rem .7rem;
+                color: var(--tf-text-secondary, #a0a0b0);
+                text-decoration: none;
+                border-radius: 6px;
+                font-size: .85rem;
+            }
+            .tf-lang-dropdown a:hover,
+            .tf-lang-dropdown a.active {
+                background: rgba(212,168,67,.12);
+                color: var(--tf-gold, #d4a843);
+            }
+        </style>
     </head>
     <body>
         {# Skip to content (A11y) #}
-        <a href="#main-content" class="tf-skip-link">Aller au contenu principal</a>
+        <a href="#main-content" class="tf-skip-link">{{ 'public.skip_to_content'|trans }}</a>
 
         {# ==================== PUBLIC NAVBAR ==================== #}
-        <nav class="tf-pub-navbar" role="navigation" aria-label="Navigation principale">
-            <a href="{{ path('public_home') }}" class="tf-pub-brand" aria-label="TalentFlow - Accueil">
+        <nav class="tf-pub-navbar" role="navigation" aria-label="{{ 'public.main_navigation'|trans }}">
+            <a href="{{ path('public_home') }}" class="tf-pub-brand" aria-label="{{ 'public.brand_home_label'|trans }}">
                 <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <rect width="32" height="32" rx="8" fill="currentColor" opacity="0.15"/>
                     <path d="M9 12h14M9 16h10M9 20h6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
@@ -66,31 +111,39 @@
             </a>
 
             <ul class="tf-pub-nav" role="menubar">
-                <li role="none"><a href="{{ path('public_home') }}" role="menuitem" class="{{ app.request.get('_route') == 'public_home' ? 'active' }}"><i class="fas fa-home" aria-hidden="true"></i> Accueil</a></li>
-                <li role="none"><a href="{{ path('public_offres') }}" role="menuitem" class="{{ app.request.get('_route') starts with 'public_offre' ? 'active' }}"><i class="fas fa-briefcase" aria-hidden="true"></i> Offres d'emploi</a></li>
-                <li role="none"><a href="{{ path('public_forum') }}" role="menuitem" class="{{ app.request.get('_route') starts with 'public_forum' ? 'active' }}"><i class="fas fa-comments" aria-hidden="true"></i> Forum</a></li>
+                <li role="none"><a href="{{ path('public_home') }}" role="menuitem" class="{{ app.request.get('_route') == 'public_home' ? 'active' }}"><i class="fas fa-home" aria-hidden="true"></i> {{ 'public.nav.home'|trans }}</a></li>
+                <li role="none"><a href="{{ path('public_offres') }}" role="menuitem" class="{{ app.request.get('_route') starts with 'public_offre' ? 'active' }}"><i class="fas fa-briefcase" aria-hidden="true"></i> {{ app.request.locale starts with 'en' ? 'Open Roles' : 'Offres d\'emploi' }}</a></li>
+                <li role="none"><a href="{{ path('public_forum') }}" role="menuitem" class="{{ app.request.get('_route') starts with 'public_forum' ? 'active' }}"><i class="fas fa-comments" aria-hidden="true"></i> {{ 'public.nav.forum'|trans }}</a></li>
             </ul>
 
             <div class="tf-pub-actions">
+                <div class="tf-lang-switcher">
+                    <button class="tf-lang-btn" type="button" id="tfPubLangToggle" title="{{ 'language.switch'|trans }}">{{ app.request.locale|upper }}</button>
+                    <div class="tf-lang-dropdown" id="tfPubLangDropdown">
+                        <a href="{{ path('app_switch_locale', {locale: 'fr'}) }}" class="{{ app.request.locale == 'fr' ? 'active' : '' }}">🇫🇷 {{ 'language.fr'|trans }}</a>
+                        <a href="{{ path('app_switch_locale', {locale: 'en'}) }}" class="{{ app.request.locale == 'en' ? 'active' : '' }}">🇬🇧 {{ 'language.en'|trans }}</a>
+                    </div>
+                </div>
+
                 {# Dark mode toggle #}
-                <button class="tf-theme-toggle" type="button" aria-label="Changer le thème">
+                <button class="tf-theme-toggle" type="button" aria-label="{{ 'theme.change'|trans }}">
                     <i class="fas fa-sun icon-sun" aria-hidden="true"></i>
                     <i class="fas fa-moon icon-moon" aria-hidden="true"></i>
                 </button>
 
                 {% if app.user %}
                     <a href="{{ path('app_dashboard') }}" class="tf-btn tf-btn-gold tf-btn-sm">
-                        <i class="fas fa-tachometer-alt" aria-hidden="true"></i> Dashboard
+                        <i class="fas fa-tachometer-alt" aria-hidden="true"></i> {{ 'nav.dashboard'|trans }}
                     </a>
                     <a href="{{ path('app_logout') }}" class="tf-btn tf-btn-outline tf-btn-sm">
-                        <i class="fas fa-sign-out-alt" aria-hidden="true"></i> Deconnexion
+                        <i class="fas fa-sign-out-alt" aria-hidden="true"></i> {{ 'nav.logout'|trans }}
                     </a>
                 {% else %}
                     <a href="{{ path('app_login') }}" class="tf-btn tf-btn-outline tf-btn-sm">
-                        <i class="fas fa-sign-in-alt" aria-hidden="true"></i> Connexion
+                        <i class="fas fa-sign-in-alt" aria-hidden="true"></i> {{ 'public.nav.login'|trans }}
                     </a>
                     <a href="{{ path('app_register') }}" class="tf-btn tf-btn-gold tf-btn-sm">
-                        <i class="fas fa-user-plus" aria-hidden="true"></i> S'inscrire
+                        <i class="fas fa-user-plus" aria-hidden="true"></i> {{ 'public.nav.register'|trans }}
                     </a>
                 {% endif %}
             </div>
@@ -117,12 +170,12 @@
             <div class="tf-footer-content">
                 <div>
                     <span class="tf-footer-brand">💼 TalentFlow</span>
-                    <p class="tf-footer-copy">© {{ "now"|date("Y") }} TalentFlow. Tous droits réservés.</p>
+                    <p class="tf-footer-copy">© {{ "now"|date("Y") }} TalentFlow. {{ 'public.footer.rights'|trans }}</p>
                 </div>
-                <ul class="tf-footer-links" aria-label="Liens utiles">
-                    <li><a href="{{ path('public_offres') }}">Offres d'emploi</a></li>
-                    <li><a href="{{ path('public_forum') }}">Forum</a></li>
-                    <li><a href="{{ path('app_login') }}">Connexion</a></li>
+                <ul class="tf-footer-links" aria-label="{{ 'public.footer.links'|trans }}">
+                    <li><a href="{{ path('public_offres') }}">{{ app.request.locale starts with 'en' ? 'Open Roles' : 'Offres d\'emploi' }}</a></li>
+                    <li><a href="{{ path('public_forum') }}">{{ 'public.nav.forum'|trans }}</a></li>
+                    <li><a href="{{ path('app_login') }}">{{ 'public.nav.login'|trans }}</a></li>
                 </ul>
             </div>
         </footer>
@@ -132,6 +185,25 @@
         {# ==================== SCRIPTS ==================== #}
         <script src="/js/theme.js"></script>
         <script src="/js/predictive-search.js"></script>
+        <script>
+            (function() {
+                const toggle = document.getElementById('tfPubLangToggle');
+                const dropdown = document.getElementById('tfPubLangDropdown');
+                if (!toggle || !dropdown) {
+                    return;
+                }
+
+                toggle.addEventListener('click', function() {
+                    dropdown.classList.toggle('show');
+                });
+
+                document.addEventListener('click', function(event) {
+                    if (!event.target.closest('.tf-lang-switcher')) {
+                        dropdown.classList.remove('show');
+                    }
+                });
+            })();
+        </script>
         {% block javascripts %}{% endblock %}
     </body>
 </html>

@@ -1,7 +1,7 @@
 {% extends 'base_public.html.twig' %}
 
-{% block title %}TalentFlow - Trouvez votre prochain emploi{% endblock %}
-{% block meta_description %}TalentFlow est la plateforme de recrutement moderne en Tunisie. Consultez les offres d'emploi, postulez en ligne et trouvez le poste idéal.{% endblock %}
+{% block title %}{{ 'public.home.page_title'|trans }}{% endblock %}
+{% block meta_description %}{{ 'public.home.meta_description'|trans }}{% endblock %}
 
 {% block structured_data %}
 <script type="application/ld+json">
@@ -11,7 +11,7 @@
     "name": "TalentFlow",
     "url": "{{ app.request.schemeAndHttpHost }}",
     "logo": "{{ app.request.schemeAndHttpHost }}/img/logo.png",
-    "description": "Plateforme de recrutement moderne en Tunisie",
+    "description": "{{ 'public.structured_description'|trans }}",
     "sameAs": []
 }
 </script>
@@ -21,31 +21,31 @@
 {# ==================== HERO ==================== #}
 <section class="tf-hero" aria-labelledby="hero-title">
     <h1 id="hero-title">
-        Trouvez le poste<br>
-        <span class="highlight">qui vous correspond</span>
+        {{ 'public.home.hero_line1'|trans }}<br>
+        <span class="highlight">{{ 'public.home.hero_line2'|trans }}</span>
     </h1>
-    <p>Parcourez des centaines d'offres d'emploi, postulez en quelques clics et suivez vos candidatures en temps réel.</p>
+    <p>{{ 'public.home.hero_subtitle'|trans }}</p>
 
     <div class="tf-hero-actions">
         <div class="tf-search-wrapper" data-predictive-search="{{ path('public_offres_search') }}">
-            <input type="text" class="tf-search-input" placeholder="Rechercher un poste, une entreprise..." aria-label="Rechercher des offres d'emploi" autocomplete="off">
+            <input type="text" class="tf-search-input" placeholder="{{ 'public.home.search_placeholder'|trans }}" aria-label="{{ 'public.home.search_aria'|trans }}" autocomplete="off">
             <i class="fas fa-search tf-search-icon" aria-hidden="true"></i>
-            <div class="tf-search-results" aria-label="Résultats de recherche"></div>
+            <div class="tf-search-results" aria-label="{{ 'public.home.search_results_aria'|trans }}"></div>
         </div>
     </div>
 
-    <div class="tf-hero-stats" aria-label="Statistiques de la plateforme">
+    <div class="tf-hero-stats" aria-label="{{ 'public.home.stats_aria'|trans }}">
         <div class="tf-hero-stat tf-animate-in">
-            <span class="number" aria-label="{{ totalOffres }} offres actives">{{ totalOffres }}</span>
-            <span class="label">Offres actives</span>
+            <span class="number" aria-label="{{ 'public.home.stats_active_offers_aria'|trans({'%count%': totalOffres}) }}">{{ totalOffres }}</span>
+            <span class="label">{{ 'public.home.stats_active_offers'|trans }}</span>
         </div>
         <div class="tf-hero-stat tf-animate-in">
-            <span class="number" aria-label="{{ totalEntreprises }} entreprises">{{ totalEntreprises }}</span>
-            <span class="label">Entreprises</span>
+            <span class="number" aria-label="{{ 'public.home.stats_companies_aria'|trans({'%count%': totalEntreprises}) }}">{{ totalEntreprises }}</span>
+            <span class="label">{{ 'public.home.stats_companies'|trans }}</span>
         </div>
         <div class="tf-hero-stat tf-animate-in">
             <span class="number">5</span>
-            <span class="label">Modules RH</span>
+            <span class="label">{{ 'public.home.stats_modules'|trans }}</span>
         </div>
     </div>
 </section>
@@ -53,8 +53,8 @@
 {# ==================== OFFRES RÉCENTES ==================== #}
 <section class="tf-section" aria-labelledby="offres-title">
     <div class="tf-section-header">
-        <h2 id="offres-title">Offres récentes</h2>
-        <p>Les dernières opportunités publiées par nos entreprises partenaires</p>
+        <h2 id="offres-title">{{ 'public.home.recent_title'|trans }}</h2>
+        <p>{{ 'public.home.recent_subtitle'|trans }}</p>
     </div>
 
     <div class="tf-grid tf-grid-3">
@@ -63,12 +63,12 @@
             <div class="offre-title">{{ offre.titre }}</div>
             <div class="offre-company">
                 <i class="fas fa-building" aria-hidden="true"></i>
-                {{ offre.entreprise ? offre.entreprise.nom : 'Entreprise' }}
+                {{ offre.entreprise ? offre.entreprise.nom : ('public.home.company_default'|trans) }}
             </div>
             <div class="tf-offre-meta">
                 <span class="meta-item">
                     <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
-                    {{ offre.localisation|default('Non précisé') }}
+                    {{ offre.localisation|default('public.home.location_unspecified'|trans) }}
                 </span>
                 <span class="meta-item">
                     <i class="fas fa-clock" aria-hidden="true"></i>
@@ -84,11 +84,11 @@
             <div class="tf-offre-tags">
                 <span class="tf-tag tf-tag-gold">{{ offre.typeContrat }}</span>
                 {% if offre.modeTravail == 'REMOTE' %}
-                    <span class="tf-tag tf-tag-green">Télétravail</span>
+                    <span class="tf-tag tf-tag-green">{{ 'public.mode.remote'|trans }}</span>
                 {% elseif offre.modeTravail == 'HYBRID' %}
-                    <span class="tf-tag tf-tag-blue">Hybride</span>
+                    <span class="tf-tag tf-tag-blue">{{ 'public.mode.hybrid'|trans }}</span>
                 {% else %}
-                    <span class="tf-tag tf-tag-purple">Présentiel</span>
+                    <span class="tf-tag tf-tag-purple">{{ 'public.mode.onsite'|trans }}</span>
                 {% endif %}
                 {% if offre.categorie %}
                     <span class="tf-tag tf-tag-orange">{{ offre.categorie.nom }}</span>
@@ -98,7 +98,7 @@
         {% else %}
         <div style="grid-column: 1/-1; text-align:center; padding: 3rem; color: var(--tf-text-muted);">
             <i class="fas fa-briefcase" style="font-size:2.5rem; margin-bottom:1rem; display:block; opacity:0.4;" aria-hidden="true"></i>
-            <p>Aucune offre disponible pour le moment</p>
+            <p>{{ 'public.home.no_offers'|trans }}</p>
         </div>
         {% endfor %}
     </div>
@@ -106,7 +106,7 @@
     {% if offresRecentes|length > 0 %}
     <div style="text-align: center; margin-top: 2rem;">
         <a href="{{ path('public_offres') }}" class="tf-btn tf-btn-outline">
-            <i class="fas fa-arrow-right" aria-hidden="true"></i> Voir toutes les offres
+            <i class="fas fa-arrow-right" aria-hidden="true"></i> {{ 'public.home.see_all_offers'|trans }}
         </a>
     </div>
     {% endif %}
@@ -115,8 +115,8 @@
 {# ==================== FEATURES ==================== #}
 <section class="tf-section" style="background: var(--tf-bg-alt); border-radius: var(--tf-radius-xl); margin: 0 1rem;" aria-labelledby="features-title">
     <div class="tf-section-header">
-        <h2 id="features-title">Comment ça marche ?</h2>
-        <p>Un processus simple et efficace pour trouver votre emploi idéal</p>
+        <h2 id="features-title">{{ 'public.home.how_title'|trans }}</h2>
+        <p>{{ 'public.home.how_subtitle'|trans }}</p>
     </div>
 
     <div class="tf-grid tf-grid-3">
@@ -124,22 +124,22 @@
             <div style="width:60px;height:60px;border-radius:var(--tf-radius-lg);background:var(--tf-gold-bg);color:var(--tf-gold);display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto 1rem;">
                 <i class="fas fa-search" aria-hidden="true"></i>
             </div>
-            <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:0.5rem;">1. Explorez</h3>
-            <p style="color:var(--tf-text-secondary); font-size:0.9rem;">Parcourez les offres d'emploi sans créer de compte. Filtrez par secteur, localisation ou type de contrat.</p>
+            <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:0.5rem;">{{ 'public.home.step1_title'|trans }}</h3>
+            <p style="color:var(--tf-text-secondary); font-size:0.9rem;">{{ 'public.home.step1_text'|trans }}</p>
         </div>
         <div class="tf-card tf-animate-in" style="text-align:center; animation-delay: 0.1s;">
             <div style="width:60px;height:60px;border-radius:var(--tf-radius-lg);background:var(--tf-blue-bg);color:var(--tf-blue);display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto 1rem;">
                 <i class="fas fa-paper-plane" aria-hidden="true"></i>
             </div>
-            <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:0.5rem;">2. Postulez</h3>
-            <p style="color:var(--tf-text-secondary); font-size:0.9rem;">Créez votre compte candidat et postulez directement depuis l'offre qui vous intéresse.</p>
+            <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:0.5rem;">{{ 'public.home.step2_title'|trans }}</h3>
+            <p style="color:var(--tf-text-secondary); font-size:0.9rem;">{{ 'public.home.step2_text'|trans }}</p>
         </div>
         <div class="tf-card tf-animate-in" style="text-align:center; animation-delay: 0.2s;">
             <div style="width:60px;height:60px;border-radius:var(--tf-radius-lg);background:var(--tf-green-bg);color:var(--tf-green);display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto 1rem;">
                 <i class="fas fa-check-circle" aria-hidden="true"></i>
             </div>
-            <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:0.5rem;">3. Suivez</h3>
-            <p style="color:var(--tf-text-secondary); font-size:0.9rem;">Suivez l'état de vos candidatures, passez vos entretiens et recevez les décisions en temps réel.</p>
+            <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:0.5rem;">{{ 'public.home.step3_title'|trans }}</h3>
+            <p style="color:var(--tf-text-secondary); font-size:0.9rem;">{{ 'public.home.step3_text'|trans }}</p>
         </div>
     </div>
 </section>
@@ -147,14 +147,14 @@
 {# ==================== CTA ==================== #}
 {% if not app.user %}
 <section class="tf-section" style="text-align:center;" aria-labelledby="cta-title">
-    <h2 id="cta-title" style="font-size:1.8rem; font-weight:800; margin-bottom:0.75rem;">Prêt à commencer ?</h2>
-    <p style="color:var(--tf-text-secondary); margin-bottom:1.5rem; max-width:500px; margin-left:auto; margin-right:auto;">Créez votre compte gratuitement et accédez à toutes les fonctionnalités de TalentFlow.</p>
+    <h2 id="cta-title" style="font-size:1.8rem; font-weight:800; margin-bottom:0.75rem;">{{ 'public.home.cta_title'|trans }}</h2>
+    <p style="color:var(--tf-text-secondary); margin-bottom:1.5rem; max-width:500px; margin-left:auto; margin-right:auto;">{{ 'public.home.cta_text'|trans }}</p>
     <div class="tf-hero-actions">
         <a href="{{ path('app_register') }}" class="tf-btn tf-btn-gold tf-btn-lg">
-            <i class="fas fa-rocket" aria-hidden="true"></i> Créer mon compte
+            <i class="fas fa-rocket" aria-hidden="true"></i> {{ 'public.home.cta_create'|trans }}
         </a>
         <a href="{{ path('public_offres') }}" class="tf-btn tf-btn-outline tf-btn-lg">
-            Voir les offres
+            {{ 'public.home.cta_view_offers'|trans }}
         </a>
     </div>
 </section>

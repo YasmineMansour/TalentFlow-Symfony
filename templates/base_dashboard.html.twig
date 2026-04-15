@@ -4,7 +4,7 @@
         <script>(function(){var t=localStorage.getItem('tf-theme');if(!t)t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');})()</script>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{% block title %}TalentFlow - Dashboard{% endblock %}</title>
+        <title>{% block title %}TalentFlow - {{ 'nav.dashboard'|trans }}{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>💼</text></svg>">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
@@ -947,34 +947,34 @@
                 </li>
                 <li>
                     <a href="{{ path('message_index') }}" class="{% if 'message' in app.request.attributes.get('_route') %}active{% endif %}" style="position:relative">
-                        <i class="fas fa-paper-plane"></i> Messages
+                        <i class="fas fa-paper-plane"></i> {{ 'nav.messages'|trans }}
                         <span class="dm-unread-badge" style="display:none;position:absolute;top:6px;right:8px;min-width:16px;height:16px;line-height:16px;background:var(--tf-gold);color:var(--tf-midnight);font-size:0.6rem;font-weight:700;border-radius:50%;text-align:center;padding:0 3px"></span>
                     </a>
                 </li>
 
                 {% if is_granted('ROLE_CANDIDAT') and not is_granted('ROLE_ADMIN') %}
-                <div class="tf-sidebar-section">Mon Espace</div>
+                <div class="tf-sidebar-section">{{ 'section.my_space'|trans }}</div>
                 <li>
                     <a href="#">
-                        <i class="fas fa-paper-plane"></i> Mes Candidatures
+                        <i class="fas fa-paper-plane"></i> {{ 'nav.my_applications'|trans }}
                     </a>
                 </li>
                 <li>
                     <a href="#">
-                        <i class="fas fa-search"></i> Offres disponibles
+                        <i class="fas fa-search"></i> {{ 'nav.browse_offers'|trans }}
                     </a>
                 </li>
                 <li>
                     <a href="#">
-                        <i class="fas fa-id-badge"></i> Mon Profil
+                        <i class="fas fa-id-badge"></i> {{ 'nav.my_profile'|trans }}
                     </a>
                 </li>
                 {% endif %}
 
-                <div class="tf-sidebar-section">Système</div>
+                <div class="tf-sidebar-section">{{ 'section.system'|trans }}</div>
                 <li>
                     <a href="#">
-                        <i class="fas fa-cog"></i> Paramètres
+                        <i class="fas fa-cog"></i> {{ 'nav.settings'|trans }}
                     </a>
                 </li>
             </ul>
@@ -1010,38 +1010,52 @@
                 <div class="tf-topbar-sep"></div>
                 <nav class="tf-topbar-nav">
                     <a href="{{ path('app_dashboard') }}" class="{% if app.request.attributes.get('_route') == 'app_dashboard' %}active{% endif %}">
-                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                        <i class="fas fa-tachometer-alt"></i> {{ 'nav.dashboard'|trans }}
                     </a>
                     <a href="{{ path('post_index') }}" class="{% if 'post' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-comments"></i> Posts
+                        <i class="fas fa-comments"></i> {{ 'nav.posts'|trans }}
                     </a>
                     <a href="{{ path('message_index') }}" class="{% if 'message' in app.request.attributes.get('_route') %}active{% endif %}" style="position:relative">
-                        <i class="fas fa-paper-plane"></i> Messages
+                        <i class="fas fa-paper-plane"></i> {{ 'nav.messages'|trans }}
                         <span class="dm-unread-badge" style="display:none;min-width:16px;height:16px;line-height:16px;background:var(--tf-gold);color:var(--tf-midnight);font-size:0.6rem;font-weight:700;border-radius:50%;text-align:center;padding:0 3px;margin-left:4px"></span>
                     </a>
                     {% if is_granted('ROLE_RH') %}
                     <a href="#">
-                        <i class="fas fa-clipboard-list"></i> Offres
+                        <i class="fas fa-clipboard-list"></i> {{ 'nav.offers_short'|trans }}
                     </a>
                     {% endif %}
                     {% if is_granted('ROLE_CANDIDAT') and not is_granted('ROLE_RH') %}
                     <a href="#">
-                        <i class="fas fa-paper-plane"></i> Candidatures
+                        <i class="fas fa-paper-plane"></i> {{ 'nav.my_applications'|trans }}
                     </a>
                     <a href="#">
-                        <i class="fas fa-search"></i> Offres
+                        <i class="fas fa-search"></i> {{ 'nav.offers_short'|trans }}
                     </a>
                     {% endif %}
                 </nav>
                 {% else %}
-                <h1>{% block page_title %}Tableau de bord{% endblock %}</h1>
+                <h1>{% block page_title %}{{ 'nav.dashboard'|trans }}{% endblock %}</h1>
                 {% endif %}
             </div>
             <div class="tf-topbar-center">
                 {% block topbar_center %}{% endblock %}
             </div>
             <div class="tf-topbar-right">
-                <button class="theme-toggle" id="themeToggle" title="Changer de thème">
+                <div class="tf-lang-switcher">
+                    <button class="tf-lang-btn" id="tfDashLangBtn" type="button" title="{{ 'language.switch'|trans }}">
+                        {{ app.request.locale|upper }}
+                    </button>
+                    <div class="tf-lang-dropdown" id="langDropdownNb">
+                        <a href="{{ path('app_switch_locale', {locale: 'fr'}) }}" class="{{ app.request.locale == 'fr' ? 'active' : '' }}">
+                            <span class="flag-icon">🇫🇷</span> {{ 'language.fr'|trans }}
+                        </a>
+                        <a href="{{ path('app_switch_locale', {locale: 'en'}) }}" class="{{ app.request.locale == 'en' ? 'active' : '' }}">
+                            <span class="flag-icon">🇬🇧</span> {{ 'language.en'|trans }}
+                        </a>
+                    </div>
+                </div>
+
+                <button class="theme-toggle" id="themeToggle" title="{{ 'theme.change'|trans }}">
                     <i class="fas fa-moon"></i>
                 </button>
                 {% if app.user %}
@@ -1080,6 +1094,8 @@
             (function() {
                 const toggle = document.getElementById('themeToggle');
                 const icon = toggle ? toggle.querySelector('i') : null;
+                const langBtn = document.getElementById('tfDashLangBtn');
+                const langDropdown = document.getElementById('langDropdownNb');
 
                 function applyTheme(mode) {
                     if (mode === 'light') {
@@ -1105,6 +1121,18 @@
                         applyTheme(next);
                     });
                 }
+
+                if (langBtn && langDropdown) {
+                    langBtn.addEventListener('click', function() {
+                        langDropdown.classList.toggle('show');
+                    });
+
+                    document.addEventListener('click', function(event) {
+                        if (!event.target.closest('.tf-lang-switcher')) {
+                            langDropdown.classList.remove('show');
+                        }
+                    });
+                }
             })();
         </script>
         <script>
@@ -1123,11 +1151,11 @@
             modal.innerHTML = `
                 <div class="tf-modal-box">
                     <div class="tf-modal-icon ${iconClass}"><i class="fas ${icon}"></i></div>
-                    <div class="tf-modal-title">${options.title || 'Confirmation'}</div>
+                    <div class="tf-modal-title">${options.title || '{{ 'action.confirm'|trans|e('js') }}'}</div>
                     <div class="tf-modal-text">${options.message || ''}</div>
                     <div class="tf-modal-actions">
-                        <button type="button" class="btn-cancel" id="tfConfirmCancelBtn"><i class="fas fa-times"></i> Annuler</button>
-                        <button type="button" class="${btnClass}" id="tfConfirmBtn"><i class="fas ${options.confirmIcon || icon}"></i> ${options.confirmText || 'Confirmer'}</button>
+                        <button type="button" class="btn-cancel" id="tfConfirmCancelBtn"><i class="fas fa-times"></i> {{ 'action.cancel'|trans }}</button>
+                        <button type="button" class="${btnClass}" id="tfConfirmBtn"><i class="fas ${options.confirmIcon || icon}"></i> ${options.confirmText || '{{ 'action.confirm'|trans|e('js') }}'}</button>
                     </div>
                 </div>`;
 
@@ -1170,13 +1198,13 @@
 
         function confirmDelete(formEl, name) {
             showConfirmModal({
-                title: 'Supprimer l\'élément',
-                message: 'Voulez-vous vraiment supprimer <strong style="color:#e74c3c">' + name + '</strong> ?<br><small style="color:#a0a0b0">Cette action est irréversible.</small>',
+                title: '{{ 'modal.delete_item_title'|trans|e('js') }}',
+                message: '{{ 'modal.confirm_delete_msg'|trans|e('js') }} <strong style="color:#e74c3c">' + name + '</strong> ?<br><small style="color:#a0a0b0">{{ 'modal.confirm_delete_warning'|trans|e('js') }}</small>',
                 icon: 'fa-trash-alt',
                 iconClass: 'danger',
                 btnClass: 'btn-confirm-danger',
                 confirmIcon: 'fa-trash',
-                confirmText: 'Oui, supprimer',
+                confirmText: '{{ 'action.yes_delete'|trans|e('js') }}',
                 onConfirm: function() { formEl.submit(); }
             });
         }

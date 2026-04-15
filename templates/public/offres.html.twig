@@ -1,14 +1,14 @@
 {% extends 'base_public.html.twig' %}
 
-{% block title %}Offres d'emploi - TalentFlow{% endblock %}
-{% block meta_description %}Consultez toutes les offres d'emploi disponibles sur TalentFlow. Filtrez par catégorie, type de contrat et localisation.{% endblock %}
+{% block title %}{{ 'public.offers.page_title'|trans }}{% endblock %}
+{% block meta_description %}{{ 'public.offers.meta_description'|trans }}{% endblock %}
 
 {% block structured_data %}
 <script type="application/ld+json">
 {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    "name": "Offres d'emploi TalentFlow",
+    "name": "{{ 'public.offers.schema_name'|trans }}",
     "numberOfItems": {{ offres|length }},
     "itemListElement": [
         {% for offre in offres %}
@@ -54,48 +54,48 @@
 {% block body %}
 <section class="tf-section" aria-labelledby="offres-page-title">
     <div class="tf-section-header">
-        <h1 id="offres-page-title" style="font-size:2rem; font-weight:800;">Offres d'emploi</h1>
-        <p>{{ offres|length }} offre{{ offres|length > 1 ? 's' }} disponible{{ offres|length > 1 ? 's' }}</p>
+        <h1 id="offres-page-title" style="font-size:2rem; font-weight:800;">{{ app.request.locale starts with 'en' ? 'Open Roles' : 'Offres d\'emploi' }}</h1>
+        <p>{{ 'public.offers.count'|trans({'%count%': offres|length}) }}</p>
     </div>
 
     {# ====== FILTRES ====== #}
-    <form method="get" action="{{ path('public_offres') }}" role="search" aria-label="Filtrer les offres" style="margin-bottom: 2rem;">
+    <form method="get" action="{{ path('public_offres') }}" role="search" aria-label="{{ 'public.offers.filter_aria'|trans }}" style="margin-bottom: 2rem;">
         <div style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:flex-end;">
             <div class="tf-search-wrapper" data-predictive-search="{{ path('public_offres_search') }}" style="flex:2; min-width:260px;">
-                <input type="text" name="q" value="{{ search }}" class="tf-search-input" placeholder="Poste, entreprise, mot-clé..." aria-label="Recherche" autocomplete="off">
+                <input type="text" name="q" value="{{ search }}" class="tf-search-input" placeholder="{{ 'public.offers.search_placeholder'|trans }}" aria-label="{{ 'public.offers.search_aria'|trans }}" autocomplete="off">
                 <i class="fas fa-search tf-search-icon" aria-hidden="true"></i>
-                <div class="tf-search-results" aria-label="Suggestions"></div>
+                <div class="tf-search-results" aria-label="{{ 'public.offers.search_suggestions_aria'|trans }}"></div>
             </div>
             <div style="flex:1; min-width:160px;">
-                <label class="tf-label" for="filter-cat">Catégorie</label>
+                <label class="tf-label" for="filter-cat">{{ 'public.offers.category'|trans }}</label>
                 <select name="categorie" id="filter-cat" class="tf-select">
-                    <option value="">Toutes</option>
+                    <option value="">{{ 'public.offers.all_categories'|trans }}</option>
                     {% for cat in categories %}
                         <option value="{{ cat.id }}" {{ categorieId == cat.id ? 'selected' }}>{{ cat.nom }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div style="flex:1; min-width:140px;">
-                <label class="tf-label" for="filter-type">Contrat</label>
+                <label class="tf-label" for="filter-type">{{ 'public.offers.contract'|trans }}</label>
                 <select name="type" id="filter-type" class="tf-select">
-                    <option value="">Tous</option>
+                    <option value="">{{ 'public.offers.all_contracts'|trans }}</option>
                     {% for t in ['CDI', 'CDD', 'Stage', 'Freelance', 'Alternance'] %}
                         <option value="{{ t }}" {{ typeContrat == t ? 'selected' }}>{{ t }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div style="flex:1; min-width:140px;">
-                <label class="tf-label" for="filter-loc">Localisation</label>
-                <input type="text" name="localisation" id="filter-loc" value="{{ localisation }}" class="tf-input" placeholder="Ville...">
+                <label class="tf-label" for="filter-loc">{{ 'public.offers.location'|trans }}</label>
+                <input type="text" name="localisation" id="filter-loc" value="{{ localisation }}" class="tf-input" placeholder="{{ 'public.offers.city_placeholder'|trans }}">
             </div>
             <button type="submit" class="tf-btn tf-btn-gold">
-                <i class="fas fa-filter" aria-hidden="true"></i> Filtrer
+                <i class="fas fa-filter" aria-hidden="true"></i> {{ app.request.locale starts with 'en' ? 'Apply filters' : 'Filtrer' }}
             </button>
         </div>
         {% if search or categorieId or typeContrat or localisation %}
         <div style="margin-top:0.75rem;">
             <a href="{{ path('public_offres') }}" style="color:var(--tf-red); font-size:0.85rem; text-decoration:none;">
-                <i class="fas fa-times" aria-hidden="true"></i> Réinitialiser les filtres
+                <i class="fas fa-times" aria-hidden="true"></i> {{ 'public.offers.reset_filters'|trans }}
             </a>
         </div>
         {% endif %}
@@ -120,11 +120,11 @@
             <div class="tf-offre-tags">
                 <span class="tf-tag tf-tag-gold">{{ offre.typeContrat }}</span>
                 {% if offre.modeTravail == 'REMOTE' %}
-                    <span class="tf-tag tf-tag-green">Télétravail</span>
+                    <span class="tf-tag tf-tag-green">{{ 'public.mode.remote'|trans }}</span>
                 {% elseif offre.modeTravail == 'HYBRID' %}
-                    <span class="tf-tag tf-tag-blue">Hybride</span>
+                    <span class="tf-tag tf-tag-blue">{{ 'public.mode.hybrid'|trans }}</span>
                 {% else %}
-                    <span class="tf-tag tf-tag-purple">Présentiel</span>
+                    <span class="tf-tag tf-tag-purple">{{ 'public.mode.onsite'|trans }}</span>
                 {% endif %}
                 {% if offre.categorie %}
                     <span class="tf-tag tf-tag-orange">{{ offre.categorie.nom }}</span>
@@ -139,8 +139,8 @@
         {% else %}
         <div style="grid-column:1/-1; text-align:center; padding:3rem; color:var(--tf-text-muted);">
             <i class="fas fa-search" style="font-size:2.5rem; margin-bottom:1rem; display:block; opacity:0.4;" aria-hidden="true"></i>
-            <p style="font-size:1.1rem;">Aucune offre ne correspond à vos critères</p>
-            <a href="{{ path('public_offres') }}" class="tf-btn tf-btn-outline" style="margin-top:1rem;">Voir toutes les offres</a>
+            <p style="font-size:1.1rem;">{{ 'public.offers.no_results'|trans }}</p>
+            <a href="{{ path('public_offres') }}" class="tf-btn tf-btn-outline" style="margin-top:1rem;">{{ 'public.home.see_all_offers'|trans }}</a>
         </div>
         {% endfor %}
     </div>

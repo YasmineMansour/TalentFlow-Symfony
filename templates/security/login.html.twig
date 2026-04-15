@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="light">
+<html lang="{{ app.request.locale }}" data-theme="light">
 <head>
     <script>(function(){var t=localStorage.getItem('tf-theme');if(!t)t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');})()</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TalentFlow - Plateforme de Gestion du Recrutement</title>
+    <title>{{ 'login.page_title'|trans }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -226,9 +226,11 @@
             <i class="fas fa-briefcase"></i> TalentFlow
         </a>
         <div class="tf-navbar-links">
-            <a href="{{ path('public_home') }}"><i class="fas fa-home"></i> Accueil</a>
-            <a href="{{ path('public_offres') }}"><i class="fas fa-briefcase"></i> Offres</a>
-            <button class="tf-theme-btn-login" onclick="TFTheme.toggle()" aria-label="Changer le thème" title="Mode clair/sombre">
+            <a href="{{ path('public_home') }}"><i class="fas fa-home"></i> {{ 'public.nav.home'|trans }}</a>
+            <a href="{{ path('public_offres') }}"><i class="fas fa-briefcase"></i> {{ 'public.nav.offers_short'|trans }}</a>
+            <a href="{{ path('app_switch_locale', {locale: 'fr'}) }}" class="{{ app.request.locale == 'fr' ? 'active' : '' }}">FR</a>
+            <a href="{{ path('app_switch_locale', {locale: 'en'}) }}" class="{{ app.request.locale == 'en' ? 'active' : '' }}">EN</a>
+            <button class="tf-theme-btn-login" onclick="TFTheme.toggle()" aria-label="{{ 'theme.change'|trans }}" title="{{ 'theme.toggle'|trans }}">
                 <i class="fas fa-sun" id="theme-icon-sun"></i>
                 <i class="fas fa-moon" id="theme-icon-moon" style="display:none;"></i>
             </button>
@@ -239,39 +241,38 @@
         <!-- LEFT: INFO PANEL -->
         <div class="tf-info-panel">
             <div class="tf-info-content">
-                <h1>Bienvenue sur<br><span>TalentFlow</span></h1>
+                <h1>{{ 'login.welcome'|trans|raw }}</h1>
                 <p class="tf-tagline">
-                    La plateforme intelligente de gestion du recrutement.
-                    Centralisez vos offres, candidatures et entretiens en un seul endroit.
+                    {{ 'login.tagline'|trans }}
                 </p>
 
                 <div class="tf-features">
                     <div class="tf-feature">
                         <div class="tf-feature-icon"><i class="fas fa-bullhorn"></i></div>
                         <div class="tf-feature-text">
-                            <h4>Gestion des offres</h4>
-                            <p>Publiez et gérez vos offres d'emploi facilement</p>
+                            <h4>{{ 'login.feature.offers_title'|trans }}</h4>
+                            <p>{{ 'login.feature.offers_text'|trans }}</p>
                         </div>
                     </div>
                     <div class="tf-feature">
                         <div class="tf-feature-icon"><i class="fas fa-file-alt"></i></div>
                         <div class="tf-feature-text">
-                            <h4>Suivi des candidatures</h4>
-                            <p>Suivez chaque candidature du dépôt à la décision</p>
+                            <h4>{{ 'login.feature.applications_title'|trans }}</h4>
+                            <p>{{ 'login.feature.applications_text'|trans }}</p>
                         </div>
                     </div>
                     <div class="tf-feature">
                         <div class="tf-feature-icon"><i class="fas fa-calendar-check"></i></div>
                         <div class="tf-feature-text">
-                            <h4>Planification d'entretiens</h4>
-                            <p>Organisez et planifiez vos entretiens en un clic</p>
+                            <h4>{{ 'login.feature.interviews_title'|trans }}</h4>
+                            <p>{{ 'login.feature.interviews_text'|trans }}</p>
                         </div>
                     </div>
                     <div class="tf-feature">
                         <div class="tf-feature-icon"><i class="fas fa-shield-alt"></i></div>
                         <div class="tf-feature-text">
-                            <h4>Sécurité renforcée</h4>
-                            <p>Authentification à deux facteurs par email</p>
+                            <h4>{{ 'login.feature.security_title'|trans }}</h4>
+                            <p>{{ 'login.feature.security_text'|trans }}</p>
                         </div>
                     </div>
                 </div>
@@ -279,15 +280,15 @@
                 <div class="tf-stats">
                     <div class="tf-stat">
                         <div class="tf-stat-num">3</div>
-                        <div class="tf-stat-label">Rôles</div>
+                        <div class="tf-stat-label">{{ 'login.stats.roles'|trans }}</div>
                     </div>
                     <div class="tf-stat">
                         <div class="tf-stat-num">5</div>
-                        <div class="tf-stat-label">Modules</div>
+                        <div class="tf-stat-label">{{ 'login.stats.modules'|trans }}</div>
                     </div>
                     <div class="tf-stat">
                         <div class="tf-stat-num">2FA</div>
-                        <div class="tf-stat-label">Sécurité</div>
+                        <div class="tf-stat-label">{{ 'login.stats.security'|trans }}</div>
                     </div>
                 </div>
             </div>
@@ -298,15 +299,15 @@
             <div class="tf-login-box">
                 <div class="tf-login-header">
                     <div class="icon-circle"><i class="fas fa-sign-in-alt"></i></div>
-                    <h2>Connexion</h2>
-                    <p>Accédez à votre espace personnel</p>
+                    <h2>{{ 'page.login.title'|trans }}</h2>
+                    <p>{{ 'login.access_space'|trans }}</p>
                 </div>
 
                 {% if lockout_minutes is not null %}
                     <div class="tf-alert tf-alert-error">
                         <i class="fas fa-ban"></i>
-                        <div>Compte bloqué temporairement.
-                        <br><small>Réessayez dans <strong>{{ lockout_minutes }}</strong> min.</small></div>
+                        <div>{{ 'login.locked'|trans }}
+                        <br><small>{{ 'login.retry_in'|trans({'%minutes%': lockout_minutes})|raw }}</small></div>
                     </div>
                 {% endif %}
 
@@ -320,27 +321,27 @@
                 {% if remaining_attempts is not null and remaining_attempts > 0 %}
                     <div class="tf-alert tf-alert-warning">
                         <i class="fas fa-exclamation-triangle"></i>
-                        <div><strong>{{ remaining_attempts }}</strong> tentative(s) restante(s).</div>
+                        <div>{{ 'login.remaining_attempts'|trans({'%count%': remaining_attempts}) }}</div>
                     </div>
                 {% endif %}
 
                 <form method="post">
                     <div class="mb-3">
                         <label for="inputEmail" class="form-label">
-                            <i class="fas fa-envelope"></i> Email
+                                     <i class="fas fa-envelope"></i> {{ 'page.login.email'|trans }}
                         </label>
                         <input type="email" value="{{ last_username }}" name="_username" id="inputEmail"
-                               class="form-control" placeholder="votre@email.com" required autofocus
+                                         class="form-control" placeholder="{{ 'login.email_placeholder'|trans }}" required autofocus
                                {% if lockout_minutes is not null %}disabled{% endif %}>
                     </div>
 
                     <div class="mb-3">
                         <label for="inputPassword" class="form-label">
-                            <i class="fas fa-lock"></i> Mot de passe
+                            <i class="fas fa-lock"></i> {{ 'page.login.password'|trans }}
                         </label>
                         <div class="input-group-icon">
                             <input type="password" name="_password" id="inputPassword"
-                                   class="form-control" placeholder="••••••••" required
+                                class="form-control" placeholder="{{ 'login.password_placeholder'|trans }}" required
                                    {% if lockout_minutes is not null %}disabled{% endif %}>
                             <i class="fas fa-eye field-icon" id="togglePassword"></i>
                         </div>
@@ -349,7 +350,7 @@
                     <div class="tf-remember-row">
                         <label class="tf-remember-check" for="rememberMe">
                             <input type="checkbox" name="_remember_me" id="rememberMe" value="1">
-                            <span>Se souvenir de moi</span>
+                            <span>{{ 'page.login.remember_me'|trans }}</span>
                         </label>
                     </div>
 
@@ -357,7 +358,7 @@
 
                     <button class="btn-login mt-2" type="submit"
                             {% if lockout_minutes is not null %}disabled{% endif %}>
-                        <i class="fas fa-arrow-right"></i> Se connecter
+                        <i class="fas fa-arrow-right"></i> {{ 'page.login.submit'|trans }}
                     </button>
                 </form>
 
@@ -365,20 +366,20 @@
 
                 <div class="text-center">
                     <a href="{{ path('app_forgot_password') }}" class="forgot-link">
-                        <i class="fas fa-key"></i> Mot de passe oublié ?
+                        <i class="fas fa-key"></i> {{ 'page.login.forgot_password'|trans }}
                     </a>
                 </div>
 
                 <div class="text-center mt-2">
                     <a href="{{ path('app_magic_link') }}" class="forgot-link">
-                        <i class="fas fa-magic"></i> Connexion sans mot de passe
+                        <i class="fas fa-magic"></i> {{ 'login.magic_link'|trans }}
                     </a>
                 </div>
 
                 <div class="tf-divider"></div>
 
                 <div class="tf-footer-login">
-                    <i class="fas fa-lock"></i> Connexion sécurisée avec vérification en deux étapes
+                    <i class="fas fa-lock"></i> {{ 'login.secure_footer'|trans }}
                 </div>
             </div>
         </div>

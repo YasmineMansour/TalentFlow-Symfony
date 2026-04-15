@@ -1,7 +1,7 @@
 {# Chatbot Widget - TalentFlow #}
 <div id="tf-chatbot-widget">
     {# Floating button #}
-    <button id="tf-chatbot-toggle" title="Assistant TalentFlow" aria-label="Ouvrir le chatbot">
+    <button id="tf-chatbot-toggle" title="{{ 'chatbot.widget.title'|trans }}" aria-label="{{ 'chatbot.widget.open'|trans }}">
         <i class="fas fa-robot" id="tf-chatbot-icon-open"></i>
         <i class="fas fa-times" id="tf-chatbot-icon-close" style="display:none;"></i>
     </button>
@@ -11,21 +11,20 @@
         <div id="tf-chatbot-header">
             <div style="display:flex;align-items:center;gap:0.5rem;">
                 <i class="fas fa-robot"></i>
-                <span><strong>Assistant TalentFlow</strong></span>
+                <span><strong>{{ 'chatbot.widget.title'|trans }}</strong></span>
             </div>
-            <button id="tf-chatbot-minimize" title="Réduire"><i class="fas fa-minus"></i></button>
+            <button id="tf-chatbot-minimize" title="{{ 'chatbot.widget.minimize'|trans }}"><i class="fas fa-minus"></i></button>
         </div>
         <div id="tf-chatbot-messages">
             <div class="tf-chat-msg tf-chat-bot">
                 <div class="tf-chat-bubble">
-                    👋 Bonjour ! Je suis l'assistant <strong>TalentFlow</strong>.<br>
-                    Comment puis-je vous aider ? Tapez <strong>aide</strong> pour voir mes capacités.
+                    {{ 'chatbot.widget.welcome'|trans|raw }}
                 </div>
             </div>
         </div>
         <div id="tf-chatbot-input-area">
-            <input type="text" id="tf-chatbot-input" placeholder="Posez votre question..." autocomplete="off" maxlength="500">
-            <button id="tf-chatbot-send" title="Envoyer"><i class="fas fa-paper-plane"></i></button>
+            <input type="text" id="tf-chatbot-input" placeholder="{{ 'chatbot.widget.placeholder'|trans }}" autocomplete="off" maxlength="500">
+            <button id="tf-chatbot-send" title="{{ 'chatbot.widget.send'|trans }}"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 </div>
@@ -237,6 +236,12 @@ body.light-mode .tf-chat-bot .tf-chat-bubble,
 
 <script>
 (function() {
+    const i18n = {
+        botError: "{{ 'chatbot.widget.error'|trans|e('js') }}",
+        botUnavailable: "{{ 'chatbot.widget.unavailable'|trans|e('js') }}",
+        connectionError: "{{ 'chatbot.widget.connection_error'|trans|e('js') }}"
+    };
+
     const widget = document.getElementById('tf-chatbot-widget');
     if (!widget || widget.dataset.bound === 'true') {
         return;
@@ -350,13 +355,13 @@ body.light-mode .tf-chat-bot .tf-chat-bubble,
 
             removeTyping();
             if (!resp.ok) {
-                addMessage((data && data.response) || 'Le chatbot a rencontré une erreur. Veuillez réessayer.', false);
+                addMessage((data && data.response) || i18n.botError, false);
             } else {
-                addMessage((data && data.response) || 'Réponse indisponible pour le moment.', false);
+                addMessage((data && data.response) || i18n.botUnavailable, false);
             }
         } catch (e) {
             removeTyping();
-            addMessage('⚠️ Erreur de connexion. Veuillez réessayer.', false);
+            addMessage(i18n.connectionError, false);
         } finally {
             setSendingState(false);
             if (isOpen) {
