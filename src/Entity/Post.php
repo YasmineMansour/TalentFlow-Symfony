@@ -44,6 +44,9 @@ class Post
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $audioPath = null;
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $hidden = false;
+
     /** @var Collection<int, Comment> */
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'post', cascade: ['remove'], orphanRemoval: true)]
     #[ORM\OrderBy(['createdAt' => 'DESC'])]
@@ -84,6 +87,9 @@ class Post
 
     public function getAudioPath(): ?string { return $this->audioPath; }
     public function setAudioPath(?string $audioPath): static { $this->audioPath = $audioPath; return $this; }
+
+    public function isHidden(): bool { return $this->hidden; }
+    public function setHidden(bool $hidden): static { $this->hidden = $hidden; return $this; }
 
     /** @return Collection<int, Comment> */
     public function getComments(): Collection { return $this->comments; }

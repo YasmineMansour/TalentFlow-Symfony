@@ -27,35 +27,35 @@
 
             /* ── Light mode overrides ── */
             body.light-mode {
-                --tf-midnight: #f8f5f0;
+                --tf-midnight: #f4f6fb;
                 --tf-navy: #ffffff;
-                --tf-dark-blue: #e8e4de;
-                --tf-gold: #2563eb;
-                --tf-gold-light: #3b82f6;
-                --tf-gold-dark: #1d4ed8;
-                --tf-white: #1c1e21;
-                --tf-gray: #65676b;
+                --tf-dark-blue: #eef1f6;
+                --tf-gold: #c9a227;
+                --tf-gold-light: #e2c355;
+                --tf-gold-dark: #a88720;
+                --tf-white: #1a1a2e;
+                --tf-gray: #5a5f7a;
                 --tf-card-bg: #ffffff;
-                --tf-border: #dddfe2;
-                --tf-body-bg: #f8f5f0;
-                --tf-text: #1c1e21;
-                --tf-text-muted: #65676b;
+                --tf-border: #e2e6ef;
+                --tf-body-bg: #f4f6fb;
+                --tf-text: #1a1a2e;
+                --tf-text-muted: #8b90a5;
             }
             body.light-mode .tf-sidebar {
-                background: linear-gradient(180deg, #ffffff 0%, #f7f8fa 100%);
+                background: linear-gradient(180deg, #ffffff 0%, #f8f9fc 100%);
             }
-            body.light-mode .tf-sidebar-brand a { color: #2563eb; }
-            body.light-mode .tf-sidebar-nav a:hover { background: rgba(37,99,235,0.06); color: #2563eb; }
-            body.light-mode .tf-sidebar-nav a.active { background: rgba(37,99,235,0.1); color: #2563eb; }
-            body.light-mode .tf-topbar { background: #ffffff; border-color: #dddfe2; }
-            body.light-mode .tf-topbar-left h1 { color: #1c1e21; }
-            body.light-mode .badge-admin { background: rgba(37,99,235,0.15); color: #2563eb; }
-            body.light-mode .btn-gold { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; }
-            body.light-mode .btn-gold:hover { color: #ffffff; }
-            body.light-mode .btn-outline-gold { border-color: #2563eb; color: #2563eb; }
-            body.light-mode .btn-outline-gold:hover { background: rgba(37,99,235,0.08); }
-            body.light-mode .tf-avatar-sm { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
-            body.light-mode .tf-card-header h3 { color: #2563eb; }
+            body.light-mode .tf-sidebar-brand a { color: var(--tf-gold); }
+            body.light-mode .tf-sidebar-nav a:hover { background: rgba(201,162,39,0.08); color: var(--tf-gold); }
+            body.light-mode .tf-sidebar-nav a.active { background: rgba(201,162,39,0.12); color: var(--tf-gold); }
+            body.light-mode .tf-topbar { background: linear-gradient(90deg, #ffffff 0%, #f8f9fc 100%); border-color: #e2e6ef; }
+            body.light-mode .tf-topbar-left h1 { color: #1a1a2e; }
+            body.light-mode .badge-admin { background: rgba(201,162,39,0.14); color: var(--tf-gold); }
+            body.light-mode .btn-gold { background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark)); color: var(--tf-midnight); }
+            body.light-mode .btn-gold:hover { color: var(--tf-midnight); }
+            body.light-mode .btn-outline-gold { border-color: var(--tf-gold); color: var(--tf-gold); }
+            body.light-mode .btn-outline-gold:hover { background: rgba(201,162,39,0.08); }
+            body.light-mode .tf-avatar-sm { background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark)); }
+            body.light-mode .tf-card-header h3 { color: var(--tf-gold); }
 
             * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -186,7 +186,7 @@
                 top: 0;
                 left: var(--sidebar-width);
                 right: 0;
-                height: 60px;
+                height: 64px;
                 background: var(--tf-card-bg);
                 border-bottom: 1px solid var(--tf-border);
                 display: flex;
@@ -197,24 +197,24 @@
             }
             .tf-topbar-left { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
             .tf-topbar-left h1 { font-size: 1.1rem; font-weight: 600; color: var(--tf-white); margin: 0; white-space: nowrap; }
-            .tf-topbar-nav { display: flex; align-items: center; gap: 0.15rem; margin-left: 0.4rem; }
+            .tf-topbar-nav { display: flex; align-items: center; gap: 0.3rem; margin-left: 0.4rem; }
             .tf-topbar-nav a {
-                display: flex; align-items: center; gap: 0.4rem;
-                padding: 0.45rem 0.85rem; border-radius: 8px; font-size: 0.82rem;
-                font-weight: 600; color: var(--tf-gray); text-decoration: none;
+                display: flex; align-items: center; gap: 0.5rem;
+                padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.88rem;
+                font-weight: 500; color: var(--tf-gray); text-decoration: none;
                 transition: all 0.2s; white-space: nowrap;
             }
             .tf-topbar-nav a:hover { background: rgba(212,168,67,0.08); color: var(--tf-gold); }
             .tf-topbar-nav a.active { color: var(--tf-gold); background: rgba(212,168,67,0.12); }
             .tf-topbar-nav a i { font-size: 0.9rem; }
-            body.light-mode .tf-topbar-nav a { color: #65676b; }
-            body.light-mode .tf-topbar-nav a:hover { background: rgba(37,99,235,0.06); color: #2563eb; }
-            body.light-mode .tf-topbar-nav a.active { color: #2563eb; background: rgba(37,99,235,0.1); }
-            .tf-topbar-sep { width: 1px; height: 24px; background: var(--tf-border); margin: 0 0.3rem; flex-shrink: 0; }
-            body.light-mode .tf-topbar-sep { background: #dddfe2; }
+            body.light-mode .tf-topbar-nav a { color: #5a5f7a; }
+            body.light-mode .tf-topbar-nav a:hover { background: rgba(201,162,39,0.08); color: var(--tf-gold); }
+            body.light-mode .tf-topbar-nav a.active { color: var(--tf-gold); background: rgba(201,162,39,0.12); }
+            .tf-topbar-sep { width: 1px; height: 28px; background: var(--tf-border); margin: 0 0.5rem; flex-shrink: 0; }
+            body.light-mode .tf-topbar-sep { background: #e2e6ef; }
             .tf-topbar-center { flex: 1; display: flex; align-items: center; justify-content: flex-end; padding: 0 0.8rem; min-width: 0; position: relative; }
-            .tf-topbar-right { display: flex; align-items: center; gap: 1.2rem; flex-shrink: 0; }
-            .tf-topbar-right .top-user { display: flex; align-items: center; gap: 0.6rem; color: var(--tf-white); font-size: 0.9rem; }
+            .tf-topbar-right { display: flex; align-items: center; gap: 1rem; flex-shrink: 0; }
+            .tf-topbar-right .top-user { display: flex; align-items: center; gap: 0.6rem; color: var(--tf-white); font-size: 0.88rem; }
             .tf-topbar-right .tf-avatar-sm {
                 width: 34px; height: 34px; border-radius: 50%;
                 background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
@@ -230,19 +230,42 @@
             /* Theme toggle */
             .theme-toggle {
                 background: none; border: 1px solid var(--tf-border); color: var(--tf-gray);
-                width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+                width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
                 display: flex; align-items: center; justify-content: center;
-                font-size: 1rem; transition: all 0.25s;
+                font-size: 1rem; transition: all 0.2s;
             }
-            .theme-toggle:hover { border-color: var(--tf-gold); color: var(--tf-gold); background: rgba(212,168,67,0.08); }
-            body.light-mode .theme-toggle { border-color: #dddfe2; color: #65676b; }
-            body.light-mode .theme-toggle:hover { border-color: #2563eb; color: #2563eb; }
+            .theme-toggle:hover { border-color: var(--tf-gold); color: var(--tf-gold); background: rgba(212,168,67,0.1); transform: rotate(15deg); }
+            body.light-mode .theme-toggle { border-color: #e2e6ef; color: #5a5f7a; }
+            body.light-mode .theme-toggle:hover { border-color: var(--tf-gold); color: var(--tf-gold); }
+
+            .tf-lang-switcher { position: relative; display: inline-flex; }
+            .tf-lang-btn {
+                width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--tf-border);
+                background: transparent; color: var(--tf-gray); cursor: pointer;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 0.75rem; font-weight: 700; transition: all 0.2s; text-transform: uppercase;
+            }
+            .tf-lang-btn:hover { background: rgba(212,168,67,0.1); color: var(--tf-gold); border-color: var(--tf-gold); }
+            .tf-lang-dropdown {
+                position: absolute; top: calc(100% + 8px); right: 0; background: var(--tf-card-bg);
+                border: 1px solid var(--tf-border); border-radius: 10px; padding: 0.4rem; min-width: 140px;
+                box-shadow: 0 8px 25px rgba(0,0,0,0.3); display: none; z-index: 9999;
+            }
+            .tf-lang-dropdown.show { display: block; }
+            .tf-lang-dropdown a {
+                display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 0.8rem;
+                color: var(--tf-gray); text-decoration: none; border-radius: 6px; font-size: 0.85rem;
+                transition: all 0.15s;
+            }
+            .tf-lang-dropdown a:hover { background: rgba(212,168,67,0.08); color: var(--tf-gold); }
+            .tf-lang-dropdown a.active { color: var(--tf-gold); font-weight: 600; background: rgba(212,168,67,0.12); }
+            .tf-lang-dropdown a .flag-icon { font-size: 1.1rem; }
 
             .tf-main {
                 margin-left: var(--sidebar-width);
-                margin-top: 60px;
+                margin-top: 64px;
                 padding: 2rem;
-                min-height: calc(100vh - 60px);
+                min-height: calc(100vh - 64px);
             }
 
             .tf-widget {
@@ -424,12 +447,12 @@
 
             /* Topbar brand link (non-admin) */
             .tf-topbar-brand-link {
-                text-decoration: none; display: flex; align-items: center; gap: 0.45rem; flex-shrink: 0;
+                text-decoration: none; display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0;
             }
-            .tf-topbar-brand-link i { color: var(--tf-gold); font-size: 1.15rem; }
-            .tf-topbar-brand-link span { font-weight: 800; font-size: 1.05rem; color: var(--tf-gold); }
-            body.light-mode .tf-topbar-brand-link span { color: #2563eb; }
-            body.light-mode .tf-topbar-brand-link i { color: #2563eb; }
+            .tf-topbar-brand-link i { color: var(--tf-gold); font-size: 1.35rem; }
+            .tf-topbar-brand-link span { font-weight: 800; font-size: 1.4rem; color: var(--tf-gold); }
+            body.light-mode .tf-topbar-brand-link span { color: var(--tf-gold); }
+            body.light-mode .tf-topbar-brand-link i { color: var(--tf-gold); }
 
             /* Collapsible search icon */
             .topbar-search-toggle {
@@ -439,8 +462,8 @@
                 font-size: 0.9rem; transition: all 0.25s; flex-shrink: 0;
             }
             .topbar-search-toggle:hover { border-color: var(--tf-gold); color: var(--tf-gold); }
-            body.light-mode .topbar-search-toggle { border-color: #dddfe2; color: #65676b; }
-            body.light-mode .topbar-search-toggle:hover { border-color: #2563eb; color: #1d4ed8; }
+            body.light-mode .topbar-search-toggle { border-color: #e2e6ef; color: #5a5f7a; }
+            body.light-mode .topbar-search-toggle:hover { border-color: var(--tf-gold); color: var(--tf-gold); }
 
             /* Expanded search bar (slides in, replaces center) */
             .topbar-search-expanded {
@@ -465,7 +488,7 @@
                 .tf-topbar { left: 0; }
                 .tf-main { margin-left: 0; }
                 .tf-topbar-nav a span { display: none; }
-                .tf-topbar-nav a { padding: 0.45rem 0.6rem; }
+                .tf-topbar-nav a { padding: 0.4rem 0.6rem; font-size: 0.82rem; }
             }
             @media (max-width: 576px) {
                 .tf-topbar { padding: 0 0.8rem; }
@@ -533,6 +556,13 @@
                         <i class="fas fa-comments"></i> Posts
                     </a>
                 </li>
+                {% if is_granted('ROLE_ADMIN') %}
+                <li>
+                    <a href="{{ path('admin_reports') }}" class="{% if app.request.attributes.get('_route') starts with 'admin_reports' %}active{% endif %}">
+                        <i class="fas fa-shield-alt"></i> Modération
+                    </a>
+                </li>
+                {% endif %}
                 <li>
                     <a href="{{ path('message_index') }}" class="{% if 'message' in app.request.attributes.get('_route') %}active{% endif %}" style="position:relative">
                         <i class="fas fa-paper-plane"></i> {{ 'nav.messages'|trans }}
@@ -595,26 +625,41 @@
                     <a href="{{ path('app_dashboard') }}" class="{% if app.request.attributes.get('_route') == 'app_dashboard' %}active{% endif %}">
                         <i class="fas fa-tachometer-alt"></i> {{ 'nav.dashboard'|trans }}
                     </a>
+
+                    {% if is_granted('ROLE_RH') %}
+                    <div class="tf-topbar-sep"></div>
+                    <a href="{{ path('offre_index') }}" class="{% if 'offre' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-clipboard-list"></i> {{ 'nav.offers_short'|trans }}
+                    </a>
+                    <a href="{{ path('app_candidature_index') }}" class="{% if 'app_candidature' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-folder-open"></i> {{ 'nav.applications_short'|trans }}
+                    </a>
+                    <a href="{{ path('app_entretien_index') }}" class="{% if 'app_entretien' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-calendar-check"></i> {{ 'nav.interviews_short'|trans }}
+                    </a>
+                    <a href="{{ path('app_decision_finale_index') }}" class="{% if 'app_decision_finale' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-scale-balanced"></i> {{ 'nav.decisions_short'|trans }}
+                    </a>
+                    {% endif %}
+
+                    {% if is_granted('ROLE_CANDIDAT') and not is_granted('ROLE_RH') and not is_granted('ROLE_ADMIN') %}
+                    <div class="tf-topbar-sep"></div>
+                    <a href="{{ path('offre_index') }}" class="{% if 'offre' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-search"></i> {{ 'nav.offers_short'|trans }}
+                    </a>
+                    <a href="{{ path('app_candidature_index') }}" class="{% if 'app_candidature' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-paper-plane"></i> {{ 'nav.my_applications'|trans }}
+                    </a>
+                    {% endif %}
+
+                    <div class="tf-topbar-sep"></div>
                     <a href="{{ path('post_index') }}" class="{% if 'post' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-comments"></i> {{ 'nav.posts'|trans }}
+                        <i class="fas fa-newspaper"></i> {{ 'nav.forum'|trans }}
                     </a>
                     <a href="{{ path('message_index') }}" class="{% if 'message' in app.request.attributes.get('_route') %}active{% endif %}" style="position:relative">
                         <i class="fas fa-paper-plane"></i> {{ 'nav.messages'|trans }}
                         <span class="dm-unread-badge" style="display:none;min-width:16px;height:16px;line-height:16px;background:var(--tf-gold);color:var(--tf-midnight);font-size:0.6rem;font-weight:700;border-radius:50%;text-align:center;padding:0 3px;margin-left:4px"></span>
                     </a>
-                    {% if is_granted('ROLE_RH') %}
-                    <a href="#">
-                        <i class="fas fa-clipboard-list"></i> {{ 'nav.offers_short'|trans }}
-                    </a>
-                    {% endif %}
-                    {% if is_granted('ROLE_CANDIDAT') and not is_granted('ROLE_RH') %}
-                    <a href="#">
-                        <i class="fas fa-paper-plane"></i> {{ 'nav.my_applications'|trans }}
-                    </a>
-                    <a href="#">
-                        <i class="fas fa-search"></i> {{ 'nav.offers_short'|trans }}
-                    </a>
-                    {% endif %}
                 </nav>
                 {% else %}
                 <h1>{% block page_title %}{{ 'nav.dashboard'|trans }}{% endblock %}</h1>
@@ -638,8 +683,9 @@
                     </div>
                 </div>
 
-                <button class="theme-toggle" id="themeToggle" title="{{ 'theme.change'|trans }}">
-                    <i class="fas fa-moon"></i>
+                <button class="theme-toggle" id="themeToggle" aria-label="{{ 'theme.change'|trans }}" title="{{ 'theme.toggle'|trans }}">
+                    <i class="fas fa-sun" id="theme-icon-sun"></i>
+                    <i class="fas fa-moon" id="theme-icon-moon" style="display:none;"></i>
                 </button>
                 {% if app.user %}
                 <div class="top-user">
@@ -647,9 +693,12 @@
                         {{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}
                     </div>
                     <span>{{ app.user.fullName }}</span>
+                    {% if app.user.entreprise %}
+                    <small style="color: var(--tf-gray); font-size: 0.75rem;">| {{ app.user.entreprise.nom }}</small>
+                    {% endif %}
                 </div>
                 <a href="{{ path('app_logout') }}">
-                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    <i class="fas fa-sign-out-alt"></i> {{ 'nav.logout'|trans }}
                 </a>
                 {% endif %}
             </div>
@@ -671,23 +720,30 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
         <script>
-            // Theme toggle (persisted in localStorage)
+            // Theme toggle and lang dropdown (persisted in localStorage)
             (function() {
                 const toggle = document.getElementById('themeToggle');
-                const icon = toggle ? toggle.querySelector('i') : null;
+                const sunIcon = document.getElementById('theme-icon-sun');
+                const moonIcon = document.getElementById('theme-icon-moon');
                 const langBtn = document.getElementById('tfDashLangBtn');
                 const langDropdown = document.getElementById('langDropdownNb');
+
+                function syncToggleIcons(mode) {
+                    if (sunIcon && moonIcon) {
+                        sunIcon.style.display = mode === 'dark' ? '' : 'none';
+                        moonIcon.style.display = mode === 'dark' ? 'none' : '';
+                    }
+                }
 
                 function applyTheme(mode) {
                     if (mode === 'light') {
                         document.body.classList.add('light-mode');
                         document.documentElement.setAttribute('data-theme', 'light');
-                        if (icon) { icon.className = 'fas fa-sun'; }
                     } else {
                         document.body.classList.remove('light-mode');
                         document.documentElement.setAttribute('data-theme', 'dark');
-                        if (icon) { icon.className = 'fas fa-moon'; }
                     }
+                    syncToggleIcons(mode);
                 }
 
                 // Load saved preference

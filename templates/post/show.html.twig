@@ -39,11 +39,29 @@
                 </div>
             </div>
 
+            {% if post.hidden and not canViewOriginal %}
+            <div style="border: 1px solid var(--tf-border); background: rgba(148, 163, 184, 0.12); color: var(--tf-light); border-radius: 14px; padding: 1.25rem 1.35rem; line-height: 1.6;">
+                {{ 'This post was removed for violating community guidelines.' }}
+            </div>
+            {% else %}
             <div style="color: var(--tf-light); line-height: 1.7; font-size: 0.95rem;">
                 {{ post.content|nl2br }}
             </div>
+            {% if post.imagePath %}
+            <div style="margin-top: 1rem;">
+                <img src="{{ post.imagePath }}" alt="Post image" style="max-width: 100%; border-radius: 14px; border: 1px solid var(--tf-border);">
+            </div>
+            {% endif %}
+            {% if post.audioPath %}
+            <div style="margin-top: 1rem; display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; border: 1px solid var(--tf-border); border-radius: 14px; background: rgba(212, 168, 67, 0.08);">
+                <i class="fas fa-microphone" style="color: var(--tf-gold);"></i>
+                <audio controls preload="metadata" src="{{ post.audioPath }}" style="width: 100%;"></audio>
+            </div>
+            {% endif %}
+            {% endif %}
         </div>
 
+        {% if not (post.hidden and not canViewOriginal) %}
         <div class="tf-card mt-3">
             <div class="tf-card-header">
                 <h3><i class="fas fa-comments"></i> Commentaires ({{ post.commentCount }})</h3>
@@ -79,6 +97,7 @@
                 {{ form_end(commentForm) }}
             </div>
         </div>
+        {% endif %}
     </div>
 
     <div class="col-lg-4">
@@ -110,6 +129,10 @@
                 <div class="tf-detail-item">
                     <span class="tf-detail-label">Créé le</span>
                     <span class="tf-detail-value">{{ post.createdAt ? post.createdAt|date('d/m/Y H:i') : '—' }}</span>
+                </div>
+                <div class="tf-detail-item">
+                    <span class="tf-detail-label">Statut</span>
+                    <span class="tf-detail-value">{{ post.hidden ? 'Masqué' : 'Visible' }}</span>
                 </div>
             </div>
         </div>

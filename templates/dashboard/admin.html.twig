@@ -223,9 +223,9 @@
                     </a>
                 </div>
                 <div class="col-6">
-                    <a href="#" class="tf-quick-action">
+                    <a href="{{ path('admin_reports') }}" class="tf-quick-action">
                         <i class="fas fa-chart-bar"></i>
-                        <span>Rapports</span>
+                        <span>Signalements</span>
                     </a>
                 </div>
             </div>
@@ -265,6 +265,8 @@
 <script>
     // ===== Registration Line Chart =====
     const regCtx = document.getElementById('registrationChart').getContext('2d');
+    const existingReg = Chart.getChart('registrationChart');
+    if (existingReg) existingReg.destroy();
     new Chart(regCtx, {
         type: 'line',
         data: {
@@ -318,6 +320,8 @@
 
     // ===== Roles Doughnut Chart =====
     const rolesCtx = document.getElementById('rolesChart').getContext('2d');
+    const existingRoles = Chart.getChart('rolesChart');
+    if (existingRoles) existingRoles.destroy();
     new Chart(rolesCtx, {
         type: 'doughnut',
         data: {
