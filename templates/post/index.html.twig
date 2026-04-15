@@ -1,4 +1,4 @@
-{% extends 'base_dashboard.html.twig' %}
+{% extends is_granted('ROLE_ADMIN') ? 'base_dashboard.html.twig' : 'base_navbar.html.twig' %}
 
 {% block title %}Forum - TalentFlow{% endblock %}
 {% block page_title %}{% endblock %}
@@ -10,11 +10,11 @@
         max-width: 1200px;
         margin: 0 auto;
         display: flex;
-        gap: 0.8rem;
+        gap: 1rem;
         align-items: flex-start;
     }
     .ln-feed-left {
-        width: 200px;
+        width: 280px;
         flex-shrink: 0;
         position: sticky;
         top: 76px;
@@ -22,15 +22,16 @@
     .ln-feed-main {
         flex: 1;
         min-width: 0;
+        max-width: 620px;
     }
     .ln-feed-sidebar {
-        width: 250px;
+        width: 280px;
         flex-shrink: 0;
         position: sticky;
         top: 76px;
         display: flex;
         flex-direction: column;
-        gap: 0.6rem;
+        gap: 0.8rem;
     }
     @media (max-width: 1100px) {
         .ln-feed-left { display: none; }
@@ -45,7 +46,7 @@
         background: var(--tf-card-bg);
         border: 1px solid var(--tf-border);
         border-radius: 12px;
-        padding: 0.8rem 0.9rem;
+        padding: 0.75rem 0.8rem;
     }
     .ln-rules-header {
         display: flex;
@@ -60,9 +61,9 @@
         font-size: 1rem;
     }
     .ln-rules-header h3 {
-        font-size: 0.82rem;
+        font-size: 0.86rem;
         font-weight: 700;
-        color: var(--tf-text);
+        color: var(--tf-white);
         margin: 0;
         flex: 1;
     }
@@ -104,8 +105,8 @@
         font-weight: 600;
     }
     .ln-rules-footer {
-        margin-top: 0.45rem;
-        padding-top: 0.4rem;
+        margin-top: 0.55rem;
+        padding-top: 0.5rem;
         border-top: 1px solid var(--tf-border);
         font-size: 0.65rem;
         color: var(--tf-gray);
@@ -118,8 +119,8 @@
         background: var(--tf-card-bg);
         border: 1px solid var(--tf-border);
         border-radius: 12px;
-        padding: 0.7rem 1rem;
-        margin-bottom: 0.8rem;
+        padding: 1rem 1.2rem;
+        margin-bottom: 1rem;
     }
     .ln-start-post-top {
         display: flex;
@@ -127,15 +128,15 @@
         gap: 0.8rem;
     }
     .ln-start-post-top .ln-avatar {
-        width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+        width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
         background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
         color: var(--tf-midnight); display: flex; align-items: center; justify-content: center;
-        font-weight: 700; font-size: 0.85rem;
+        font-weight: 700; font-size: 1rem;
     }
     .ln-start-post-btn {
-        flex: 1; padding: 0.55rem 1rem; border-radius: 35px;
+        flex: 1; padding: 0.7rem 1.2rem; border-radius: 35px;
         border: 1px solid var(--tf-border); background: transparent;
-        color: var(--tf-gray); font-size: 0.82rem; text-align: left;
+        color: var(--tf-gray); font-size: 0.9rem; text-align: left;
         cursor: pointer; transition: background 0.2s, border-color 0.2s;
         text-decoration: none; display: block;
     }
@@ -214,24 +215,24 @@
     .ln-post-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.25); }
 
     .ln-post-header {
-        display: flex; align-items: flex-start; gap: 0.6rem;
-        padding: 0.7rem 1rem 0;
+        display: flex; align-items: flex-start; gap: 0.8rem;
+        padding: 1rem 1.2rem 0;
     }
     .ln-post-header .ln-avatar {
-        width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+        width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
         background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
         color: var(--tf-midnight); display: flex; align-items: center; justify-content: center;
-        font-weight: 700; font-size: 0.85rem;
+        font-weight: 700; font-size: 1rem;
     }
     .ln-post-author-info { flex: 1; min-width: 0; }
     .ln-post-author-name {
-        font-weight: 700; font-size: 0.84rem; color: var(--tf-white);
+        font-weight: 700; font-size: 0.92rem; color: var(--tf-white);
         text-decoration: none; display: block;
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .ln-post-author-name:hover { color: var(--tf-gold); text-decoration: underline; }
     .ln-post-author-role {
-        font-size: 0.72rem; color: var(--tf-gray); margin-top: 0.05rem;
+        font-size: 0.78rem; color: var(--tf-gray); margin-top: 0.1rem;
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .ln-post-time {
@@ -240,6 +241,13 @@
     }
     .ln-post-time i { font-size: 0.6rem; }
     .ln-post-menu { flex-shrink: 0; display: flex; gap: 0.3rem; }
+    .ln-report-btn {
+        width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(212, 168, 67, 0.22);
+        background: rgba(212, 168, 67, 0.08); color: var(--tf-gold);
+        display: inline-flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+    }
+    .ln-report-btn:hover { background: rgba(212, 168, 67, 0.16); border-color: rgba(212, 168, 67, 0.36); transform: translateY(-1px); }
     .ln-post-menu-btn {
         background: none; border: none; color: var(--tf-gray);
         padding: 0.3rem 0.5rem; border-radius: 50%; cursor: pointer;
@@ -249,14 +257,14 @@
 
     /* Post body */
     .ln-post-title {
-        padding: 0.4rem 1rem 0;
-        font-size: 0.9rem; font-weight: 700; color: var(--tf-gold);
+        padding: 0.6rem 1.2rem 0;
+        font-size: 1rem; font-weight: 700; color: var(--tf-gold);
     }
     .ln-post-title a { color: var(--tf-gold); text-decoration: none; }
     .ln-post-title a:hover { text-decoration: underline; }
     .ln-post-content {
-        padding: 0.3rem 1rem 0.6rem;
-        font-size: 0.8rem; color: var(--tf-light, #ccc); line-height: 1.5;
+        padding: 0.4rem 1.2rem 0.8rem;
+        font-size: 0.88rem; color: var(--tf-light, #ccc); line-height: 1.6;
     }
     .ln-post-content-text {
         overflow: hidden; display: -webkit-box;
@@ -267,11 +275,30 @@
         cursor: pointer; text-decoration: none; margin-left: 0.2rem;
     }
     .ln-see-more:hover { color: var(--tf-gold); text-decoration: underline; }
+    .ln-removed-card {
+        margin: 0.4rem 1.2rem 1rem;
+        padding: 1rem 1.05rem;
+        border: 1px solid rgba(148, 163, 184, 0.26);
+        border-radius: 14px;
+        background: linear-gradient(180deg, rgba(148, 163, 184, 0.14), rgba(148, 163, 184, 0.08));
+        color: #d4d7dd;
+        line-height: 1.6;
+        font-size: 0.88rem;
+    }
+    .ln-post-card.is-hidden .ln-post-title {
+        color: #e6e8eb;
+        padding-bottom: 0.2rem;
+    }
+    .ln-post-card.is-hidden .ln-post-title a {
+        color: #e6e8eb;
+        pointer-events: none;
+        text-decoration: none;
+    }
 
     /* Stats row */
     .ln-post-stats {
         display: flex; justify-content: space-between; align-items: center;
-        padding: 0.3rem 1rem; font-size: 0.72rem; color: var(--tf-gray);
+        padding: 0.4rem 1.2rem; font-size: 0.78rem; color: var(--tf-gray);
     }
     .ln-post-stats-left { display: flex; align-items: center; gap: 0.4rem; }
     .ln-post-stats-left .ln-reaction-icons { display: flex; }
@@ -298,13 +325,77 @@
     }
     .ln-action-btn {
         flex: 1; display: flex; align-items: center; justify-content: center;
-        gap: 0.4rem; padding: 0.5rem 0; border: none; background: none;
-        color: var(--tf-gray); font-size: 0.75rem; font-weight: 600;
+        gap: 0.5rem; padding: 0.7rem 0; border: none; background: none;
+        color: var(--tf-gray); font-size: 0.82rem; font-weight: 600;
         cursor: pointer; border-radius: 8px; transition: background 0.2s, color 0.2s;
         text-decoration: none;
     }
     .ln-action-btn:hover { background: rgba(255,255,255,0.06); color: var(--tf-white); }
-    .ln-action-btn i { font-size: 0.9rem; }
+    .ln-action-btn i { font-size: 1.05rem; }
+    .ln-tts-btn.speaking {
+        color: var(--tf-gold);
+        background: rgba(212, 168, 67, 0.14);
+        animation: ttsPulse 1s ease-in-out infinite;
+    }
+    .ln-tts-btn[disabled] {
+        cursor: not-allowed;
+        opacity: 0.58;
+    }
+    @keyframes ttsPulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(212, 168, 67, 0.36); }
+        50% { box-shadow: 0 0 0 7px rgba(212, 168, 67, 0); }
+    }
+
+    /* ── AI Summarize Button ── */
+    .ln-summarize-btn { color: var(--tf-gold); }
+    .ln-summarize-btn:hover { background: rgba(212, 168, 67, 0.1); color: var(--tf-gold); }
+    .ln-summarize-btn.active { color: var(--tf-gold); background: rgba(212, 168, 67, 0.12); }
+
+    /* ── AI Summary Card ── */
+    .ln-ai-summary {
+        display: none;
+        margin: 0 1.2rem 0.8rem;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.04);
+        border-left: 3px solid var(--tf-gold);
+    }
+    .ln-ai-summary.visible { display: block; }
+    .ln-ai-summary-label {
+        font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.07em; color: var(--tf-gold);
+        margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.3rem;
+    }
+    .ln-ai-summary-text {
+        font-size: 0.83rem; font-style: italic;
+        color: var(--tf-gray); line-height: 1.5;
+    }
+    .ln-ai-summary.loading .ln-ai-summary-text { display: none; }
+    .ln-ai-summary.loading::after {
+        content: '';
+        display: block; height: 13px; border-radius: 6px;
+        background: linear-gradient(90deg,
+            rgba(255,255,255,0.06) 25%,
+            rgba(255,255,255,0.13) 50%,
+            rgba(255,255,255,0.06) 75%);
+        background-size: 200% 100%;
+        animation: skeletonLoad 1.4s infinite;
+        width: 88%;
+    }
+    @keyframes skeletonLoad {
+        0%   { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+    .ln-ai-summary.error .ln-ai-summary-text { color: #e88; font-style: normal; }
+    [data-theme="light"] .ln-summarize-btn { color: var(--tf-gold-dark); }
+    [data-theme="light"] .ln-summarize-btn:hover { background: rgba(201,162,39,0.1); }
+    [data-theme="light"] .ln-ai-summary { background: rgba(0,0,0,0.03); }
+    [data-theme="light"] .ln-ai-summary-text { color: #555; }
+    [data-theme="light"] .ln-ai-summary.loading::after {
+        background: linear-gradient(90deg,
+            rgba(0,0,0,0.05) 25%, rgba(0,0,0,0.12) 50%, rgba(0,0,0,0.05) 75%);
+        background-size: 200% 100%;
+    }
 
     /* Vote buttons */
     .ln-vote-group {
@@ -314,8 +405,8 @@
     }
     .ln-vote-btn {
         display: flex; align-items: center; justify-content: center;
-        gap: 0.25rem; padding: 0.5rem 0.6rem; border: none; background: none;
-        color: var(--tf-gray); font-size: 0.75rem; font-weight: 600;
+        gap: 0.35rem; padding: 0.7rem 0.8rem; border: none; background: none;
+        color: var(--tf-gray); font-size: 0.82rem; font-weight: 600;
         cursor: pointer; border-radius: 8px; transition: background 0.15s, color 0.15s;
     }
     .ln-vote-btn:hover { background: rgba(255,255,255,0.06); }
@@ -323,9 +414,9 @@
     .ln-vote-btn.downvote:hover { color: #e74c3c; }
     .ln-vote-btn.upvote.voted { color: #0a66c2; }
     .ln-vote-btn.downvote.voted { color: #e74c3c; }
-    .ln-vote-btn i { font-size: 0.95rem; }
+    .ln-vote-btn i { font-size: 1.1rem; }
     .ln-vote-count {
-        font-size: 0.75rem; font-weight: 700; color: var(--tf-white);
+        font-size: 0.82rem; font-weight: 700; color: var(--tf-white);
         min-width: 20px; text-align: center; padding: 0 0.1rem;
     }
 
@@ -503,6 +594,15 @@
     }
     .mdl-post-content {
         font-size: 0.9rem; color: var(--tf-light, #ccc); line-height: 1.7;
+        .mdl-removed-card {
+            border: 1px solid rgba(148, 163, 184, 0.26);
+            border-radius: 14px;
+            padding: 1rem 1.1rem;
+            background: linear-gradient(180deg, rgba(148, 163, 184, 0.14), rgba(148, 163, 184, 0.08));
+            color: #d4d7dd;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
         white-space: pre-wrap; margin-bottom: 1.2rem;
     }
     .mdl-post-meta {
@@ -661,59 +761,6 @@
         .topbar-filter-chips { display: none; }
     }
 
-    /* ── Delete confirmation modal ── */
-    .forum-confirm-overlay {
-        position: fixed; inset: 0; background: rgba(0,0,0,0.55);
-        z-index: 10000; display: flex; align-items: center; justify-content: center;
-        animation: forumFadeIn 0.15s ease-out;
-    }
-    @keyframes forumFadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .forum-confirm-box {
-        background: var(--tf-card-bg); border: 1px solid var(--tf-border);
-        border-radius: 14px; padding: 1.8rem 2rem; max-width: 380px; width: 90%;
-        box-shadow: 0 12px 40px rgba(0,0,0,0.4); text-align: center;
-        animation: forumModalSlide 0.2s ease-out;
-    }
-    @keyframes forumModalSlide {
-        from { opacity: 0; transform: scale(0.92) translateY(10px); }
-        to { opacity: 1; transform: scale(1) translateY(0); }
-    }
-    .forum-confirm-icon {
-        width: 52px; height: 52px; border-radius: 50%;
-        background: rgba(231,76,60,0.12); color: #e74c3c;
-        display: inline-flex; align-items: center; justify-content: center;
-        font-size: 1.4rem; margin-bottom: 1rem;
-    }
-    .forum-confirm-title {
-        font-size: 1.05rem; font-weight: 700; color: var(--tf-white); margin-bottom: 0.4rem;
-    }
-    .forum-confirm-text {
-        font-size: 0.85rem; color: var(--tf-gray); margin-bottom: 1.4rem; line-height: 1.4;
-    }
-    .forum-confirm-actions { display: flex; gap: 0.7rem; justify-content: center; }
-    .forum-confirm-cancel {
-        padding: 0.55rem 1.4rem; border-radius: 8px; border: 1px solid var(--tf-border);
-        background: transparent; color: var(--tf-white); font-weight: 600; font-size: 0.88rem;
-        cursor: pointer; transition: all 0.15s;
-    }
-    .forum-confirm-cancel:hover { background: rgba(255,255,255,0.05); border-color: var(--tf-gold); }
-    .forum-confirm-delete {
-        padding: 0.55rem 1.4rem; border-radius: 8px; border: none;
-        background: #e74c3c; color: white; font-weight: 600; font-size: 0.88rem;
-        cursor: pointer; transition: all 0.15s;
-    }
-    .forum-confirm-delete:hover { background: #c0392b; }
-    body.light-mode .forum-confirm-box,
-    [data-theme="light"] .forum-confirm-box { background: #fff; border-color: #dddfe2; }
-    body.light-mode .forum-confirm-title,
-    [data-theme="light"] .forum-confirm-title { color: #1c1e21; }
-    body.light-mode .forum-confirm-text,
-    [data-theme="light"] .forum-confirm-text { color: #65676b; }
-    body.light-mode .forum-confirm-cancel,
-    [data-theme="light"] .forum-confirm-cancel { border-color: #dddfe2; color: #1c1e21; }
-    body.light-mode .forum-confirm-cancel:hover,
-    [data-theme="light"] .forum-confirm-cancel:hover { background: #f0f2f5; }
-
     /* ── Light mode overrides for feed ── */
     [data-theme="light"] .ln-post-card,
     [data-theme="light"] .ln-start-post {
@@ -730,6 +777,10 @@
     [data-theme="light"] .ln-vote-count { color: #1c1e21; }
     [data-theme="light"] .ln-action-btn { color: #65676b; }
     [data-theme="light"] .ln-action-btn:hover { background: rgba(0,0,0,0.04); color: #1c1e21; }
+    [data-theme="light"] .ln-tts-btn.speaking {
+        color: var(--tf-gold-dark);
+        background: rgba(201, 162, 39, 0.16);
+    }
     [data-theme="light"] .ln-start-post-btn { border-color: #dddfe2; color: #65676b; }
     [data-theme="light"] .ln-start-post-btn:hover { background: #f0f2f5; border-color: var(--tf-gold); color: #1c1e21; }
     [data-theme="light"] .ln-sort-bar hr { border-color: #dddfe2; }
@@ -742,6 +793,11 @@
     [data-theme="light"] .ln-post-stats-right button:hover { color: var(--tf-gold-dark); }
     [data-theme="light"] .ln-empty { color: #65676b; }
     [data-theme="light"] .ln-empty i { color: #ccc; }
+    [data-theme="light"] .ln-report-btn { background: rgba(212, 168, 67, 0.1); border-color: rgba(212, 168, 67, 0.22); color: var(--tf-gold-dark); }
+    [data-theme="light"] .ln-removed-card,
+    [data-theme="light"] .mdl-removed-card { background: #f1f3f5; border-color: #d7dbe0; color: #495057; }
+    [data-theme="light"] .ln-post-card.is-hidden .ln-post-title,
+    [data-theme="light"] .ln-post-card.is-hidden .ln-post-title a { color: #495057; }
 
     /* Light mode: modals */
     [data-theme="light"] .modal-overlay { background: rgba(0,0,0,0.35); }
@@ -875,12 +931,14 @@
     }
 
     /* Light mode sidebar overrides */
-    [data-theme="light"] .sidebar-widget { background: #fff; border-color: #dddfe2; }
-    [data-theme="light"] .sidebar-widget-title { color: #1c1e21; }
+    [data-theme="light"] .sidebar-widget { background: #fff; border-color: #e2e6ef; }
+    [data-theme="light"] .sidebar-widget-title { color: #1a1a2e; }
     [data-theme="light"] .sidebar-stat-card { background: rgba(212,168,67,0.08); border-color: rgba(212,168,67,0.2); }
-    [data-theme="light"] .sidebar-stat-value { color: #1c1e21; }
-    [data-theme="light"] .sidebar-stat-label { color: #65676b; }
+    [data-theme="light"] .sidebar-stat-value { color: #1a1a2e; }
+    [data-theme="light"] .sidebar-stat-label { color: #5a5f7a; }
     [data-theme="light"] .sidebar-ad { background: linear-gradient(135deg, rgba(212,168,67,0.06), rgba(212,168,67,0.02)); border-color: rgba(212,168,67,0.3); }
+    [data-theme="light"] .ln-rules-header h3 { color: #1a1a2e; }
+    [data-theme="light"] .ln-rules-list li strong { color: #1a1a2e; }
 
     /* ── Media Toolbar (Create/Edit modals) ── */
     .modal-media-toolbar {
@@ -1055,51 +1113,16 @@
 </style>
 {% endblock %}
 
-{% block topbar_center %}
-<button class="topbar-search-toggle" id="searchToggle" title="Rechercher">
-    <i class="fas fa-search"></i>
-</button>
-<div class="topbar-search-expanded" id="searchExpanded">
-    <i class="fas fa-search" style="color:var(--tf-gray); font-size:0.85rem; flex-shrink:0;"></i>
-    <input type="text" class="topbar-search-input" id="feedSearchTopbar"
-           placeholder="Rechercher un post, un auteur..." autocomplete="off">
-    <div class="topbar-filter-chips">
-        <button class="ln-filter-chip active" data-sort="recent"><i class="fas fa-clock"></i> Récents</button>
-        <button class="ln-filter-chip" data-sort="top"><i class="fas fa-fire"></i> Top</button>
-        <button class="ln-filter-chip" data-sort="oldest"><i class="fas fa-history"></i> Anciens</button>
-        <button class="ln-filter-chip" data-sort="comments"><i class="fas fa-comments"></i> Commentés</button>
-    </div>
-    <span class="ln-result-count" id="resultCountTopbar"></span>
-</div>
-{% endblock %}
+{% block topbar_center %}{% endblock %}
 
 {% block body %}
-{% if not is_granted('ROLE_ADMIN') %}
-<div style="display:flex; justify-content:center; margin-bottom:0.8rem;">
-<div class="ln-inline-search" style="display:flex; align-items:center; gap:0.5rem; background:var(--tf-card-bg); border:1px solid var(--tf-border); border-radius:10px; padding:0.35rem 0.8rem; max-width:700px; width:100%;">
-    <i class="fas fa-search" style="color:var(--tf-gray); font-size:0.75rem;"></i>
-    <input type="text" class="topbar-search-input" id="feedSearch"
-           placeholder="Rechercher un post, un auteur..." autocomplete="off"
-           style="flex:1; min-width:100px; background:transparent; border:none; color:var(--tf-white,#f5f5f5); font-size:0.78rem; outline:none;">
-    <div class="topbar-filter-chips" style="display:flex; gap:0.25rem;">
-        <button class="ln-filter-chip active" data-sort="recent"><i class="fas fa-clock"></i> Récents</button>
-        <button class="ln-filter-chip" data-sort="top"><i class="fas fa-fire"></i> Top</button>
-        <button class="ln-filter-chip" data-sort="oldest"><i class="fas fa-history"></i> Anciens</button>
-        <button class="ln-filter-chip" data-sort="comments"><i class="fas fa-comments"></i> Commentés</button>
-    </div>
-    <span class="ln-result-count" id="resultCount"></span>
-</div>
-</div>
-{% endif %}
-
 <div class="ln-feed-wrapper">
 
 {# ── Left Sidebar: Rules ── #}
 <div class="ln-feed-left">
-    <div class="ln-rules-card">
+    <div class="ln-rules-card sidebar-widget">
         <div class="ln-rules-header" id="rulesToggle">
-            <i class="fas fa-shield-alt"></i>
-            <h3>Règles du Forum</h3>
+            <h3 class="sidebar-widget-title" style="margin: 0;"><i class="fas fa-shield-alt"></i> Règles du Forum</h3>
             <i class="fas fa-chevron-down ln-rules-toggle" id="rulesChevron"></i>
         </div>
         <ul class="ln-rules-list" id="rulesList">
@@ -1175,7 +1198,10 @@
     <div id="feedContainer">
         {% if posts|length > 0 %}
             {% for post in posts %}
-            <div class="ln-post-card" data-post-id="{{ post.id }}" data-original-lang="{{ postLangs[post.id]|default('fr') }}" data-display-lang="{{ postLangs[post.id]|default('fr') }}" data-original-title="{{ post.title }}" data-original-content="{{ post.content|default('') }}">
+            {% set postHiddenForViewer = post.hidden and not is_granted('ROLE_ADMIN') %}
+            {% set renderedTitle = postHiddenForViewer ? 'Post retiré' : post.title %}
+            {% set renderedContent = postHiddenForViewer ? 'This post was removed for violating community guidelines.' : post.content|default('') %}
+            <div class="ln-post-card{{ postHiddenForViewer ? ' is-hidden' : '' }}" data-post-id="{{ post.id }}" data-original-lang="{{ postHiddenForViewer ? 'fr' : postLangs[post.id]|default('fr') }}" data-display-lang="{{ postHiddenForViewer ? 'fr' : postLangs[post.id]|default('fr') }}" data-original-title="{{ renderedTitle }}" data-original-content="{{ renderedContent }}">
                 <div class="ln-post-header">
                     <span class="ln-avatar">{{ post.authorName|first|upper }}</span>
                     <div class="ln-post-author-info">
@@ -1196,6 +1222,11 @@
                         </div>
                     </div>
                     <div class="ln-post-menu">
+                        {% if app.user and not is_granted('ROLE_ADMIN') and not post.hidden %}
+                        <button class="ln-report-btn open-report-modal" data-id="{{ post.id }}" title="Signaler ce post">
+                            <i class="fas fa-flag"></i>
+                        </button>
+                        {% endif %}
                         {% if is_granted('ROLE_ADMIN') or (app.user and post.author is same as(app.user)) %}
                         <div class="ln-dropdown">
                             <button class="ln-post-menu-btn" title="Plus d'options">
@@ -1206,9 +1237,9 @@
                                     <i class="fas fa-pen"></i> Modifier
                                 </button>
                                 <div class="ln-dropdown-sep"></div>
-                                <form method="post" action="{{ path('post_delete', {id: post.id}) }}" class="post-delete-form">
+                                <form method="post" action="{{ path('post_delete', {id: post.id}) }}" onsubmit="return confirm('Supprimer ce post ?')">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ post.id) }}">
-                                    <button type="button" class="ln-dropdown-item danger post-delete-btn">
+                                    <button type="submit" class="ln-dropdown-item danger">
                                         <i class="fas fa-trash-alt"></i> Supprimer
                                     </button>
                                 </form>
@@ -1219,22 +1250,24 @@
                 </div>
 
                 <div class="ln-post-title">
-                    <a href="#" class="open-detail-modal" data-id="{{ post.id }}">{{ post.title }}</a>
+                    <a href="#" class="open-detail-modal" data-id="{{ post.id }}">{{ renderedTitle }}</a>
                 </div>
                 <div class="ln-post-content">
-                    {% if post.content %}
+                    {% if postHiddenForViewer %}
+                    <div class="ln-removed-card">This post was removed for violating community guidelines.</div>
+                    {% elseif post.content %}
                     <div class="ln-post-content-text">{{ post.content }}</div>
                     {% if post.content|length > 200 %}
                         <a href="#" class="ln-see-more open-detail-modal" data-id="{{ post.id }}">...voir plus</a>
                     {% endif %}
                     {% endif %}
                 </div>
-                {% if post.imagePath %}
+                {% if post.imagePath and not postHiddenForViewer %}
                 <div class="ln-post-media">
                     <img src="{{ post.imagePath }}" alt="Post image" loading="lazy">
                 </div>
                 {% endif %}
-                {% if post.audioPath %}
+                {% if post.audioPath and not postHiddenForViewer %}
                 <div class="ln-post-audio">
                     <i class="fas fa-microphone"></i>
                     <audio controls preload="metadata" src="{{ post.audioPath }}"></audio>
@@ -1242,7 +1275,7 @@
                 </div>
                 {% endif %}
 
-                {% if post.upvotes != 0 or post.commentCount > 0 %}
+                {% if not postHiddenForViewer and (post.upvotes != 0 or post.commentCount > 0) %}
                 <div class="ln-post-stats">
                     <div class="ln-post-stats-left">
                         {% if post.upvotes != 0 %}
@@ -1260,6 +1293,8 @@
                 </div>
                 {% endif %}
 
+                {% if not postHiddenForViewer %}
+                <div class="ln-ai-summary" data-summary-id="{{ post.id }}"></div>
                 <div class="ln-post-actions">
                     <div class="ln-vote-group">
                         <button class="ln-vote-btn upvote{{ userVotes[post.id] is defined and userVotes[post.id] == 'up' ? ' voted' : '' }}" data-id="{{ post.id }}" title="Upvote">
@@ -1273,12 +1308,21 @@
                     <button class="ln-action-btn open-detail-modal" data-id="{{ post.id }}" title="Commenter">
                         <i class="far fa-comment-dots"></i> <span>Commenter</span>
                     </button>
+                    <button class="ln-action-btn ln-tts-btn" data-id="{{ post.id }}" title="Lire ce post à voix haute">
+                        <i class="fas fa-volume-up"></i> <span>Écouter</span>
+                    </button>
+                    {% if (post.content|default('')|split(' ')|length) > 100 %}
+                    <button class="ln-action-btn ln-summarize-btn" data-id="{{ post.id }}" title="Résumer avec IA">
+                        <i class="fas fa-wand-magic-sparkles"></i> <span>Résumer</span>
+                    </button>
+                    {% endif %}
                     {% if app.user and post.author and post.author.id != app.user.id %}
                     <a href="{{ path('message_start', {id: post.author.id}) }}" class="ln-action-btn" title="Envoyer un message">
                         <i class="far fa-paper-plane"></i> <span>Message</span>
                     </a>
                     {% endif %}
                 </div>
+                {% endif %}
             </div>
             {% endfor %}
         {% else %}
@@ -1505,6 +1549,42 @@
     </div>
 </div>
 
+{# ══════════════════════════════════════════════════
+   MODAL: Report Post
+   ══════════════════════════════════════════════════ #}
+<div class="modal-overlay" id="reportOverlay">
+    <div class="modal-box modal-report">
+        <button class="modal-close" id="closeReport">&times;</button>
+        <div class="modal-new-post-header">
+            <span class="ln-avatar"><i class="fas fa-flag" style="font-size: 0.85rem;"></i></span>
+            <h3>Signaler ce post</h3>
+        </div>
+        <div class="modal-new-post-body">
+            <ul class="modal-errors" id="reportErrors"></ul>
+            <div class="modal-field">
+                <label for="reportReason"><i class="fas fa-triangle-exclamation"></i> Motif</label>
+                <select id="reportReason">
+                    <option value="">-- Choisir un motif --</option>
+                    <option value="Spam">Spam</option>
+                    <option value="Inappropriate">Inappropriate</option>
+                    <option value="Misinformation">Misinformation</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="modal-field">
+                <label for="reportDescription"><i class="fas fa-pen"></i> Description optionnelle</label>
+                <textarea id="reportDescription" placeholder="Ajoutez un peu de contexte si nécessaire..."></textarea>
+            </div>
+        </div>
+        <div class="modal-new-post-footer">
+            <button class="modal-btn modal-btn-cancel" id="cancelReport">Annuler</button>
+            <button class="modal-btn modal-btn-submit" id="submitReport">
+                <i class="fas fa-flag"></i> Envoyer le signalement
+            </button>
+        </div>
+    </div>
+</div>
+
 {# ── Floating Language Picker ── #}
 <div class="lang-picker" id="langPicker">
     <button class="lang-picker-btn" id="langPickerBtn" title="Traduire">
@@ -1536,18 +1616,6 @@
 </div>
 {% endblock %}
 {% block javascripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script>
-/* Sync body.light-mode class with [data-theme] attribute (needed for navbar layout) */
-(function(){
-    function sync(){
-        var isLight = document.documentElement.getAttribute('data-theme') === 'light';
-        document.body.classList.toggle('light-mode', isLight);
-    }
-    sync();
-    new MutationObserver(sync).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
-})();
-</script>
 <script>
 (function() {
     /* ── Forum Rules Toggle ── */
@@ -1568,21 +1636,39 @@
     }
 
     /* ── Refs ── */
-    const searchInput = document.getElementById('feedSearch') || document.getElementById('feedSearchTopbar');
+    const searchInput = document.getElementById('feedSearch');
     const filterChips = document.querySelectorAll('.ln-filter-chip');
     const feedContainer = document.getElementById('feedContainer');
     const noResults = document.getElementById('noResults');
     const feedLoading = document.getElementById('feedLoading');
-    const resultCount = document.getElementById('resultCount') || document.getElementById('resultCountTopbar');
+    const resultCount = document.getElementById('resultCount');
     const searchUrl = '{{ path("post_search") }}';
     const createUrl = '{{ path("post_create_ajax") }}';
     const isAdmin = {{ is_granted('ROLE_ADMIN') ? 'true' : 'false' }};
     const currentUserId = {{ app.user ? app.user.id : 'null' }};
+    const hiddenPostMessage = 'This post was removed for violating community guidelines.';
 
     let debounceTimer = null;
     let currentSort = 'recent';
     let isSearchActive = false;
     let currentDetailPostId = null;
+    let currentReportPostId = null;
+    const speechSupported = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+    let activeTtsButton = null;
+    let activeUtterance = null;
+    const ttsUnsupportedMsg = 'Text-to-speech is not supported in your browser.';
+
+    /* ── AI Summary state ── */
+    const summaryCache = {};
+    (function () {
+        try {
+            const stored = JSON.parse(localStorage.getItem('tf_ai_summaries') || '{}');
+            Object.assign(summaryCache, stored);
+        } catch (e) {}
+    })();
+    function saveSummaryCache() {
+        try { localStorage.setItem('tf_ai_summaries', JSON.stringify(summaryCache)); } catch (e) {}
+    }
 
     /* ── Media state ── */
     let newPostImageUrl = '';
@@ -1747,6 +1833,22 @@
 
     function renderPost(p) {
         const lang = p.lang || 'fr';
+        const hiddenForViewer = p.hidden && !p.canViewOriginal;
+        if (hiddenForViewer) {
+            return `
+        <div class="ln-post-card is-hidden" data-post-id="${p.id}" data-original-lang="fr" data-display-lang="fr" data-original-title="Post retiré" data-original-content="${esc(p.hiddenMessage || hiddenPostMessage)}">
+            <div class="ln-post-header">
+                <span class="ln-avatar">${esc(p.authorInitial)}</span>
+                <div class="ln-post-author-info">
+                    <span class="ln-post-author-name">${esc(p.authorName)}</span>
+                    <div class="ln-post-author-role">${esc(p.authorRole)}</div>
+                    <div class="ln-post-time">${esc(p.timeLabel)}</div>
+                </div>
+            </div>
+            <div class="ln-post-title"><a href="#">Post retiré</a></div>
+            <div class="ln-post-content"><div class="ln-removed-card">${esc(p.hiddenMessage || hiddenPostMessage)}</div></div>
+        </div>`;
+        }
         const contentShort = p.content && p.content.length > 200;
         const contentHtml = p.content ? `<div class="ln-post-content-text">${esc(p.content)}</div>
                 ${contentShort ? `<a href="#" class="ln-see-more open-detail-modal" data-id="${p.id}">...voir plus</a>` : ''}` : '';
@@ -1777,6 +1879,7 @@
                     </div>
                 </div>
                 <div class="ln-post-menu">
+                    ${p.canReport ? `<button class="ln-report-btn open-report-modal" data-id="${p.id}" title="Signaler ce post"><i class="fas fa-flag"></i></button>` : ''}
                     ${p.canManage ? `
                     <div class="ln-dropdown">
                         <button class="ln-post-menu-btn" title="Plus d'options">
@@ -1787,9 +1890,9 @@
                                 <i class="fas fa-pen"></i> Modifier
                             </button>
                             <div class="ln-dropdown-sep"></div>
-                            <form method="post" action="${esc(p.deleteUrl)}" class="post-delete-form">
+                            <form method="post" action="${esc(p.deleteUrl)}" onsubmit="return confirm('Supprimer ce post ?')">
                                 <input type="hidden" name="_token" value="${esc(p.deleteToken)}">
-                                <button type="button" class="ln-dropdown-item danger post-delete-btn">
+                                <button type="submit" class="ln-dropdown-item danger">
                                     <i class="fas fa-trash-alt"></i> Supprimer
                                 </button>
                             </form>
@@ -1831,8 +1934,16 @@
                 <button class="ln-action-btn open-detail-modal" data-id="${p.id}" title="Commenter">
                     <i class="far fa-comment-dots"></i> <span>Commenter</span>
                 </button>
+                <button class="ln-action-btn ln-tts-btn" data-id="${p.id}" title="Lire ce post à voix haute">
+                    <i class="fas fa-volume-up"></i> <span>Écouter</span>
+                </button>
+                ${(p.content || '').trim().split(/\s+/).filter(Boolean).length > 100 ? `
+                <button class="ln-action-btn ln-summarize-btn" data-id="${p.id}" title="Résumer avec IA">
+                    <i class="fas fa-wand-magic-sparkles"></i> <span>Résumer</span>
+                </button>` : ''}
                 ${p.authorId && p.authorId != currentUserId ? `<a href="/message/start/${p.authorId}" class="ln-action-btn" title="Envoyer un message"><i class="far fa-paper-plane"></i> <span>Message</span></a>` : ''}
             </div>
+            ${(p.content || '').trim().split(/\s+/).filter(Boolean).length > 100 ? `<div class="ln-ai-summary" data-summary-id="${p.id}"></div>` : ''}
         </div>`;
     }
 
@@ -1866,6 +1977,146 @@
             btn.style.pointerEvents = '';
         })
         .catch(() => { btn.style.pointerEvents = ''; });
+    }
+
+    function setTtsButtonState(btn, speaking) {
+        if (!btn) return;
+
+        const icon = btn.querySelector('i');
+        const label = btn.querySelector('span');
+        if (!speechSupported) {
+            btn.disabled = true;
+            btn.title = ttsUnsupportedMsg;
+            if (icon) icon.className = 'fas fa-volume-up';
+            if (label) label.textContent = 'Écouter';
+            btn.classList.remove('speaking');
+            return;
+        }
+
+        btn.disabled = false;
+        btn.title = speaking ? 'Arrêter la lecture' : 'Lire ce post à voix haute';
+        btn.classList.toggle('speaking', speaking);
+        if (icon) icon.className = speaking ? 'fas fa-stop' : 'fas fa-volume-up';
+        if (label) label.textContent = speaking ? '⏹ Stop' : 'Écouter';
+    }
+
+    function resetActiveTts() {
+        if (activeTtsButton) {
+            setTtsButtonState(activeTtsButton, false);
+        }
+        activeTtsButton = null;
+        activeUtterance = null;
+    }
+
+    function stopSpeech() {
+        if (!speechSupported) return;
+        window.speechSynthesis.cancel();
+        resetActiveTts();
+    }
+
+    function handleTtsClick(e) {
+        e.preventDefault();
+        const btn = e.currentTarget;
+        if (!speechSupported) {
+            setTtsButtonState(btn, false);
+            return;
+        }
+
+        if (activeTtsButton === btn && window.speechSynthesis.speaking) {
+            stopSpeech();
+            return;
+        }
+
+        stopSpeech();
+
+        const card = btn.closest('.ln-post-card');
+        if (!card) return;
+        const title = (card.querySelector('.ln-post-title a')?.textContent || '').trim();
+        const content = (card.querySelector('.ln-post-content-text')?.textContent || '').trim();
+        const fallback = (card.querySelector('.ln-removed-card')?.textContent || '').trim();
+        const textToRead = [title, content || fallback].filter(Boolean).join('. ');
+
+        if (!textToRead) return;
+
+        const utterance = new SpeechSynthesisUtterance(textToRead);
+        utterance.rate = 1;
+        utterance.pitch = 1;
+        utterance.lang = document.documentElement.lang || 'fr-FR';
+
+        utterance.onend = resetActiveTts;
+        utterance.onerror = resetActiveTts;
+
+        activeTtsButton = btn;
+        activeUtterance = utterance;
+        setTtsButtonState(btn, true);
+
+        window.speechSynthesis.speak(utterance);
+    }
+
+    /* ══════════════════════════════════════════════
+       AI POST SUMMARIZER
+       ══════════════════════════════════════════════ */
+    function showSummaryCard(id, state, text) {
+        const card = document.querySelector(`.ln-ai-summary[data-summary-id="${id}"]`);
+        if (!card) return;
+        if (state === 'loading') {
+            card.innerHTML = '<div class="ln-ai-summary-label"><i class="fas fa-wand-magic-sparkles"></i> AI Summary</div><div class="ln-ai-summary-text"></div>';
+            card.className = 'ln-ai-summary visible loading';
+        } else if (state === 'result') {
+            card.innerHTML = '<div class="ln-ai-summary-label"><i class="fas fa-wand-magic-sparkles"></i> AI Summary</div><div class="ln-ai-summary-text">' + esc(text) + '</div>';
+            card.className = 'ln-ai-summary visible';
+        } else if (state === 'error') {
+            card.innerHTML = '<div class="ln-ai-summary-label"><i class="fas fa-wand-magic-sparkles"></i> AI Summary</div><div class="ln-ai-summary-text">' + esc(text) + '</div>';
+            card.className = 'ln-ai-summary visible error';
+        } else {
+            card.className = 'ln-ai-summary';
+        }
+    }
+
+    function handleSummarizeClick(e) {
+        e.preventDefault();
+        const btn = e.currentTarget;
+        const id = btn.dataset.id;
+        if (!id) return;
+
+        const summaryCard = document.querySelector(`.ln-ai-summary[data-summary-id="${id}"]`);
+        // Toggle off if already showing a result
+        if (summaryCard && summaryCard.classList.contains('visible') && !summaryCard.classList.contains('loading')) {
+            showSummaryCard(id, 'hidden');
+            btn.classList.remove('active');
+            return;
+        }
+
+        // Return cached summary
+        if (summaryCache[id]) {
+            showSummaryCard(id, 'result', summaryCache[id]);
+            btn.classList.add('active');
+            return;
+        }
+
+        // Fetch from API
+        btn.classList.add('active');
+        showSummaryCard(id, 'loading');
+
+        fetch('/post/' + id + '/summarize', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.summary) {
+                summaryCache[id] = data.summary;
+                saveSummaryCache();
+                showSummaryCard(id, 'result', data.summary);
+            } else {
+                showSummaryCard(id, 'error', data.error || 'Summary unavailable right now.');
+                btn.classList.remove('active');
+            }
+        })
+        .catch(function () {
+            showSummaryCard(id, 'error', 'Summary unavailable right now.');
+            btn.classList.remove('active');
+        });
     }
 
     /* ══════════════════════════════════════════════
@@ -1956,11 +2207,17 @@
     const detailCommentsList = document.getElementById('detailCommentsList');
     const detailCommentCount = document.getElementById('detailCommentCount');
     const commentErrors = document.getElementById('commentErrors');
+    const detailCommentForm = document.getElementById('detailCommentForm');
+
+    function toggleDetailCommentForm(visible) {
+        detailCommentForm.style.display = visible ? '' : 'none';
+    }
 
     function openDetailModal(postId) {
         currentDetailPostId = postId;
         commentErrors.innerHTML = '';
         document.getElementById('commentContent').value = '';
+        toggleDetailCommentForm(true);
         detailLeft.innerHTML = '<div class="ln-loading" style="display:block;"><span class="spinner"></span></div>';
         detailCommentsList.innerHTML = '';
         detailCommentCount.textContent = '0';
@@ -1972,6 +2229,7 @@
         .then(r => r.json())
         .then(data => {
             const p = data.post;
+            toggleDetailCommentForm(!(p.hidden && !p.canViewOriginal));
             const pLang = p.lang || 'fr';
             // Store original for translation
             detailLeft.dataset.originalLang = pLang;
@@ -2081,37 +2339,13 @@
         });
     }
 
-    /* ── Styled Confirm Modal ── */
-    function showForumConfirm(title, text, onConfirm) {
-        document.querySelectorAll('.forum-confirm-overlay').forEach(el => el.remove());
-        const overlay = document.createElement('div');
-        overlay.className = 'forum-confirm-overlay';
-        overlay.innerHTML = `
-            <div class="forum-confirm-box">
-                <div class="forum-confirm-icon"><i class="fas fa-trash-alt"></i></div>
-                <div class="forum-confirm-title">${title}</div>
-                <div class="forum-confirm-text">${text}</div>
-                <div class="forum-confirm-actions">
-                    <button class="forum-confirm-cancel">Annuler</button>
-                    <button class="forum-confirm-delete"><i class="fas fa-trash"></i> Supprimer</button>
-                </div>
-            </div>`;
-        document.body.appendChild(overlay);
-        overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
-        overlay.querySelector('.forum-confirm-cancel').addEventListener('click', () => overlay.remove());
-        overlay.querySelector('.forum-confirm-delete').addEventListener('click', () => { overlay.remove(); onConfirm(); });
-        const onKey = e => { if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', onKey); } };
-        document.addEventListener('keydown', onKey);
-    }
-
     /* ── Comment Delete ── */
     function handleCommentDelete(e) {
         const btn = e.currentTarget;
         const id = btn.dataset.id;
         const token = btn.dataset.token;
-        showForumConfirm('Supprimer ce commentaire ?', 'Cette action est irréversible. Le commentaire sera définitivement supprimé.', () => performCommentDelete(id, token));
-    }
-    function performCommentDelete(id, token) {
+        if (!confirm('Supprimer ce commentaire ?')) return;
+
         fetch('/post/comment/' + id + '/delete-ajax', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
@@ -2166,6 +2400,22 @@
     }
 
     function renderDetailContent(p, title, content, origLang, displayLang) {
+        if (p.hidden && !p.canViewOriginal) {
+            detailLeft.innerHTML = `
+                <div class="mdl-author-row">
+                    <span class="ln-avatar">${esc(p.authorInitial)}</span>
+                    <div>
+                        <div class="mdl-author-name">${esc(p.authorName)}</div>
+                        <div class="mdl-author-role">${esc(p.authorRole)}</div>
+                        <div class="mdl-author-time"><i class="far fa-clock"></i> ${esc(p.timeLabel)}</div>
+                    </div>
+                </div>
+                <div class="mdl-post-title">Post retiré</div>
+                <div class="mdl-removed-card">${esc(p.hiddenMessage || hiddenPostMessage)}</div>
+            `;
+            return;
+        }
+
         const dir = displayLang === 'ar' ? ' style="direction:rtl;text-align:right;"' : '';
         detailLeft.innerHTML = `
             <div class="mdl-author-row">
@@ -2278,13 +2528,27 @@
             el.removeEventListener('click', handleOpenEdit);
             el.addEventListener('click', handleOpenEdit);
         });
-        // Post delete buttons
-        document.querySelectorAll('.post-delete-btn').forEach(btn => {
-            btn.onclick = function(e) {
-                e.preventDefault();
-                const form = this.closest('.post-delete-form');
-                showForumConfirm('Supprimer ce post ?', 'Cette action est irréversible. Le post et tous ses commentaires seront définitivement supprimés.', () => form.submit());
-            };
+        document.querySelectorAll('.open-report-modal').forEach(el => {
+            el.removeEventListener('click', handleOpenReport);
+            el.addEventListener('click', handleOpenReport);
+        });
+        document.querySelectorAll('.ln-tts-btn').forEach(btn => {
+            btn.removeEventListener('click', handleTtsClick);
+            btn.addEventListener('click', handleTtsClick);
+            setTtsButtonState(btn, activeTtsButton === btn && window.speechSynthesis?.speaking);
+        });
+        document.querySelectorAll('.ln-summarize-btn').forEach(btn => {
+            btn.removeEventListener('click', handleSummarizeClick);
+            btn.addEventListener('click', handleSummarizeClick);
+        });
+        // Restore cached summaries for visible cards
+        document.querySelectorAll('.ln-ai-summary[data-summary-id]').forEach(card => {
+            const id = card.dataset.summaryId;
+            if (summaryCache[id] && !card.classList.contains('visible')) {
+                // Don't auto-show on bind; only restore if user already had it open (card is visible)
+            }
+            const btn = document.querySelector(`.ln-summarize-btn[data-id="${id}"]`);
+            if (btn) btn.classList.toggle('active', summaryCache[id] !== undefined && card.classList.contains('visible'));
         });
     }
 
@@ -2294,12 +2558,84 @@
         if (id) openDetailModal(id);
     }
 
+    const reportOverlay = document.getElementById('reportOverlay');
+    const reportErrors = document.getElementById('reportErrors');
+
+    function openReportModal(postId) {
+        currentReportPostId = postId;
+        reportErrors.innerHTML = '';
+        document.getElementById('reportReason').value = '';
+        document.getElementById('reportDescription').value = '';
+        reportOverlay.classList.add('active');
+    }
+
+    function closeReportModal() {
+        reportOverlay.classList.remove('active');
+        currentReportPostId = null;
+    }
+
+    function handleOpenReport(e) {
+        e.preventDefault();
+        const id = this.dataset.id;
+        if (id) openReportModal(id);
+    }
+
+    document.getElementById('closeReport').addEventListener('click', closeReportModal);
+    document.getElementById('cancelReport').addEventListener('click', closeReportModal);
+    reportOverlay.addEventListener('click', function(e) {
+        if (e.target === reportOverlay) closeReportModal();
+    });
+
+    document.getElementById('submitReport').addEventListener('click', function() {
+        if (!currentReportPostId) return;
+        const btn = this;
+        const reason = document.getElementById('reportReason').value;
+        const description = document.getElementById('reportDescription').value.trim();
+
+        reportErrors.innerHTML = '';
+        btn.disabled = true;
+
+        fetch('/post/' + currentReportPostId + '/report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ reason, description })
+        })
+        .then(async r => ({ status: r.status, body: await r.json() }))
+        .then(({ body }) => {
+            btn.disabled = false;
+            if (!body.success) {
+                reportErrors.innerHTML = (body.errors || ['Erreur réseau, réessayez.']).map(e => '<li>' + esc(e) + '</li>').join('');
+                return;
+            }
+            const postId = currentReportPostId;
+            closeReportModal();
+            const trigger = document.querySelector(`.open-report-modal[data-id="${postId}"]`);
+            if (trigger) {
+                trigger.disabled = true;
+                trigger.innerHTML = '<i class="fas fa-check"></i>';
+                trigger.title = 'Signalement envoyé';
+            }
+        })
+        .catch(() => {
+            btn.disabled = false;
+            reportErrors.innerHTML = '<li>Erreur réseau, réessayez.</li>';
+        });
+    });
+
     // Keyboard: Escape to close modals
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             if (detailOverlay.classList.contains('active')) closeDetailModal();
+            else if (reportOverlay.classList.contains('active')) closeReportModal();
             else if (editPostOverlay.classList.contains('active')) closeEditPostModal();
             else if (newPostOverlay.classList.contains('active')) closeNewPostModal();
+            else if (speechSupported && window.speechSynthesis.speaking) stopSpeech();
+        }
+    });
+
+    window.addEventListener('beforeunload', function() {
+        if (speechSupported && window.speechSynthesis.speaking) {
+            window.speechSynthesis.cancel();
         }
     });
 
@@ -2575,6 +2911,8 @@
     const activityCtx = document.getElementById('activityChart');
     if (activityCtx) {
         const activityData = {{ postsPerDay|json_encode|raw }};
+        const existingActivity = Chart.getChart(activityCtx);
+        if (existingActivity) existingActivity.destroy();
         new Chart(activityCtx, {
             type: 'bar',
             data: {
@@ -2700,16 +3038,17 @@
 
     // ── Chart.js: Sidebar Charts ──
     (function initSidebarCharts() {
-        if (typeof Chart === 'undefined') return; // Chart.js not loaded
         const postsPerDay = {{ postsPerDay|json_encode|raw }};
         const topAuthors = {{ topAuthors|json_encode|raw }};
-        const isLight = document.body.classList.contains('light-mode') || document.documentElement.getAttribute('data-theme') === 'light';
+        const isLight = document.body.classList.contains('light-mode');
         const gridColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
         const textColor = isLight ? '#65676b' : '#b0b3b8';
 
         // Activity bar chart
         const actCtx = document.getElementById('activityChart');
         if (actCtx) {
+            const prevActChart = Chart.getChart(actCtx);
+            if (prevActChart) prevActChart.destroy();
             new Chart(actCtx, {
                 type: 'bar',
                 data: {
@@ -2760,6 +3099,8 @@
         // Top authors doughnut
         const authCtx = document.getElementById('authorsChart');
         if (authCtx && Object.keys(topAuthors).length > 0) {
+            const prevAuthChart = Chart.getChart(authCtx);
+            if (prevAuthChart) prevAuthChart.destroy();
             const authNames = Object.keys(topAuthors);
             const authCounts = Object.values(topAuthors);
             const palette = [
@@ -2810,5 +3151,37 @@
         }
     })();
 })();
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const grid = document.getElementById('post-grid');
+    if (!form || !grid) return;
+    let debounceTimer;
+
+    function fetchPosts() {
+        const params = new URLSearchParams(new FormData(form)).toString();
+        fetch("{{ path('post_search') }}?" + params, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(r => r.text())
+            .then(html => { grid.innerHTML = html; });
+    }
+
+    form.querySelectorAll('input.tf-search').forEach(input => {
+        input.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(fetchPosts, 300);
+        });
+    });
+
+    form.querySelectorAll('select.tf-search').forEach(sel => {
+        sel.addEventListener('change', fetchPosts);
+    });
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        fetchPosts();
+    });
+});
 </script>
 {% endblock %}

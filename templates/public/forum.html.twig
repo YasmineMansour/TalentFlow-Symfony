@@ -30,6 +30,11 @@
                 </div>
 
                 <div style="flex:1; min-width:0;">
+                    {% if post.hidden and not is_granted('ROLE_ADMIN') %}
+                    <div style="border:1px solid var(--tf-border); background:rgba(148, 163, 184, 0.12); border-radius:14px; padding:1rem 1.1rem; color:var(--tf-text-secondary);">
+                        {{ hiddenPostMessage }}
+                    </div>
+                    {% else %}
                     <h3 style="font-size:1.05rem; font-weight:700; margin-bottom:0.35rem;">
                         <a href="{{ path('post_show', {id: post.id}) }}" style="color:var(--tf-text); text-decoration:none; transition:color 0.2s;">
                             {{ post.title }}
@@ -45,6 +50,7 @@
                         <span><i class="fas fa-clock" aria-hidden="true"></i> {{ post.createdAt ? post.createdAt|date('d/m/Y') : '—' }}</span>
                         <span><i class="fas fa-comments" aria-hidden="true"></i> {{ post.commentCount|default(0) }} commentaire{{ post.commentCount|default(0) > 1 ? 's' }}</span>
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </article>

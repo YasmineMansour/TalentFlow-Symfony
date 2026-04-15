@@ -1,0 +1,390 @@
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}Signalements - TalentFlow{% endblock %}
+{% block page_title %}Modération des posts{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .report-preview-btn {
+        border: 1px solid var(--tf-gold);
+        background: rgba(212, 168, 67, 0.08);
+        color: var(--tf-gold);
+        border-radius: 10px;
+        padding: 0.42rem 0.9rem;
+        font-size: 0.92rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .report-preview-btn:hover { background: rgba(212, 168, 67, 0.16); }
+    .report-preview-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .report-modal-overlay {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(8, 14, 24, 0.72);
+        backdrop-filter: blur(3px);
+        z-index: 12000;
+        padding: 1rem;
+    }
+    .report-modal-overlay.active { display: flex; }
+    .report-modal {
+        width: min(900px, 95vw);
+        max-height: 88vh;
+        overflow: hidden;
+        background: var(--tf-card-bg);
+        border: 1px solid var(--tf-border);
+        border-radius: 16px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+        display: flex;
+        flex-direction: column;
+    }
+    .report-modal-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1rem 1.2rem;
+        border-bottom: 1px solid var(--tf-border);
+    }
+    .report-modal-header h3 {
+        margin: 0;
+        color: var(--tf-white);
+        font-size: 1.08rem;
+        font-weight: 700;
+        line-height: 1.4;
+    }
+    .report-modal-meta {
+        margin-top: 0.35rem;
+        color: var(--tf-gray);
+        font-size: 0.82rem;
+        display: flex;
+        gap: 0.65rem;
+        flex-wrap: wrap;
+    }
+    .report-modal-close {
+        border: 1px solid var(--tf-border);
+        background: transparent;
+        color: var(--tf-gray);
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .report-modal-close:hover {
+        border-color: #e74c3c;
+        color: #e74c3c;
+        background: rgba(231, 76, 60, 0.08);
+    }
+    .report-modal-body {
+        padding: 1rem 1.2rem 1.2rem;
+        overflow-y: auto;
+        display: grid;
+        gap: 0.95rem;
+    }
+    .report-modal-panel {
+        border: 1px solid var(--tf-border);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.02);
+        padding: 0.9rem 1rem;
+    }
+    .report-modal-label {
+        color: var(--tf-gray);
+        font-size: 0.75rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin-bottom: 0.45rem;
+    }
+    .report-modal-content {
+        color: var(--tf-light);
+        line-height: 1.62;
+        white-space: pre-wrap;
+    }
+    .report-modal-footer {
+        border-top: 1px solid var(--tf-border);
+        padding: 0.8rem 1.2rem;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    [data-theme="light"] .report-preview-btn {
+        background: rgba(201, 162, 39, 0.1);
+        color: var(--tf-gold-dark);
+        border-color: var(--tf-gold-dark);
+    }
+    [data-theme="light"] .report-modal-overlay { background: rgba(10, 20, 32, 0.45); }
+    [data-theme="light"] .report-modal-panel { background: #f5f7fb; }
+    [data-theme="light"] .report-modal-content { color: #1f2937; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="row g-3 mb-4">
+    <div class="col-lg-4 col-md-6">
+        <div class="tf-widget">
+            <div class="tf-widget-icon gold">
+                <i class="fas fa-flag"></i>
+            </div>
+            <div class="tf-widget-info">
+                <h3>{{ reports|length }}</h3>
+                <p>Signalements en attente</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="tf-card" style="height: 100%; display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+            <div>
+                <h3 style="margin:0 0 0.35rem; color: var(--tf-white);"><i class="fas fa-shield-alt"></i> File de modération</h3>
+                <p style="margin:0; color: var(--tf-gray);">Examinez les signalements, rejetez les abus et masquez les posts qui enfreignent les règles communautaires.</p>
+            </div>
+            <a href="{{ path('post_index') }}" class="btn-outline-gold btn-sm-tf">
+                <i class="fas fa-comments"></i> Voir le forum
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="tf-card">
+    <div class="tf-card-header">
+        <h3><i class="fas fa-inbox"></i> Signalements en attente</h3>
+    </div>
+
+    {% if reports is empty %}
+        <p style="color: var(--tf-gray); text-align:center; padding:2.5rem 1rem; margin:0;">Aucun signalement en attente.</p>
+    {% else %}
+        <div style="display:grid; gap:1rem;">
+            {% for report in reports %}
+                {% set post = report.post %}
+                <article style="border:1px solid var(--tf-border); border-radius:16px; padding:1.1rem 1.15rem; background: color-mix(in srgb, var(--tf-card-bg) 88%, #ffffff 12%);">
+                    <div style="display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; margin-bottom:0.9rem;">
+                        <div>
+                            <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.35rem; flex-wrap:wrap;">
+                                <span class="badge-role badge-admin" style="background: rgba(212, 168, 67, 0.16); color: var(--tf-gold); border: 1px solid rgba(212, 168, 67, 0.22);">{{ report.reason }}</span>
+                                <span style="color: var(--tf-gray); font-size:0.82rem;">Signalé le {{ report.createdAt ? report.createdAt|date('d/m/Y à H:i') : '—' }}</span>
+                            </div>
+                            <h4 style="margin:0; color: var(--tf-white); font-size:1rem;">{{ post ? post.title : 'Post supprimé' }}</h4>
+                        </div>
+                        <button
+                            type="button"
+                            class="report-preview-btn open-report-preview"
+                            {% if not post %}disabled{% endif %}
+                            data-post-title="{{ post ? post.title|e('html_attr') : '' }}"
+                            data-post-content="{{ post ? (post.content ?: 'Aucun contenu texte.')|e('html_attr') : '' }}"
+                            data-author-name="{{ report.reportedBy ? report.reportedBy.fullName|e('html_attr') : 'Utilisateur supprimé' }}"
+                            data-author-email="{{ report.reportedBy ? report.reportedBy.email|e('html_attr') : '—' }}"
+                            data-reason="{{ report.reason|e('html_attr') }}"
+                            data-description="{{ (report.description ?: 'Aucune précision fournie.')|e('html_attr') }}"
+                            data-created-at="{{ report.createdAt ? report.createdAt|date('d/m/Y à H:i') : '—' }}"
+                        >
+                            <i class="fas fa-eye"></i> Ouvrir
+                        </button>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-lg-7">
+                            <div style="border:1px solid var(--tf-border); border-radius:14px; padding:0.95rem 1rem; background: rgba(255,255,255,0.02); height:100%;">
+                                <div style="color: var(--tf-gray); font-size:0.76rem; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.55rem;">Aperçu du post</div>
+                                {% if post %}
+                                    <div style="color: var(--tf-light); line-height:1.6; white-space:pre-wrap;">{{ post.content ?: 'Aucun contenu texte.' }}</div>
+                                {% else %}
+                                    <div style="color: var(--tf-gray);">Le post lié n'est plus disponible.</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-lg-5">
+                            <div style="border:1px solid var(--tf-border); border-radius:14px; padding:0.95rem 1rem; background: rgba(255,255,255,0.02); height:100%; display:flex; flex-direction:column; gap:0.85rem;">
+                                <div>
+                                    <div style="color: var(--tf-gray); font-size:0.76rem; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.3rem;">Signalé par</div>
+                                    <div style="color: var(--tf-white); font-weight:600;">{{ report.reportedBy ? report.reportedBy.fullName : 'Utilisateur supprimé' }}</div>
+                                    <div style="color: var(--tf-gray); font-size:0.82rem;">{{ report.reportedBy ? report.reportedBy.email : '—' }}</div>
+                                </div>
+                                <div>
+                                    <div style="color: var(--tf-gray); font-size:0.76rem; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.3rem;">Description</div>
+                                    <div style="color: var(--tf-light); font-size:0.9rem; line-height:1.55;">{{ report.description ?: 'Aucune précision fournie.' }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end; gap:0.65rem; margin-top:1rem; flex-wrap:wrap;">
+                        <form method="post" action="{{ path('admin_reports_dismiss', {id: report.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('dismiss_report_' ~ report.id) }}">
+                            <button type="submit" class="btn-outline-gold btn-sm-tf">
+                                <i class="fas fa-check"></i> Dismiss
+                            </button>
+                        </form>
+                        <form method="post" action="{{ path('admin_reports_hide_post', {id: report.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('hide_report_' ~ report.id) }}">
+                            <button type="submit" class="btn-danger-tf btn-sm-tf">
+                                <i class="fas fa-ban"></i> Hide Post
+                            </button>
+                        </form>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+
+<div class="tf-card mt-3">
+    <div class="tf-card-header">
+        <h3><i class="fas fa-eye-slash"></i> Posts masqués</h3>
+    </div>
+
+    {% if hiddenPosts is empty %}
+        <p style="color: var(--tf-gray); text-align:center; padding:2rem 1rem; margin:0;">Aucun post masqué actuellement.</p>
+    {% else %}
+        <div style="display:grid; gap:0.8rem;">
+            {% for post in hiddenPosts %}
+                <article style="border:1px solid var(--tf-border); border-radius:14px; padding:0.95rem 1rem; background: rgba(255,255,255,0.02);">
+                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+                        <div style="min-width:0; flex:1;">
+                            <div style="display:flex; align-items:center; gap:0.55rem; flex-wrap:wrap; margin-bottom:0.25rem;">
+                                <span class="badge-role badge-admin" style="background: rgba(148, 163, 184, 0.2); color: #d4d7dd; border:1px solid rgba(148, 163, 184, 0.26);">Masqué</span>
+                                <span style="color: var(--tf-gray); font-size:0.8rem;">Publié le {{ post.createdAt ? post.createdAt|date('d/m/Y à H:i') : '—' }}</span>
+                            </div>
+                            <h4 style="margin:0 0 0.35rem; color: var(--tf-white); font-size:1rem;">{{ post.title }}</h4>
+                            <div style="color: var(--tf-gray); font-size:0.86rem; margin-bottom:0.35rem;">Par {{ post.authorName }}</div>
+                            <div style="color: var(--tf-light); line-height:1.6; white-space:pre-wrap;">
+                                {{ post.content ?: 'Aucun contenu texte.' }}
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:0.55rem; align-items:center;">
+                            <button
+                                type="button"
+                                class="report-preview-btn open-report-preview"
+                                data-post-title="{{ post.title|e('html_attr') }}"
+                                data-post-content="{{ (post.content ?: 'Aucun contenu texte.')|e('html_attr') }}"
+                                data-author-name="{{ post.authorName|e('html_attr') }}"
+                                data-author-email="—"
+                                data-reason="Post masqué"
+                                data-description="Visible uniquement par les administrateurs."
+                                data-created-at="{{ post.createdAt ? post.createdAt|date('d/m/Y à H:i') : '—' }}"
+                            >
+                                <i class="fas fa-eye"></i> Ouvrir
+                            </button>
+                            <form method="post" action="{{ path('admin_reports_unhide_post', {id: post.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('unhide_post_' ~ post.id) }}">
+                                <button type="submit" class="btn-outline-gold btn-sm-tf">
+                                    <i class="fas fa-eye"></i> Unhide Post
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+
+<div class="report-modal-overlay" id="reportPreviewOverlay" aria-hidden="true">
+    <div class="report-modal" role="dialog" aria-modal="true" aria-labelledby="reportPreviewTitle">
+        <div class="report-modal-header">
+            <div>
+                <h3 id="reportPreviewTitle"></h3>
+                <div class="report-modal-meta">
+                    <span id="reportPreviewDate"></span>
+                    <span id="reportPreviewReason"></span>
+                </div>
+            </div>
+            <button type="button" class="report-modal-close" id="reportPreviewClose" aria-label="Fermer">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="report-modal-body">
+            <div class="report-modal-panel">
+                <div class="report-modal-label">Contenu complet du post</div>
+                <div class="report-modal-content" id="reportPreviewContent"></div>
+            </div>
+            <div class="report-modal-panel">
+                <div class="report-modal-label">Signalé par</div>
+                <div class="report-modal-content" id="reportPreviewReporter"></div>
+            </div>
+            <div class="report-modal-panel">
+                <div class="report-modal-label">Description du signalement</div>
+                <div class="report-modal-content" id="reportPreviewDescription"></div>
+            </div>
+        </div>
+        <div class="report-modal-footer">
+            <button type="button" class="btn-outline-gold btn-sm-tf" id="reportPreviewCloseFooter">
+                <i class="fas fa-xmark"></i> Fermer
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+(function() {
+    const overlay = document.getElementById('reportPreviewOverlay');
+    const closeTop = document.getElementById('reportPreviewClose');
+    const closeBottom = document.getElementById('reportPreviewCloseFooter');
+    const titleEl = document.getElementById('reportPreviewTitle');
+    const dateEl = document.getElementById('reportPreviewDate');
+    const reasonEl = document.getElementById('reportPreviewReason');
+    const contentEl = document.getElementById('reportPreviewContent');
+    const reporterEl = document.getElementById('reportPreviewReporter');
+    const descriptionEl = document.getElementById('reportPreviewDescription');
+
+    function esc(value) {
+        const d = document.createElement('div');
+        d.textContent = value || '';
+        return d.innerHTML;
+    }
+
+    function closeModal() {
+        overlay.classList.remove('active');
+        overlay.setAttribute('aria-hidden', 'true');
+    }
+
+    function openModal(btn) {
+        const title = btn.dataset.postTitle || 'Post';
+        const content = btn.dataset.postContent || 'Aucun contenu texte.';
+        const reason = btn.dataset.reason || '—';
+        const createdAt = btn.dataset.createdAt || '—';
+        const authorName = btn.dataset.authorName || '—';
+        const authorEmail = btn.dataset.authorEmail || '—';
+        const description = btn.dataset.description || 'Aucune précision fournie.';
+
+        titleEl.textContent = title;
+        dateEl.textContent = 'Signalé le ' + createdAt;
+        reasonEl.textContent = 'Motif: ' + reason;
+        contentEl.innerHTML = esc(content);
+        reporterEl.innerHTML = '<strong>' + esc(authorName) + '</strong><br><span style="color:var(--tf-gray)">' + esc(authorEmail) + '</span>';
+        descriptionEl.innerHTML = esc(description);
+
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden', 'false');
+    }
+
+    document.querySelectorAll('.open-report-preview').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (this.disabled) return;
+            openModal(this);
+        });
+    });
+
+    closeTop.addEventListener('click', closeModal);
+    closeBottom.addEventListener('click', closeModal);
+    overlay.addEventListener('click', function(event) {
+        if (event.target === overlay) {
+            closeModal();
+        }
+    });
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && overlay.classList.contains('active')) {
+            closeModal();
+        }
+    });
+})();
+</script>
+{% endblock %}

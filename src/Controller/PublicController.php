@@ -102,6 +102,7 @@ class PublicController extends AbstractController
         return $this->render('public/forum.html.twig', [
             'posts' => $posts,
             'search' => $search,
+            'hiddenPostMessage' => 'This post was removed for violating community guidelines.',
         ]);
     }
 }
