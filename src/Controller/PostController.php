@@ -6,6 +6,7 @@ use App\Entity\Comment;
 use App\Entity\Post;
 use App\Entity\User;
 use App\Entity\Vote;
+use App\Form\CommentType;
 use App\Form\PostType;
 use App\Repository\PostRepository;
 use App\Repository\VoteRepository;
@@ -20,7 +21,6 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 #[Route('/post')]
-#[IsGranted('ROLE_USER')]
 class PostController extends AbstractController
 {
     public function __construct(
@@ -161,6 +161,14 @@ class PostController extends AbstractController
     {
         $currentUser = $this->getUser();
         $isAdmin = $this->isGranted('ROLE_ADMIN');
+        $canViewOriginal = $this->canViewOriginalPost($post);
+
+        if ($post->isHidden() && !$canViewOriginal) {
+            return $this->json([
+                'post' => $this->serializePost($post, $csrf, $voteRepo),
+                'comments' => [],
+            ]);
+        }
 
         $comments = [];
         foreach ($post->getComments() as $comment) {
@@ -229,6 +237,10 @@ class PostController extends AbstractController
     #[Route('/{id}/comment-ajax', name: 'post_comment_ajax', methods: ['POST'])]
     public function commentAjax(Post $post, Request $request, EntityManagerInterface $em, CsrfTokenManagerInterface $csrf, ContentValidator $validator): JsonResponse
     {
+        if ($post->isHidden() && !$this->canViewOriginalPost($post)) {
+            return $this->json(['success' => false, 'errors' => ['Ce post a été retiré et ne peut plus recevoir de commentaires.']], 403);
+        }
+
         $data = json_decode($request->getContent(), true);
         $content = trim($data['content'] ?? '');
 
@@ -332,6 +344,10 @@ class PostController extends AbstractController
             return $this->json(['error' => 'Non authentifié'], 401);
         }
 
+        if ($post->isHidden() && !$this->canViewOriginalPost($post)) {
+            return $this->json(['error' => 'Ce post a été retiré.'], 403);
+        }
+
         $existing = $voteRepo->findByUserAndPost($user, $post);
 
         if ($existing && $existing->getType() === Vote::TYPE_UP) {
@@ -368,6 +384,10 @@ class PostController extends AbstractController
             return $this->json(['error' => 'Non authentifié'], 401);
         }
 
+        if ($post->isHidden() && !$this->canViewOriginalPost($post)) {
+            return $this->json(['error' => 'Ce post a été retiré.'], 403);
+        }
+
         $existing = $voteRepo->findByUserAndPost($user, $post);
 
         if ($existing && $existing->getType() === Vote::TYPE_DOWN) {
@@ -400,7 +420,6 @@ class PostController extends AbstractController
     public function new(Request $request, EntityManagerInterface $em): Response
     {
         $post = new Post();
-        $post->setAuthor($this->getUser());
         $form = $this->createForm(PostType::class, $post);
         $form->handleRequest($request);
 
@@ -418,37 +437,17 @@ class PostController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'post_show', methods: ['GET', 'POST'])]
-    public function show(Request $request, Post $post, EntityManagerInterface $em): Response
+    #[Route('/{id}', name: 'post_show', methods: ['GET'])]
+    public function show(Post $post): Response
     {
         $comment = new Comment();
-        $comment->setAuthor($this->getUser());
         $comment->setPost($post);
-
-        $form = $this->createFormBuilder($comment)
-            ->add('content', TextareaType::class, [
-                'label' => false,
-                'attr' => [
-                    'placeholder' => 'Écrire un commentaire...',
-                    'rows' => 3,
-                    'class' => 'form-control',
-                ],
-            ])
-            ->getForm();
-
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em->persist($comment);
-            $em->flush();
-
-            $this->addFlash('success', 'Commentaire ajouté avec succès.');
-            return $this->redirectToRoute('post_show', ['id' => $post->getId()]);
-        }
+        $commentForm = $this->createForm(CommentType::class, $comment);
 
         return $this->render('post/show.html.twig', [
             'post' => $post,
-            'commentForm' => $form,
+            'commentForm' => $commentForm,
+            'canViewOriginal' => $this->canViewOriginalPost($post),
         ]);
     }
 
@@ -493,6 +492,66 @@ class PostController extends AbstractController
         return $this->redirectToRoute('post_index');
     }
 
+    #[Route('/{id}/summarize', name: 'post_summarize', methods: ['POST'])]
+    public function summarize(Post $post, Request $request): JsonResponse
+    {
+        if (!$request->isXmlHttpRequest()) {
+            throw $this->createNotFoundException();
+        }
+
+        if ($post->isHidden() && !$this->isGranted('ROLE_ADMIN')) {
+            return $this->json(['error' => 'Summary unavailable right now.'], 403);
+        }
+
+        $apiKey = $_SERVER['GROQ_API_KEY'] ?? $_ENV['GROQ_API_KEY'] ?? '';
+        if (empty($apiKey)) {
+            return $this->json(['error' => 'Summary unavailable right now.'], 503);
+        }
+
+        $text = trim(($post->getTitle() ?? '') . "\n\n" . ($post->getContent() ?? ''));
+        if (empty($text)) {
+            return $this->json(['error' => 'Nothing to summarize.'], 400);
+        }
+
+        $payload = json_encode([
+            'model' => 'llama-3.1-8b-instant',
+            'max_tokens' => 256,
+            'messages' => [
+                ['role' => 'system', 'content' => 'You are a helpful assistant. Summarize the following post in 1-2 concise sentences, capturing the main point. Be neutral and factual. Reply with the summary only, no preamble.'],
+                ['role' => 'user', 'content' => $text],
+            ],
+        ]);
+
+        $ch = curl_init('https://api.groq.com/openai/v1/chat/completions');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $payload,
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+                'Authorization: Bearer ' . $apiKey,
+            ],
+            CURLOPT_TIMEOUT => 20,
+            CURLOPT_SSL_VERIFYPEER => false,
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($response === false || $httpCode !== 200) {
+            return $this->json(['error' => 'Summary unavailable right now.'], 503);
+        }
+
+        $data = json_decode($response, true);
+        $summary = $data['choices'][0]['message']['content'] ?? null;
+        if (!$summary) {
+            return $this->json(['error' => 'Summary unavailable right now.'], 503);
+        }
+
+        return $this->json(['summary' => trim($summary)]);
+    }
+
     private function serializePost(Post $post, CsrfTokenManagerInterface $csrf, ?VoteRepository $voteRepo = null): array
     {
         $diff = time() - $post->getCreatedAt()->getTimestamp();
@@ -510,33 +569,45 @@ class PostController extends AbstractController
 
         $currentUser = $this->getUser();
         $canManage = $this->isGranted('ROLE_ADMIN') || ($currentUser && $post->getAuthor() === $currentUser);
+        $canViewOriginal = $this->canViewOriginalPost($post);
+        $isHiddenForViewer = $post->isHidden() && !$canViewOriginal;
 
         $userVote = null;
-        if ($currentUser && $voteRepo) {
+        if (!$isHiddenForViewer && $currentUser && $voteRepo) {
             $vote = $voteRepo->findByUserAndPost($currentUser, $post);
             $userVote = $vote?->getType();
         }
 
         return [
             'id' => $post->getId(),
-            'title' => $post->getTitle(),
-            'content' => $post->getContent(),
+            'title' => $isHiddenForViewer ? 'Post retiré' : $post->getTitle(),
+            'content' => $isHiddenForViewer ? 'This post was removed for violating community guidelines.' : $post->getContent(),
             'authorId' => $post->getAuthor()?->getId(),
             'authorName' => $post->getAuthorName(),
             'authorRole' => $post->getAuthorRole(),
             'authorInitial' => mb_strtoupper(mb_substr($post->getAuthorName(), 0, 1)),
             'upvotes' => $post->getUpvotes(),
-            'commentCount' => $post->getCommentCount(),
+            'commentCount' => $isHiddenForViewer ? 0 : $post->getCommentCount(),
             'timeLabel' => $timeLabel,
             'showUrl' => $this->generateUrl('post_show', ['id' => $post->getId()]),
             'editUrl' => $this->generateUrl('post_edit', ['id' => $post->getId()]),
             'deleteUrl' => $this->generateUrl('post_delete', ['id' => $post->getId()]),
+            'reportUrl' => $this->generateUrl('post_report', ['id' => $post->getId()]),
             'deleteToken' => $canManage ? $csrf->getToken('delete' . $post->getId())->getValue() : '',
             'canManage' => $canManage,
+            'canViewOriginal' => $canViewOriginal,
+            'canReport' => $currentUser && !$this->isGranted('ROLE_ADMIN') && !$post->isHidden(),
+            'hidden' => $post->isHidden(),
+            'hiddenMessage' => 'This post was removed for violating community guidelines.',
             'userVote' => $userVote,
-            'imagePath' => $post->getImagePath(),
-            'audioPath' => $post->getAudioPath(),
-            'lang' => $this->langDetector->detect($post->getTitle() . ' ' . ($post->getContent() ?? '')),
+            'imagePath' => $isHiddenForViewer ? null : $post->getImagePath(),
+            'audioPath' => $isHiddenForViewer ? null : $post->getAudioPath(),
+            'lang' => $isHiddenForViewer ? 'fr' : $this->langDetector->detect($post->getTitle() . ' ' . ($post->getContent() ?? '')),
         ];
+    }
+
+    private function canViewOriginalPost(Post $post): bool
+    {
+        return !$post->isHidden() || $this->isGranted('ROLE_ADMIN');
     }
 }

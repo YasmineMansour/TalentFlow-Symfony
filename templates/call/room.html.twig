@@ -454,7 +454,7 @@
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
             },
-            body: JSON.stringify({ peerId: MY_PEER_ID })
+            body: JSON.stringify({ peerId: MY_PEER_ID, mode: callMode })
         }).then(function() {
             console.log('[TF Call] Registered peer ID:', MY_PEER_ID);
         }).catch(function(e) {
@@ -567,6 +567,32 @@
     function setupCallEvents(call) {
         call.on('stream', handleRemoteStream);
 
+        // Listen for new tracks added mid-call (e.g. camera turned on during audio call)
+        if (call.peerConnection) {
+            call.peerConnection.ontrack = function(event) {
+                console.log('[TF Call] ontrack event:', event.track.kind);
+                if (event.track.kind === 'video') {
+                    remoteVideo.srcObject = event.streams[0] || new MediaStream([event.track]);
+                    remoteVideo.style.display = '';
+                    remoteAvatar.style.display = 'none';
+                }
+                if (event.track.kind === 'audio') {
+                    remoteAudio.srcObject = event.streams[0] || new MediaStream([event.track]);
+                }
+                // --- Ensure UI updates to connected state ---
+                connectingOverlay.style.display = 'none';
+                remoteBox.style.display = '';
+                statusText.textContent = 'En appel';
+                statusDot.classList.add('connected');
+                refreshLayout();
+                if (!callStartTime) {
+                    callStartTime = Date.now();
+                    timerInterval = setInterval(updateTimer, 1000);
+                }
+                if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+            };
+        }
+
         call.on('close', function() {
             console.log('[TF Call] Call closed');
             connected = false;
@@ -595,19 +621,57 @@
         updateLocalMicUI();
     };
 
-    window.toggleCam = function() {
+    window.toggleCam = async function() {
         if (!localStream) return;
         camOn = !camOn;
-        localStream.getVideoTracks().forEach(function(t) { t.enabled = camOn; });
         btnCam.className = 'call-btn' + (camOn ? '' : ' off');
         btnCam.innerHTML = camOn
             ? '<i class="fas fa-video"></i>'
             : '<i class="fas fa-video-slash"></i>';
+
+        var existingVt = localStream.getVideoTracks()[0];
+
         if (camOn) {
+            if (existingVt) {
+                // Track exists, just enable it
+                existingVt.enabled = true;
+            } else {
+                // No video track (audio-only call) — acquire a new one
+                try {
+                    var camStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    var newVt = camStream.getVideoTracks()[0];
+                    localStream.addTrack(newVt);
+
+                    // Send the new track to the remote peer
+                    if (currentCall && currentCall.peerConnection) {
+                        var senders = currentCall.peerConnection.getSenders();
+                        var videoSender = null;
+                        for (var i = 0; i < senders.length; i++) {
+                            if (senders[i].track && senders[i].track.kind === 'video') {
+                                videoSender = senders[i];
+                                break;
+                            }
+                        }
+                        if (videoSender) {
+                            videoSender.replaceTrack(newVt);
+                        } else {
+                            currentCall.peerConnection.addTrack(newVt, localStream);
+                        }
+                    }
+                } catch (err) {
+                    console.error('[TF Call] Cannot enable camera:', err);
+                    camOn = false;
+                    btnCam.className = 'call-btn off';
+                    btnCam.innerHTML = '<i class="fas fa-video-slash"></i>';
+                    return;
+                }
+            }
             localVideo.srcObject = localStream;
             localVideo.style.display = '';
             localAvatar.style.display = 'none';
         } else {
+            var vt = localStream.getVideoTracks()[0];
+            if (vt) vt.enabled = false;
             localVideo.style.display = 'none';
             localAvatar.style.display = '';
         }

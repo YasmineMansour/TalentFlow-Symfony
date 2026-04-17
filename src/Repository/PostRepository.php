@@ -32,33 +32,6 @@ class PostRepository extends ServiceEntityRepository
     /**
      * @return Post[]
      */
-    public function findByFilters(string $search = '', ?string $auteur = null, string $tri = 'createdAt', string $ordre = 'DESC'): array
-    {
-        $qb = $this->createQueryBuilder('p')
-            ->leftJoin('p.author', 'a');
-
-        if ($search !== '') {
-            $qb->andWhere('p.title LIKE :q OR p.content LIKE :q OR a.nom LIKE :q OR a.prenom LIKE :q')
-               ->setParameter('q', '%' . $search . '%');
-        }
-
-        if ($auteur !== null && $auteur !== '') {
-            $qb->andWhere('a.id = :auteurId')
-               ->setParameter('auteurId', (int) $auteur);
-        }
-
-        $allowedTri = ['createdAt', 'title', 'upvotes'];
-        $triField = in_array($tri, $allowedTri) ? $tri : 'createdAt';
-        $ordreField = strtoupper($ordre) === 'ASC' ? 'ASC' : 'DESC';
-
-        $qb->orderBy('p.' . $triField, $ordreField);
-
-        return $qb->getQuery()->getResult();
-    }
-
-    /**
-     * @return Post[]
-     */
     public function findByAuthor(int $authorId): array
     {
         return $this->createQueryBuilder('p')
@@ -69,9 +42,9 @@ class PostRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    /**
-     * @return Post[]
-     */
+        /**
+        * @return Post[]
+        */
     public function findPublicPosts(string $search = ''): array
     {
         $qb = $this->createQueryBuilder('p')

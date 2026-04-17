@@ -30,7 +30,6 @@ class Post
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    #[Assert\NotNull(message: 'L\'auteur est obligatoire.')]
     private ?User $author = null;
 
     #[ORM\Column(options: ['default' => 0])]
@@ -40,11 +39,13 @@ class Post
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(length: 500, nullable: true)]
-    #[Assert\Length(max: 500, maxMessage: 'Le chemin de l\'image ne peut pas dépasser {{ limit }} caractères.')]
     private ?string $imagePath = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $audioPath = null;
+
+    #[ORM\Column(options: ['default' => false])]
+    private bool $hidden = false;
 
     /** @var Collection<int, Comment> */
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'post', cascade: ['remove'], orphanRemoval: true)]
@@ -86,6 +87,9 @@ class Post
 
     public function getAudioPath(): ?string { return $this->audioPath; }
     public function setAudioPath(?string $audioPath): static { $this->audioPath = $audioPath; return $this; }
+
+    public function isHidden(): bool { return $this->hidden; }
+    public function setHidden(bool $hidden): static { $this->hidden = $hidden; return $this; }
 
     /** @return Collection<int, Comment> */
     public function getComments(): Collection { return $this->comments; }

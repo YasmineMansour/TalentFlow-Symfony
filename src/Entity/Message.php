@@ -43,6 +43,8 @@ class Message
         $this->createdAt ??= new \DateTimeImmutable();
     }
 
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static { $this->createdAt = $createdAt; return $this; }
+
     public function getId(): ?int { return $this->id; }
 
     public function getConversation(): ?Conversation { return $this->conversation; }

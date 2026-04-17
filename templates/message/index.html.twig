@@ -1,4 +1,4 @@
-{% extends 'base_dashboard.html.twig' %}
+{% extends is_granted('ROLE_ADMIN') ? 'base_dashboard.html.twig' : 'base_navbar.html.twig' %}
 
 {% block title %}TalentFlow - Messages{% endblock %}
 
@@ -783,11 +783,11 @@
                         <i class="fas fa-phone-volume"></i>
                     </div>
                     <div class="dm-incoming-call-info">
-                        <strong>{{ otherUser.fullName }}</strong> vous appelle
+                        <strong>{{ otherUser.fullName }}</strong> <span id="incomingCallText">vous appelle</span>
                     </div>
                     <div class="dm-incoming-call-actions">
-                        <a href="{{ path('call_room', {id: activeConversation.id}) }}?mode=video&join=1" class="dm-incoming-call-accept">
-                            <i class="fas fa-video me-1"></i> Rejoindre
+                        <a href="#" id="incomingCallAcceptLink" class="dm-incoming-call-accept">
+                            <i class="fas fa-phone me-1" id="incomingCallIcon"></i> Rejoindre
                         </a>
                         <button class="dm-incoming-call-decline" onclick="dismissIncomingCall()">
                             <i class="fas fa-times"></i>
@@ -1282,12 +1282,26 @@
         stopRingtone();
     };
 
+    const acceptLink = document.getElementById('incomingCallAcceptLink');
+    const callIcon = document.getElementById('incomingCallIcon');
+    const callText = document.getElementById('incomingCallText');
+    const baseCallUrl = '{{ activeConversation ? path("call_room", {id: activeConversation.id}) : "" }}';
+
     function checkCall() {
         if (dismissed) return;
         fetch('/call/check/' + convId)
             .then(r => r.json())
             .then(data => {
                 if (data.active && !dismissed) {
+                    const mode = data.mode || 'video';
+                    acceptLink.href = baseCallUrl + '?mode=' + mode + '&join=1';
+                    if (mode === 'audio') {
+                        callIcon.className = 'fas fa-phone me-1';
+                        callText.textContent = 'vous appelle (vocal)';
+                    } else {
+                        callIcon.className = 'fas fa-video me-1';
+                        callText.textContent = 'vous appelle (vidéo)';
+                    }
                     banner.style.display = '';
                     playRingtone();
                 } else {
