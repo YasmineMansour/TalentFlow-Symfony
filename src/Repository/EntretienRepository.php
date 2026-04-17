@@ -124,4 +124,34 @@ class EntretienRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findFor24hReminder(\DateTimeInterface $windowStart, \DateTimeInterface $windowEnd): array
+    {
+        return $this->createQueryBuilder('e')
+            ->andWhere('e.statut = :statut')
+            ->andWhere('e.dateHeure >= :start')
+            ->andWhere('e.dateHeure < :end')
+            ->andWhere('e.reminder24hSentAt IS NULL')
+            ->setParameter('statut', 'PLANIFIE')
+            ->setParameter('start', $windowStart)
+            ->setParameter('end', $windowEnd)
+            ->orderBy('e.dateHeure', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findFor1hReminder(\DateTimeInterface $windowStart, \DateTimeInterface $windowEnd): array
+    {
+        return $this->createQueryBuilder('e')
+            ->andWhere('e.statut = :statut')
+            ->andWhere('e.dateHeure >= :start')
+            ->andWhere('e.dateHeure < :end')
+            ->andWhere('e.reminder1hSentAt IS NULL')
+            ->setParameter('statut', 'PLANIFIE')
+            ->setParameter('start', $windowStart)
+            ->setParameter('end', $windowEnd)
+            ->orderBy('e.dateHeure', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

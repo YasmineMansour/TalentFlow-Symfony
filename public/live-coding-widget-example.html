@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exemple d'intégration - TalentFlow Live Coding Widget</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+        h1 { color: #333; margin-bottom: 10px; }
+        .subtitle { color: #666; margin-bottom: 40px; }
+        
+        .section { background: white; border-radius: 8px; padding: 30px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .section h2 { color: #333; margin-bottom: 15px; font-size: 18px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; }
+        
+        .code-block { background: #f8f8f8; border-left: 4px solid #4a90e2; padding: 15px; margin: 15px 0; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 13px; overflow-x: auto; }
+        
+        .demo { background: #f0f4ff; padding: 20px; border-radius: 8px; border: 2px dashed #4a90e2; margin-bottom: 20px; }
+        .demo-title { font-weight: 600; color: #4a90e2; margin-bottom: 15px; }
+        
+        .button-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        button { padding: 12px 20px; background: #4a90e2; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; }
+        button:hover { background: #357abd; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(74,144,226,0.3); }
+        
+        .info-box { background: #e3f2fd; border-left: 4px solid #2196F3; color: #1565c0; padding: 15px; border-radius: 4px; margin: 15px 0; }
+        .success-box { background: #e8f5e9; border-left: 4px solid #4caf50; color: #2e7d32; padding: 15px; border-radius: 4px; margin: 15px 0; }
+        
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #e0e0e0; padding: 12px; text-align: left; }
+        th { background: #f5f5f5; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 TalentFlow Live Coding Widget</h1>
+        <p class="subtitle">Intégrez le live coding collaboratif dans vos applications</p>
+
+        <!-- Demo Section -->
+        <div class="section">
+            <h2>🧪 Démonstration</h2>
+            <div class="demo">
+                <div class="demo-title">Exemple d'utilisation interactive</div>
+                <p>Le widget flottant devrait apparaître dans le coin inférieur droit si vous avez fourni un entretienId. Cliquez sur le bouton pour ouvrir une popup live coding.</p>
+                <p style="margin-top: 10px; font-size: 12px; color: #666;">Essayez avec l'entretien ID 34 (la réunion de l'image):</p>
+                <div class="button-group" style="margin-top: 15px;">
+                    <button onclick="launchLiveCoding(34)">📱 Lancer - Entretien 34</button>
+                    <button onclick="launchLiveCoding(1)">📱 Lancer - Entretien 1</button>
+                </div>
+            </div>
+
+            <div class="success-box">
+                ✅ Le widget est chargé et prêt à être utilisé. Cliquez sur un bouton ci-dessus pour voir la popup Live Coding !
+            </div>
+        </div>
+
+        <!-- Installation Section -->
+        <div class="section">
+            <h2>📦 Installation et usage</h2>
+            
+            <h3 style="color: #666; margin-top: 15px; margin-bottom: 10px;">Étape 1 : Charger le script</h3>
+            <div class="code-block">&lt;script src="http://127.0.0.1:8000/js/live-coding-widget.js"&gt;&lt;/script&gt;</div>
+            
+            <h3 style="color: #666; margin-top: 15px; margin-bottom: 10px;">Étape 2 : Initialiser le widget</h3>
+            <div class="code-block">TalentFlowLivecoding.init({
+    entretienId: 34,           // ID de l'entretien
+    position: 'bottom-right',  // Position: bottom-right, bottom-left, top-right, top-left
+    title: '💻 Code',          // Texte du bouton
+    tooltip: 'Ouvrir Live Coding' // Tooltip au survol
+});</div>
+
+            <div class="info-box">
+                💡 <strong>Astuce :</strong> Le widget détecte automatiquement l'ID dans l'URL avec le paramètre <code>?entretienId=34</code>
+            </div>
+        </div>
+
+        <!-- Configuration Section -->
+        <div class="section">
+            <h2>⚙️ Options de configuration</h2>
+            <table>
+                <tr>
+                    <th>Option</th>
+                    <th>Type</th>
+                    <th>Défaut</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td><code>entretienId</code></td>
+                    <td>number</td>
+                    <td>null</td>
+                    <td>ID de l'entretien (requis)</td>
+                </tr>
+                <tr>
+                    <td><code>position</code></td>
+                    <td>string</td>
+                    <td>'bottom-right'</td>
+                    <td>Position du widget: bottom-right, bottom-left, top-right, top-left</td>
+                </tr>
+                <tr>
+                    <td><code>baseUrl</code></td>
+                    <td>string</td>
+                    <td>'http://127.0.0.1:8000'</td>
+                    <td>URL de base du serveur TalentFlow</td>
+                </tr>
+                <tr>
+                    <td><code>title</code></td>
+                    <td>string</td>
+                    <td>'💻 Code'</td>
+                    <td>Texte du bouton flottant</td>
+                </tr>
+                <tr>
+                    <td><code>tooltip</code></td>
+                    <td>string</td>
+                    <td>'Ouvrir Live Coding'</td>
+                    <td>Texte au survol du bouton</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- API Section -->
+        <div class="section">
+            <h2>🔌 API JavaScript</h2>
+            
+            <h3 style="color: #666; margin-top: 15px; margin-bottom: 10px;">Méthodes disponibles</h3>
+            
+            <div style="margin-bottom: 20px;">
+                <strong>init(config)</strong>
+                <div class="code-block">// Initialiser le widget avec une configuration
+TalentFlowLivecoding.init({ entretienId: 34 });</div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <strong>open(entretienId)</strong>
+                <div class="code-block">// Ouvrir directement une session live coding
+TalentFlowLivecoding.open(34);</div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <strong>destroy()</strong>
+                <div class="code-block">// Supprimer le widget
+TalentFlowLivecoding.destroy();</div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <strong>getConfig()</strong>
+                <div class="code-block">// Récupérer la configuration actuelle
+var config = TalentFlowLivecoding.getConfig();
+console.log(config.entretienId);</div>
+            </div>
+        </div>
+
+        <!-- Integration Examples Section -->
+        <div class="section">
+            <h2>💻 Exemples d'intégration</h2>
+            
+            <h3 style="color: #666; margin-top: 15px; margin-bottom: 10px;">Microsoft Teams</h3>
+            <div class="code-block">&lt;!-- Dans votre page Teams-hosted --&gt;
+&lt;script src="http://127.0.0.1:8000/js/live-coding-widget.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  // Auto-détecte l'entretien ID depuis les paramètres de query
+  const params = new URLSearchParams(window.location.search);
+  const entretienId = params.get('entretienId');
+  
+  if (entretienId) {
+    TalentFlowLivecoding.init({
+      entretienId: parseInt(entretienId),
+      position: 'bottom-right'
+    });
+  }
+&lt;/script&gt;</div>
+
+            <h3 style="color: #666; margin-top: 20px; margin-bottom: 10px;">Page HTML statique</h3>
+            <div class="code-block">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;script src="http://127.0.0.1:8000/js/live-coding-widget.js"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;Ma réunion de travail&lt;/h1&gt;
+  &lt;p&gt;Discutez et programmez ensemble...&lt;/p&gt;
+  
+  &lt;script&gt;
+    // Initialiser le widget au chargement
+    document.addEventListener('DOMContentLoaded', () => {
+      TalentFlowLivecoding.init({
+        entretienId: 34,
+        position: 'bottom-right'
+      });
+    });
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</div>
+
+            <h3 style="color: #666; margin-top: 20px; margin-bottom: 10px;">Communication avec la popup</h3>
+            <div class="code-block">// Écouter les événements de la popup
+window.addEventListener('message', (event) => {
+    if (event.data.type === 'TALENTFLOW_LIVE_CODING_READY') {
+        console.log('Live Coding démarré pour:', event.data.entretienId);
+        // Faire quelque chose quand le live coding est prêt
+    }
+});</div>
+        </div>
+
+        <!-- Endpoints Section -->
+        <div class="section">
+            <h2>🔗 Endpoints API</h2>
+            
+            <table>
+                <tr>
+                    <th>Endpoint</th>
+                    <th>Méthode</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td><code>/live-coding/test</code></td>
+                    <td>GET</td>
+                    <td>Diagnostic de l'API (public)</td>
+                </tr>
+                <tr>
+                    <td><code>/live-coding/popup/{id}</code></td>
+                    <td>GET</td>
+                    <td>Ouvrir popup live coding (public)</td>
+                </tr>
+                <tr>
+                    <td><code>/mon-entretien/{id}/live-coding</code></td>
+                    <td>GET</td>
+                    <td>Interface live coding (authentifiée)</td>
+                </tr>
+                <tr>
+                    <td><code>/mon-entretien/{id}/live-coding/token</code></td>
+                    <td>GET</td>
+                    <td>Générer token WebSocket (authentifiée)</td>
+                </tr>
+                <tr>
+                    <td><code>/mon-entretien/{id}/live-coding/run</code></td>
+                    <td>POST</td>
+                    <td>Exécuter du code (authentifiée)</td>
+                </tr>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- Load the widget -->
+    <script src="http://127.0.0.1:8000/js/live-coding-widget.js"></script>
+    
+    <script>
+        // Prevent auto-init on this page
+        window.TalentFlowLivecodingAutoInit = false;
+
+        // Custom launch function
+        function launchLiveCoding(entretienId) {
+            TalentFlowLivecoding.open(entretienId);
+        }
+
+        // Listen for popup events
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'TALENTFLOW_LIVE_CODING_READY') {
+                console.log('[Demo] Live Coding popup ready for entretien:', event.data.entretienId);
+            }
+        });
+
+        console.log('%c✅ TalentFlow Live Coding Widget chargé !', 'color: #4caf50; font-size: 14px; font-weight: bold;');
+        console.log('%cUtilisez launchLiveCoding(id) pour ouvrir une session', 'color: #2196F3;');
+    </script>
+</body>
+</html>

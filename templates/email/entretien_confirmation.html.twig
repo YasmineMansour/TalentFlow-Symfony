@@ -61,6 +61,13 @@
       <p>Rejoignez votre entretien en ligne en cliquant sur le bouton ci-dessous&nbsp;:</p>
       <a href="{{ meetUrl }}" class="meet-btn">🎥 Rejoindre l'entretien</a>
       <p style="font-size:12px; color:#888;">Lien : <a href="{{ meetUrl }}" style="color:#1a2a4a;">{{ meetUrl }}</a></p>
+      
+      {# Live Coding Link #}
+      <div style="background: #f8f4ff; border: 2px solid #d4a843; border-radius: 8px; padding: 16px; margin: 20px 0;">
+          <p style="margin-top: 0; font-weight: bold; color: #1a2a4a;"><i style="color: #d4a843;">💻</i> Test live coding</p>
+        <p style="margin: 8px 0; font-size: 14px; color: #333;">Pendant votre entretien, vous ferez un test de codage en temps réel. Accédez directement à la plateforme&nbsp;:</p>
+          <a href="{{ app.request.schemeAndHttpHost ~ path('app_live_coding_join', {'id': entretien.id}) }}" style="display: inline-block; padding: 10px 20px; background: #fbbf24; color: #000; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px;">Ouvrir Live Coding</a>
+      </div>
     {% endif %}
 
     <p>Vous pouvez également consulter votre entretien sur TalentFlow&nbsp;: <a href="{{ app.request.schemeAndHttpHost ~ path('app_mon_entretien', {'id': entretien.id}) }}" style="color:#1a2a4a;">Voir mon entretien</a></p>

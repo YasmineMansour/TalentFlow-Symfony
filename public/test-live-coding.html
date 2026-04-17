@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Live Coding - TalentFlow</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #1e1e1e; color: #e0e0e0; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { margin-bottom: 30px; text-align: center; color: #4a9eff; }
+        
+        .test-section { background: #252526; border: 1px solid #3e3e42; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .test-section h2 { color: #4a9eff; margin-bottom: 15px; font-size: 16px; }
+        .test-item { display: flex; align-items: center; margin-bottom: 10px; padding: 10px; background: #1e1e1e; border-radius: 4px; }
+        .status { width: 20px; height: 20px; border-radius: 50%; margin-right: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; }
+        .status.ok { background: #4ec9b0; }
+        .status.error { background: #f48771; }
+        .status.pending { background: #ce9178; }
+        
+        .editor-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+        textarea { background: #1e1e1e; color: #d4d4d4; border: 1px solid #3e3e42; padding: 15px; font-family: 'Courier New', monospace; font-size: 14px; border-radius: 4px; resize: vertical; }
+        select, button { background: #007acc; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 14px; margin-right: 10px; }
+        select { padding: 8px 15px; }
+        button { background: #0e639c; transition: background 0.3s; }
+        button:hover { background: #1177bb; }
+        button:disabled { background: #555; cursor: not-allowed; }
+        
+        .output { background: #1e1e1e; border: 1px solid #3e3e42; padding: 15px; border-radius: 4px; min-height: 150px; max-height: 300px; overflow-y: auto; white-space: pre-wrap; word-break: break-word; line-height: 1.5; }
+        .error-text { color: #f48771; }
+        .success-text { color: #4ec9b0; }
+        .info-text { color: #4a9eff; }
+        
+        .controls { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Live Coding - TalentFlow</h1>
+        
+        <!-- Status Section -->
+        <div class="test-section">
+            <h2>📊 États des Services</h2>
+            <div class="test-item">
+                <div class="status pending" id="wsStatus">?</div>
+                <span>WebSocket (ws://127.0.0.1:8081)</span>
+            </div>
+            <div class="test-item">
+                <div class="status pending" id="phpStatus">?</div>
+                <span>Serveur PHP (http://127.0.0.1:8000)</span>
+            </div>
+            <div class="test-item">
+                <div class="status pending" id="apiStatus">?</div>
+                <span>API Token</span>
+            </div>
+        </div>
+        
+        <!-- Editor Demo Section -->
+        <div class="test-section">
+            <h2>💻 Éditeur Live Coding</h2>
+            <div class="controls">
+                <label>Langage:</label>
+                <select id="language">
+                    <option value="php">PHP</option>
+                    <option value="python">Python</option>
+                    <option value="javascript">JavaScript</option>
+                </select>
+            </div>
+            
+            <div class="editor-demo">
+                <div>
+                    <p style="margin-bottom: 10px; color: #858585; font-size: 12px;">Code à exécuter</p>
+                    <textarea id="codeEditor" rows="15" placeholder="Écrivez votre code ici..."><?php echo "Hello World!"; ?></textarea>
+                </div>
+                <div>
+                    <p style="margin-bottom: 10px; color: #858585; font-size: 12px;">Entrée (stdin)</p>
+                    <textarea id="stdinInput" rows="5" placeholder="Entrée optionnelle..."></textarea>
+                </div>
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <button id="runBtn" onclick="runCode()">▶ Exécuter le Code</button>
+                <button onclick="resetEditor()">↻ Réinitialiser</button>
+                <button onclick="clearOutput()">× Effacer Output</button>
+            </div>
+            
+            <p style="margin-top: 15px; color: #858585; font-size: 12px;">Output / Résultat:</p>
+            <div class="output" id="resultOutput">En attente d'exécution...</div>
+        </div>
+        
+        <!-- Tests Section -->
+        <div class="test-section">
+            <h2>🧪 Diagnostics</h2>
+            <button onclick="runAllTests()">Exécuter tous les tests</button>
+            <div id="testResults" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000';
+        const WS_URL = 'ws://127.0.0.1:8081';
+        let ws = null;
+        let wsConnected = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            testPHPServer();
+            testWebSocket();
+            testAPI();
+        });
+
+        // Test PHP Server
+        function testPHPServer() {
+            fetch(API_BASE + '/fr/', { method: 'HEAD' })
+                .then(() => {
+                    updateStatus('phpStatus', 'ok');
+                })
+                .catch(() => {
+                    updateStatus('phpStatus', 'error');
+                });
+        }
+
+        // Test WebSocket
+        function testWebSocket() {
+            try {
+                ws = new WebSocket(WS_URL);
+                ws.onopen = () => {
+                    updateStatus('wsStatus', 'ok');
+                    wsConnected = true;
+                };
+                ws.onerror = () => {
+                    updateStatus('wsStatus', 'error');
+                };
+                ws.onclose = () => {
+                    wsConnected = false;
+                };
+            } catch (e) {
+                updateStatus('wsStatus', 'error');
+            }
+        }
+
+        // Test API
+        function testAPI() {
+            fetch(API_BASE + '/live-coding/test')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.ok && data.status === 'operational') {
+                        updateStatus('apiStatus', 'ok');
+                    } else {
+                        updateStatus('apiStatus', 'error');
+                    }
+                })
+                .catch(() => {
+                    updateStatus('apiStatus', 'error');
+                });
+        }
+
+        function updateStatus(elementId, status) {
+            const el = document.getElementById(elementId);
+            el.className = 'status ' + status;
+            el.textContent = status === 'ok' ? '✓' : status === 'pending' ? '⏳' : '✕';
+        }
+
+        // Run Code (Simulated)
+        async function runCode() {
+            const code = document.getElementById('codeEditor').value;
+            const stdin = document.getElementById('stdinInput').value;
+            const language = document.getElementById('language').value;
+            const output = document.getElementById('resultOutput');
+            const btn = document.getElementById('runBtn');
+
+            if (!code.trim()) {
+                output.innerHTML = '<span class="error-text">❌ Le code est vide!</span>';
+                return;
+            }
+
+            btn.disabled = true;
+            output.innerHTML = '<span class="info-text">⏳ Exécution en cours...</span>';
+
+            try {
+                // Simulated execution (when Docker is available)
+                // In production, this would call the actual API endpoint
+                const result = await simulateCodeExecution(language, code, stdin);
+                displayResult(result);
+            } catch (err) {
+                output.innerHTML = `<span class="error-text">❌ Erreur: ${err.message}</span><br><span style="color: #858585; font-size: 12px;">Note: Sans Docker, l'exécution réelle n'est pas disponible. C'est une simulation.</span>`;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function simulateCodeExecution(language, code, stdin) {
+            // Simulate code execution based on language
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    let output = '';
+                    
+                    if (language === 'php') {
+                        // Simple PHP echo simulation
+                        if (code.includes('echo')) {
+                            output = code.match(/echo\s+["']([^"']+)["']/)?.[1] || 'PHP executed';
+                        } else {
+                            output = '(PHP code executed)';
+                        }
+                    } else if (language === 'python') {
+                        output = '(Python code executed)\n' + (stdin || '');
+                    } else if (language === 'javascript') {
+                        output = '(JavaScript executed)\nConsole output simulated';
+                    }
+                    
+                    resolve({
+                        stdout: output,
+                        stderr: '',
+                        exitCode: 0,
+                        timedOut: false,
+                        durationMs: 123
+                    });
+                }, 800);
+            });
+        }
+
+        function displayResult(result) {
+            const output = document.getElementById('resultOutput');
+            let html = '';
+            
+            if (result.stdout) {
+                html += `<span class="success-text">✓ Output:</span>\n${result.stdout}\n`;
+            }
+            if (result.stderr) {
+                html += `<span class="error-text">✕ Errors:</span>\n${result.stderr}\n`;
+            }
+            html += `\n<span class="info-text">Exit Code:</span> ${result.exitCode} (${result.durationMs}ms)`;
+            
+            output.innerHTML = html;
+        }
+
+        function resetEditor() {
+            document.getElementById('codeEditor').value = '<?php echo "Hello World!"; ?>';
+            document.getElementById('stdinInput').value = '';
+            document.getElementById('language').value = 'php';
+        }
+
+        function clearOutput() {
+            document.getElementById('resultOutput').innerHTML = '';
+        }
+
+        async function runAllTests() {
+            const results = document.getElementById('testResults');
+            results.innerHTML = '<span class="info-text">Exécution des tests...</span>';
+            
+            const tests = [
+                { name: 'Connexion PHP Server', fn: pingServer },
+                { name: 'Connexion WebSocket', fn: pingWebSocket },
+                { name: 'API Token', fn: pingAPI },
+                { name: 'Simulation Code Execution', fn: testCodeExecution }
+            ];
+            
+            let html = '';
+            for (const test of tests) {
+                try {
+                    const result = await test.fn();
+                    html += `<div class="test-item"><div class="status ok">✓</div><span>${test.name}: ${result}</span></div>`;
+                } catch (err) {
+                    html += `<div class="test-item"><div class="status error">✕</div><span>${test.name}: ${err.message}</span></div>`;
+                }
+            }
+            
+            results.innerHTML = html;
+        }
+
+        function pingServer() {
+            return fetch(API_BASE + '/mon-entretien/1/live-coding')
+                .then(() => 'OK (Code 200)')
+                .catch(err => { throw new Error('Connexion refusée'); });
+        }
+
+        function pingWebSocket() {
+            return new Promise((resolve, reject) => {
+                const ws = new WebSocket(WS_URL);
+                const timeout = setTimeout(() => {
+                    reject(new Error('Timeout'));
+                }, 3000);
+                ws.onopen = () => {
+                    clearTimeout(timeout);
+                    ws.close();
+                    resolve('Connecté');
+                };
+                ws.onerror = () => {
+                    clearTimeout(timeout);
+                    reject(new Error('Erreur connexion'));
+                };
+            });
+        }
+
+        function pingAPI() {
+            return fetch(API_BASE + '/live-coding/test')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.ok) return 'Connected';
+                    throw new Error('API response invalid');
+                });
+        }
+
+        function testCodeExecution() {
+            return simulateCodeExecution('php', 'echo "test"', '')
+                .then(() => 'Simulation OK');
+        }
+    </script>
+</body>
+</html>

@@ -64,6 +64,12 @@ class Entretien
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
 
+    #[ORM\Column(name: 'reminder_24h_sent_at', type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $reminder24hSentAt = null;
+
+    #[ORM\Column(name: 'reminder_1h_sent_at', type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $reminder1hSentAt = null;
+
     #[ORM\OneToOne(mappedBy: 'entretien', targetEntity: DecisionFinale::class)]
     private ?DecisionFinale $decisionFinale = null;
 
@@ -212,6 +218,30 @@ class Entretien
     public function setDecisionFinale(?DecisionFinale $decisionFinale): static
     {
         $this->decisionFinale = $decisionFinale;
+
+        return $this;
+    }
+
+    public function getReminder24hSentAt(): ?\DateTimeInterface
+    {
+        return $this->reminder24hSentAt;
+    }
+
+    public function setReminder24hSentAt(?\DateTimeInterface $reminder24hSentAt): static
+    {
+        $this->reminder24hSentAt = $reminder24hSentAt;
+
+        return $this;
+    }
+
+    public function getReminder1hSentAt(): ?\DateTimeInterface
+    {
+        return $this->reminder1hSentAt;
+    }
+
+    public function setReminder1hSentAt(?\DateTimeInterface $reminder1hSentAt): static
+    {
+        $this->reminder1hSentAt = $reminder1hSentAt;
 
         return $this;
     }

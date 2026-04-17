@@ -4,6 +4,136 @@
 {% block page_title %}Mon Entretien{% endblock %}
 
 {% block body %}
+
+{# ── Vue Meeting avec Live Coding côte à côte ── #}
+{% if entretien.type == 'EN_LIGNE' and app.request.query.get('showCode') == '1' %}
+<div style="display: flex; gap: 16px; height: calc(100vh - 120px);">
+    
+    {# Colonne Gauche: Infos + Candidat #}
+    <div style="width: 280px; overflow-y: auto; padding-right: 8px;">
+        <div class="tf-card" style="margin-bottom: 16px;">
+            <h3 style="font-size: 1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-user-circle" style="color: var(--tf-gold);"></i> Candidat
+            </h3>
+            <div style="font-weight: 600; margin-bottom: 4px;">{{ entretien.candidature.nomCandidat }}</div>
+            <div style="font-size: 0.85rem; color: var(--tf-gray);">{{ entretien.candidature.postulatePour }}</div>
+            {% if entretien.candidature.email %}
+            <div style="font-size: 0.8rem; color: var(--tf-gray); margin-top: 8px;">📧 {{ entretien.candidature.email }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="tf-card" style="margin-bottom: 16px;">
+            <h3 style="font-size: 1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-calendar-check" style="color: var(--tf-gold);"></i> Détails
+            </h3>
+            <div style="font-size: 0.85rem;">
+                <strong>Date:</strong> {{ entretien.dateHeure ? entretien.dateHeure|date('d/m/Y H:i') : '—' }}<br>
+                <strong>Statut:</strong> <span class="tf-tag-sm tf-tag-blue">{{ entretien.statut }}</span>
+            </div>
+        </div>
+        
+        <div class="tf-card">
+            <a href="{{ entretien.meetUrl }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-info" style="width: 100%; display: block; margin-bottom: 8px;">
+                <i class="fas fa-video"></i> Jitsi directe
+            </a>
+            <a href="?showCode=0" class="btn btn-sm btn-outline-secondary" style="width: 100%; display: block;">
+                <i class="fas fa-times"></i> Quitter mode code
+            </a>
+        </div>
+    </div>
+    
+    {# Colonne Milieu: Jitsi Meet #}
+    <div style="flex: 1; min-width: 0;">
+        <div class="tf-card h-100" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+            <div style="padding: 12px 16px; background: var(--tf-dark-blue); display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-video" style="color: var(--tf-gold);"></i>
+                <span style="font-weight: 600; font-size: 0.95rem;">Jitsi Meet</span>
+                <span class="tf-tag-sm tf-tag-green" style="margin-left: auto;"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> EN DIRECT</span>
+            </div>
+            <iframe
+                src="{{ entretien.meetUrl }}"
+                allow="camera; microphone; fullscreen; display-capture; autoplay"
+                style="flex: 1; border: none; min-height: 400px;"
+                title="Entretien en ligne TalentFlow">
+            </iframe>
+        </div>
+    </div>
+    
+    {# Colonne Droite: Live Coding #}
+    <div style="width: 420px; overflow-y: auto; padding-left: 8px;">
+        <div class="tf-card h-100" style="display: flex; flex-direction: column; padding: 16px;">
+            <h3 style="font-size: 1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-code" style="color: #fbbf24;"></i> Live Coding
+            </h3>
+            
+            <div style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 0.8rem; color: var(--tf-gray); margin-bottom: 6px; font-weight: 600;">Language</label>
+                    <select id="liveCodingLanguage" style="width: 100%; padding: 8px 12px; background: var(--tf-darker); color: var(--tf-white); border: 1px solid var(--tf-border); border-radius: 6px; font-size: 0.85rem;">
+                        <option value="javascript">JavaScript</option>
+                        <option value="python">Python</option>
+                        <option value="php">PHP</option>
+                    </select>
+                </div>
+                
+                <textarea id="liveCodingEditor" style="flex: 1; padding: 12px; background: var(--tf-darker); color: var(--tf-white); border: 1px solid var(--tf-border); border-radius: 6px; font-family: 'Courier New', monospace; font-size: 0.85rem; resize: none; min-height: 250px;">console.log('Hello World');</textarea>
+                
+                <div style="margin-top: 12px; display: flex; gap: 8px;">
+                    <button id="liveCodingRun" style="flex: 1; padding: 10px 16px; background: #fbbf24; color: #000; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                        <i class="fas fa-play"></i> Exécuter
+                    </button>
+                    <button id="liveCodingShare" style="flex: 1; padding: 10px 16px; background: #4a90e2; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                        <i class="fas fa-share"></i> Partager
+                    </button>
+                </div>
+                
+                <div id="liveCodingOutput" style="margin-top: 12px; padding: 12px; background: #1a1a1a; border: 1px solid var(--tf-border); border-radius: 6px; max-height: 150px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 0.8rem; color: #4ade80;">
+                    <div style="color: var(--tf-gray); text-align: center; font-style: italic;">Sortie de code</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('liveCodingRun').addEventListener('click', function() {
+    const code = document.getElementById('liveCodingEditor').value;
+    const language = document.getElementById('liveCodingLanguage').value;
+    const output = document.getElementById('liveCodingOutput');
+    
+    output.innerHTML = '<div style="color: #fbbf24;">▶ Exécution...</div>';
+    
+    fetch('{{ path("app_live_coding_run", {"id": entretien.id}) }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({language, code, stdin: ''})
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) {
+            output.innerHTML = '<div style="color: #ef4444;">❌ ' + (data.error || 'Erreur') + '</div>';
+        } else {
+            output.innerHTML = '<div>' + (data.stdout || '(pas de sortie)') + '</div>';
+            if (data.stderr) output.innerHTML += '<div style="color: #fbbf24; margin-top: 8px;">⚠ ' + data.stderr + '</div>';
+        }
+    })
+    .catch(e => output.innerHTML = '<div style="color: #ef4444;">❌ Erreur réseau</div>');
+});
+
+document.getElementById('liveCodingShare').addEventListener('click', function() {
+    const code = document.getElementById('liveCodingEditor').value;
+    fetch('{{ path("app_live_coding_token", {"id": entretien.id}) }}')
+        .then(r => r.json())
+        .then(d => {
+            const url = '{{ entretien.meetUrl }}?code=' + encodeURIComponent(code);
+            const text = 'Code partagé: ' + code.substring(0, 30) + '...';
+            alert('Partage du code:\n' + url);
+        });
+});
+</script>
+
+{% else %}
+
 <div class="row justify-content-center g-4">
 
     {# ── Colonne infos ── #}
@@ -51,9 +181,20 @@
 
             {% if entretien.type == 'EN_LIGNE' %}
             <hr style="border-color: var(--tf-border);">
-            <a href="{{ entretien.meetUrl }}" target="_blank" rel="noopener noreferrer"
-               class="btn-gold d-block text-center" style="margin-top:12px;">
-                <i class="fas fa-external-link-alt"></i> Ouvrir dans un onglet
+            <div style="padding: 16px; background: linear-gradient(135deg, rgba(251,191,36,.15), rgba(74,144,226,.15)); border: 2px solid var(--tf-gold); border-radius: 10px; margin-bottom: 12px;">
+                <div style="font-size: 0.8rem; color: var(--tf-gray); margin-bottom: 8px; font-weight: 600;">
+                    <i class="fas fa-video" style="color: var(--tf-gold);"></i> REJOINDRE LA RÉUNION
+                </div>
+                <a href="{{ entretien.meetUrl }}" target="_blank" rel="noopener noreferrer"
+                   class="btn-gold d-block text-center" style="margin: 0; padding: 14px; font-weight: 700;">
+                    <i class="fas fa-video-camera"></i> REJOINDRE JITSI MEET
+                </a>
+            </div>
+            <a href="{{ path('app_live_coding_room', {'id': entretien.id}) }}" class="btn-outline-gold d-block text-center" style="display: block; text-align: center; padding: 12px 16px; background: transparent; color: var(--tf-gold); border: 2px solid var(--tf-gold); border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.2s; margin-top: 8px;">
+                <i class="fas fa-code"></i> 💻 Ouvrir Live Coding
+            </a>
+            <a href="?showCode=1" class="btn-outline-primary d-block text-center" style="display: block; text-align: center; padding: 12px 16px; background: transparent; color: #4a90e2; border: 2px solid #4a90e2; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.2s; margin-top: 8px;">
+                <i class="fas fa-columns"></i> Mode Code
             </a>
             {% endif %}
 
@@ -70,12 +211,19 @@
     <div class="col-lg-8">
         {% if entretien.type == 'EN_LIGNE' %}
         <div class="tf-card h-100" style="padding:0; overflow:hidden; position:relative; min-height:500px;">
-            <div style="padding:16px 20px; background: var(--tf-dark-blue); display:flex; align-items:center; gap:12px;">
-                <i class="fas fa-video" style="color:var(--tf-gold); font-size:1.2rem;"></i>
-                <span style="font-weight:600;">Entretien en ligne – Jitsi Meet</span>
-                <span class="tf-tag-sm tf-tag-green" style="margin-left:auto;">
-                    <i class="fas fa-circle" style="font-size:0.5rem;"></i> EN DIRECT
-                </span>
+            <div style="padding:16px 20px; background: var(--tf-dark-blue); display:flex; align-items:center; gap:12px; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <i class="fas fa-video" style="color:var(--tf-gold); font-size:1.2rem;"></i>
+                    <span style="font-weight:600;">Entretien en ligne – Jitsi Meet</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <a href="{{ path('app_live_coding_room', {'id': entretien.id}) }}" style="background: #4a90e2; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; white-space: nowrap;" title="Ouvrir l'éditeur de code collaboratif">
+                        <i class="fas fa-code"></i> Live Code
+                    </a>
+                    <span class="tf-tag-sm tf-tag-green" style="margin-left: auto;">
+                        <i class="fas fa-circle" style="font-size:0.5rem;"></i> EN DIRECT
+                    </span>
+                </div>
             </div>
             <iframe
                 src="{{ entretien.meetUrl }}"
@@ -112,4 +260,5 @@
     </div>
 
 </div>
+{% endif %}
 {% endblock %}

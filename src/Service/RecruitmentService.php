@@ -50,6 +50,41 @@ class RecruitmentService
     }
 
     /**
+     * Envoie un rappel d'entretien (24h ou 1h avant) au candidat.
+     */
+    public function sendEntretienReminder(Entretien $entretien, string $reminderType): void
+    {
+        $candidature = $this->candidatureRepository->find($entretien->getCandidatureId() ?? 0);
+        if ($candidature === null) {
+            return;
+        }
+
+        $recipientEmail = $candidature->getEmail() ?? $candidature->getCandidat()?->getEmail();
+        if ($recipientEmail === null) {
+            return;
+        }
+
+        $label = $reminderType === '1h' ? '1 heure' : '24 heures';
+        $subject = sprintf('Rappel: entretien dans %s - TalentFlow', $label);
+
+        $html = $this->twig->render('email/entretien_reminder.html.twig', [
+            'entretien' => $entretien,
+            'candidature' => $candidature,
+            'meetUrl' => $entretien->getType() === 'EN_LIGNE' ? $entretien->getMeetUrl() : null,
+            'reminderType' => $reminderType,
+            'reminderLabel' => $label,
+        ]);
+
+        $this->mailer->send(
+            (new Email())
+                ->from(new Address('nouralouini004@gmail.com', 'TalentFlow RH'))
+                ->to($recipientEmail)
+                ->subject($subject)
+                ->html($html)
+        );
+    }
+
+    /**
      * Envoie un email de résultat au candidat après enregistrement d'une décision (ACCEPTE / REFUSE).
      */
     public function sendDecisionNotification(DecisionFinale $decision): void

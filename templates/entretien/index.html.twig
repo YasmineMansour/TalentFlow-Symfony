@@ -167,10 +167,14 @@
                     <span><i class="fas fa-comments"></i> Com: {{ entretien.noteCommunication ?? '—' }}</span>
                 </div>
                 {% if entretien.type == 'EN_LIGNE' %}
-                <div style="margin: 8px 0;">
+                <div style="margin: 8px 0; display: flex; gap: 8px;">
                     <a href="{{ entretien.meetUrl }}" target="_blank" rel="noopener noreferrer"
-                       class="btn btn-sm btn-outline-info" style="font-size:0.8rem;">
+                       class="btn btn-sm btn-outline-info" style="font-size:0.8rem; flex: 1;">
                         <i class="fas fa-video"></i> Rejoindre Meet
+                    </a>
+                    <a href="{{ path('app_live_coding_room', {'id': entretien.id}) }}"
+                       class="btn btn-sm btn-outline-primary" style="font-size:0.8rem; flex: 1;">
+                        <i class="fas fa-code"></i> Live Code
                     </a>
                 </div>
                 {% endif %}
@@ -178,6 +182,9 @@
                     {% if entretien.type == 'EN_LIGNE' %}
                     <a href="{{ path('app_mon_entretien', {'id': entretien.id}) }}" class="btn btn-sm btn-outline-info" title="Voir la salle Meet">
                         <i class="fas fa-video"></i>
+                    </a>
+                    <a href="{{ path('app_live_coding_room', {'id': entretien.id}) }}" class="btn btn-sm btn-outline-primary" title="Ouvrir Live Coding">
+                        <i class="fas fa-code"></i> Live Code
                     </a>
                     {% endif %}
                     <a href="{{ path('app_entretien_edit', {'id': entretien.id}) }}" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i> Modifier</a>

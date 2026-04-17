@@ -1,0 +1,434 @@
+{% extends is_granted('ROLE_ADMIN') ? 'base_dashboard.html.twig' : 'base_navbar.html.twig' %}
+
+{% block title %}Live Coding - Entretien #{{ entretien.id }}{% endblock %}
+{% block page_title %}Live Coding Collaboratif{% endblock %}
+
+{% block body %}
+<style>
+    .lc-container { display: grid; grid-template-columns: 1fr 320px; gap: 12px; max-width: 1600px; margin: 0 auto; }
+    @media (max-width: 1024px) { .lc-container { grid-template-columns: 1fr; } .lc-sidebar { display: none; } }
+    
+    .lc-main { display: flex; flex-direction: column; gap: 12px; }
+    .lc-editor-panel { flex: 1; display: flex; flex-direction: column; gap: 8px; background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 14px; }
+    .lc-output-panel { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 14px; max-height: 200px; overflow-y: auto; }
+    .lc-sidebar { background: #0f172a; border: 1px solid #334155; border-radius: 10px; display: flex; flex-direction: column; font-size: 0.85rem; }
+    
+    .lc-tab-bar { display: flex; gap: 8px; border-bottom: 1px solid #334155; }
+    .lc-tab { padding: 8px 12px; cursor: pointer; border: none; background: transparent; color: #94a3b8; font-size: 0.85rem; transition: all 0.2s; border-bottom: 2px solid transparent; }
+    .lc-tab.active { color: #fbbf24; border-bottom-color: #fbbf24; background: rgba(251, 191, 36, 0.05); }
+    
+    .lc-chat-area { flex: 1; display: flex; flex-direction: column; padding: 12px; overflow: hidden; }
+    .lc-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+    .lc-message { padding: 8px; background: #1e293b; border-radius: 6px; border-left: 3px solid #4a90e2; font-size: 0.8rem; }
+    .lc-message-user { font-weight: 600; color: #fbbf24; }
+    .lc-message-time { color: #64748b; font-size: 0.75rem; }
+    .lc-message-text { color: #cbd5e1; margin-top: 2px; word-break: break-word; }
+    
+    .lc-typing { color: #64748b; font-size: 0.8rem; font-style: italic; padding: 4px 8px; }
+    .lc-chat-input-area { display: flex; gap: 6px; }
+    .lc-chat-input { flex: 1; padding: 8px; background: #1e293b; border: 1px solid #334155; border-radius: 6px; color: #e2e8f0; font-size: 0.8rem; }
+    .lc-chat-input:focus { outline: none; border-color: #fbbf24; }
+    
+    .lc-history-item { padding: 8px; border-left: 2px solid #334155; cursor: pointer; transition: all 0.2s; }
+    .lc-history-item:hover { background: #1e293b; border-left-color: #fbbf24; }
+    .lc-history-time { color: #64748b; font-size: 0.75rem; }
+    .lc-history-preview { color: #cbd5e1; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+    
+    .lc-presence { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-bottom: 1px solid #334155; }
+    .lc-presence-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 0.8rem; }
+    .lc-presence-dot { width: 8px; height: 8px; border-radius: 50%; background: #4ec9b0; }
+    .lc-presence-meta { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .lc-presence-name { color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lc-presence-role { color: #94a3b8; font-size: 0.75rem; }
+    .lc-presence-state { color: #fbbf24; font-size: 0.72rem; }
+    .lc-observer-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; margin-bottom: 12px; background: rgba(74, 144, 226, 0.12); border: 1px solid rgba(74, 144, 226, 0.35); border-radius: 8px; color: #cbd5e1; font-size: 0.82rem; }
+    
+    .code-editor { width: 100%; min-height: 450px; background: #020617; color: #e2e8f0; border: 1px solid #334155; border-radius: 8px; padding: 12px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; line-height: 1.5; resize: vertical; }
+    
+    .runner-controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+    .runner-controls > div { display: flex; flex-direction: column; gap: 4px; }
+    .runner-controls label { font-size: 0.8rem; color: #94a3b8; }
+    .runner-controls select, .runner-controls input { padding: 8px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #e2e8f0; }
+    
+    .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #1e293b; border: 1px solid #334155; border-radius: 6px; font-size: 0.8rem; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .status-dot.connected { background: #4ec9b0; }
+    .status-dot.disconnected { background: #f87171; }
+    
+    /* Button Styles */
+    button { outline: none; }
+    #run-code-btn:hover { background: #f3ad0a !important; transform: scale(1.02); box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3); }
+    #run-code-btn:active { transform: scale(0.98); }
+    #run-code-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    
+    #chat-send:hover { background: #357abd !important; transform: scale(1.02); }
+    #chat-send:active { transform: scale(0.98); }
+</style>
+
+<div class="lc-container">
+    <!-- Main Editor -->
+    <div class="lc-main">
+        <div class="tf-card" style="padding: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <div>
+                    <h2 class="tf-title" style="margin: 0;"><i class="fas fa-code"></i> Live Coding Collaboratif</h2>
+                    <div style="color: #94a3b8; font-size: 0.8rem; margin-top: 4px;">
+                        Entretien #{{ entretien.id }} | {{ entretien.dateHeure ? entretien.dateHeure|date('d/m/Y H:i') : '—' }}
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div class="status-badge">
+                        <div class="status-dot disconnected" id="ws-status-dot"></div>
+                        <span id="ws-status-text">Connexion...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lc-editor-panel">
+                {% if is_granted('ROLE_RH') %}
+                <div class="lc-observer-banner">
+                    <span><i class="fas fa-eye"></i> Mode RH: vous voyez le code du candidat en temps reel.</span>
+                    <span id="active-editor-label" style="color: #fbbf24; font-weight: 600;">En attente...</span>
+                </div>
+                {% endif %}
+
+                <div class="runner-controls">
+                    <div style="min-width: 150px;">
+                        <label for="runner-language">Langage</label>
+                        <select id="runner-language">
+                            <option value="php">PHP</option>
+                            <option value="python">Python</option>
+                            <option value="javascript">JavaScript</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label for="runner-stdin">STDIN</label>
+                        <input id="runner-stdin" type="text" placeholder="Entrée optionnelle...">
+                    </div>
+                    <div>
+                        <button id="run-code-btn" style="min-width: 120px; padding: 10px 16px; background: #fbbf24; color: #000; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s;"><i class="fas fa-play"></i> Exécuter</button>
+                    </div>
+                </div>
+
+                <textarea id="live-code-editor" spellcheck="false" class="code-editor">// Écrivez votre code ici...</textarea>
+
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #64748b;">
+                    <span id="last-sync">Synchro: —</span>
+                    <span><strong id="presence-count">0</strong> participant(s)</span>
+                </div>
+            </div>
+
+            <!-- Output Section -->
+            <div style="margin-top: 12px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <strong style="font-size: 0.9rem;">Output</strong>
+                    <span id="runner-meta" style="font-size: 0.8rem; color: #64748b;">Aucune exécution</span>
+                </div>
+                <pre id="runner-output" class="lc-output-panel" style="background: #020617; margin: 0;"></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="lc-sidebar">
+        <!-- Presence Tab -->
+        <div class="lc-tab-bar">
+            <button class="lc-tab active" data-tab="chat"><i class="fas fa-comments"></i> Chat</button>
+            <button class="lc-tab" data-tab="history"><i class="fas fa-history"></i> Historique</button>
+        </div>
+
+        <!-- Chat Tab -->
+        <div id="tab-chat" class="lc-chat-area">
+            <div class="lc-presence" id="presence-list"></div>
+            <div class="lc-messages" id="chat-messages"></div>
+            <div id="typing-indicator" class="lc-typing" style="display: none;"></div>
+            <div class="lc-chat-input-area">
+                <input id="chat-input" type="text" placeholder="Message..." class="lc-chat-input" maxlength="100">
+                <button id="chat-send" style="padding: 8px 12px; min-width: 50px; background: #4a90e2; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s;">Envoyer</button>
+            </div>
+        </div>
+
+        <!-- History Tab -->
+        <div id="tab-history" class="lc-chat-area" style="display: none; padding: 12px;">
+            <div id="history-list" style="flex: 1; overflow-y: auto;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const editor = document.getElementById('live-code-editor');
+    const wsStatusText = document.getElementById('ws-status-text');
+    const wsStatusDot = document.getElementById('ws-status-dot');
+    const presenceEl = document.getElementById('presence-count');
+    const presenceList = document.getElementById('presence-list');
+    const syncEl = document.getElementById('last-sync');
+    const runBtn = document.getElementById('run-code-btn');
+    const languageEl = document.getElementById('runner-language');
+    const stdinEl = document.getElementById('runner-stdin');
+    const outputEl = document.getElementById('runner-output');
+    const runnerMetaEl = document.getElementById('runner-meta');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const chatSend = document.getElementById('chat-send');
+    const typingIndicator = document.getElementById('typing-indicator');
+    const historyList = document.getElementById('history-list');
+    const tabs = document.querySelectorAll('.lc-tab');
+    const activeEditorLabel = document.getElementById('active-editor-label');
+
+    let ws = null;
+    let ready = false;
+    let applyingRemote = false;
+    let debounceTimer = null;
+    let typingTimer = null;
+    const codeVersions = [];
+    let currentUser = 'Participant';
+    let currentRoleLabel = 'Participant';
+
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    // Tab switching
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            document.querySelectorAll('[id^="tab-"]').forEach(t => t.style.display = 'none');
+            document.getElementById('tab-' + tab.dataset.tab).style.display = 'flex';
+        });
+    });
+
+    function setWsStatus(connected) {
+        if (connected) {
+            wsStatusDot.classList.remove('disconnected');
+            wsStatusDot.classList.add('connected');
+            wsStatusText.textContent = 'Connecté';
+        } else {
+            wsStatusDot.classList.remove('connected');
+            wsStatusDot.classList.add('disconnected');
+            wsStatusText.textContent = 'Déconnecté';
+        }
+    }
+
+    function markSynced() {
+        syncEl.textContent = 'Synchro: ' + new Date().toLocaleTimeString('fr-FR');
+    }
+
+    function addChatMessage(userName, message, timestamp) {
+        const msgEl = document.createElement('div');
+        msgEl.className = 'lc-message';
+        msgEl.innerHTML = `
+            <div class="lc-message-user">${escapeHtml(userName)} <span class="lc-message-time">${escapeHtml(timestamp)}</span></div>
+            <div class="lc-message-text">${escapeHtml(message)}</div>
+        `;
+        chatMessages.appendChild(msgEl);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function renderPresence(users) {
+        if (!Array.isArray(users) || users.length === 0) {
+            presenceList.innerHTML = '<div style="color:#64748b; font-size:0.8rem;">Aucun participant connecte.</div>';
+            return;
+        }
+
+        presenceList.innerHTML = users.map((user) => `
+            <div class="lc-presence-item">
+                <div class="lc-presence-meta">
+                    <span class="lc-presence-dot"></span>
+                    <div>
+                        <div class="lc-presence-name">${escapeHtml(user.userName || 'Participant')}</div>
+                        <div class="lc-presence-role">${escapeHtml(user.roleLabel || 'Participant')}</div>
+                    </div>
+                </div>
+                <div class="lc-presence-state">${user.isTyping ? 'ecrit...' : 'en ligne'}</div>
+            </div>
+        `).join('');
+    }
+
+    function setActiveEditor(name, time) {
+        if (!activeEditorLabel) {
+            return;
+        }
+
+        activeEditorLabel.textContent = name ? `Derniere modification: ${name}${time ? ' a ' + time : ''}` : 'En attente...';
+    }
+
+    function saveCodeVersion() {
+        codeVersions.push({
+            code: editor.value,
+            timestamp: new Date().toLocaleTimeString('fr-FR'),
+            size: editor.value.length
+        });
+        updateHistoryDisplay();
+    }
+
+    function updateHistoryDisplay() {
+        historyList.innerHTML = codeVersions.map((v, i) => `
+            <div class="lc-history-item" onclick="loadVersion(${i})">
+                <div class="lc-history-time">${v.timestamp}</div>
+                <div class="lc-history-preview">${v.size} caractères</div>
+            </div>
+        `).join('');
+    }
+
+    window.loadVersion = function(index) {
+        if (codeVersions[index]) {
+            applyingRemote = true;
+            editor.value = codeVersions[index].code;
+            applyingRemote = false;
+        }
+    };
+
+    async function runCode() {
+        runBtn.disabled = true;
+        outputEl.textContent = 'Exécution en cours...';
+        runnerMetaEl.textContent = 'Exécution...';
+
+        try {
+            const response = await fetch('{{ path('app_live_coding_run', {'id': entretien.id}) }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    language: languageEl.value,
+                    code: editor.value,
+                    stdin: stdinEl.value
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok || data.ok === false) {
+                outputEl.textContent = data.error || 'Erreur d exécution';
+                runnerMetaEl.textContent = 'Erreur';
+                return;
+            }
+
+            let output = '';
+            if (data.stdout) output += data.stdout + '\n';
+            if (data.stderr) output += 'Error:\n' + data.stderr + '\n';
+            if (!output) output = '(Aucune sortie)';
+            
+            outputEl.textContent = output.trim();
+            runnerMetaEl.textContent = `exit=${data.exitCode} | ${data.durationMs}ms${data.timedOut ? ' | timeout' : ''}${data.engine ? ' | ' + data.engine : ''}`;
+        } catch (error) {
+            outputEl.textContent = 'Erreur: Runner indisponible';
+            runnerMetaEl.textContent = 'Erreur';
+        } finally {
+            runBtn.disabled = false;
+        }
+    }
+
+    async function boot() {
+        try {
+            const tokenResp = await fetch('{{ path('app_live_coding_token', {'id': entretien.id}) }}');
+            if (!tokenResp.ok) {
+                setWsStatus(false);
+                return;
+            }
+
+            const auth = await tokenResp.json();
+            if (auth.initialCode) editor.value = auth.initialCode;
+            currentUser = auth.userName || 'Participant';
+            currentRoleLabel = auth.roleLabel || 'Participant';
+
+            ws = new WebSocket(auth.wsUrl || '{{ wsUrl }}');
+
+            ws.onopen = () => {
+                setWsStatus(true);
+                ws.send(JSON.stringify({
+                    type: 'auth',
+                    token: auth.token,
+                    userName: currentUser,
+                    roleLabel: currentRoleLabel
+                }));
+            };
+
+            ws.onclose = () => {
+                ready = false;
+                setWsStatus(false);
+            };
+
+            ws.onerror = () => setWsStatus(false);
+
+            ws.onmessage = (event) => {
+                let msg;
+                try { msg = JSON.parse(event.data); } catch (e) { return; }
+
+                if (msg.type === 'auth_ok') {
+                    ready = true;
+                    markSynced();
+                    saveCodeVersion();
+                    setActiveEditor(msg.userName || currentUser, null);
+                } else if (msg.type === 'code_update' && msg.code !== editor.value) {
+                    applyingRemote = true;
+                    editor.value = msg.code;
+                    applyingRemote = false;
+                    markSynced();
+                    saveCodeVersion();
+                    setActiveEditor(msg.userName || 'Participant', msg.updatedAt || null);
+                } else if (msg.type === 'presence') {
+                    presenceEl.textContent = msg.count || 0;
+                    renderPresence(msg.users || []);
+                } else if (msg.type === 'chat_message') {
+                    addChatMessage(msg.userName, msg.message, msg.timestamp);
+                } else if (msg.type === 'typing_status') {
+                    if (Array.isArray(msg.users) && msg.users.length > 0) {
+                        typingIndicator.textContent = msg.users.map(u => u.userName).join(', ') + ' tape...';
+                        typingIndicator.style.display = 'block';
+                    } else {
+                        typingIndicator.style.display = 'none';
+                    }
+                }
+            };
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    // Event listeners
+    editor.addEventListener('input', () => {
+        if (applyingRemote) return;
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            if (ws && ready) {
+                ws.send(JSON.stringify({ type: 'code_update', code: editor.value }));
+                markSynced();
+                saveCodeVersion();
+                setActiveEditor(currentUser, new Date().toLocaleTimeString('fr-FR'));
+            }
+        }, 300);
+
+        if (!typingTimer) {
+            ws?.send(JSON.stringify({ type: 'typing_start' }));
+        }
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => {
+            ws?.send(JSON.stringify({ type: 'typing_end' }));
+            typingTimer = null;
+        }, 2000);
+    });
+
+    runBtn.addEventListener('click', runCode);
+
+    chatSend.addEventListener('click', () => {
+        const msg = chatInput.value.trim();
+        if (msg && ws && ready) {
+            ws.send(JSON.stringify({ type: 'chat_message', message: msg }));
+            addChatMessage(currentUser, msg, new Date().toLocaleTimeString('fr-FR'));
+            chatInput.value = '';
+        }
+    });
+
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') chatSend.click();
+    });
+
+    boot();
+})();
+</script>
+{% endblock %}

@@ -14,6 +14,15 @@ services:
       # - ./docker/db/data:/var/lib/postgresql/data:rw
 ###< doctrine/doctrine-bundle ###
 
+  code_runner:
+    build:
+      context: .
+      dockerfile: docker/code-runner/Dockerfile
+    environment:
+      RUNNER_HOST: 0.0.0.0
+      RUNNER_PORT: 9001
+      RUNNER_TIMEOUT_MS: 5000
+
 volumes:
 ###> doctrine/doctrine-bundle ###
   database_data:
