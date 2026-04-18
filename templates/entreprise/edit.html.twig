@@ -16,6 +16,11 @@
             </div>
             <div class="col-md-6 mb-3">
                 {{ form_row(form.adresse) }}
+                <div id="country-detect-result" style="display:none; margin-top: 0.5rem; padding: 0.5rem 0.75rem; background: rgba(212,168,67,0.06); border: 1px solid var(--tf-border); border-radius: 8px; font-size: 0.85rem;">
+                    <span id="detect-flag" style="font-size: 1.3rem;"></span>
+                    <span id="detect-name" style="color: var(--tf-gold); font-weight: 600;"></span>
+                    <span style="color: var(--tf-gray);"> — <i class="fas fa-coins"></i> <span id="detect-currency"></span> · <span id="detect-code"></span></span>
+                </div>
             </div>
         </div>
         <div class="row">
@@ -30,7 +35,7 @@
             {{ form_row(form.description) }}
         </div>
         <div class="mb-3">
-            {{ form_row(form.logo) }}
+            {{ form_row(form.logoFile) }}
         </div>
 
         <div class="d-flex justify-content-between mt-3">
@@ -39,4 +44,29 @@
         </div>
     </div>
 {{ form_end(form) }}
+
+<script>
+(function() {
+    const adresseInput = document.getElementById('entreprise_adresse');
+    if (!adresseInput) return;
+    let timer;
+    function detectCountry() {
+        const val = adresseInput.value.trim();
+        if (val.length < 3) { document.getElementById('country-detect-result').style.display = 'none'; return; }
+        fetch('/api/country/detect?localisation=' + encodeURIComponent(val))
+            .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+            .then(data => {
+                document.getElementById('detect-flag').textContent = data.flag;
+                document.getElementById('detect-name').textContent = data.name;
+                document.getElementById('detect-capital').textContent = data.capital;
+                document.getElementById('detect-currency').textContent = data.currency;
+                document.getElementById('detect-code').textContent = data.code;
+                document.getElementById('country-detect-result').style.display = 'block';
+            })
+            .catch(() => { document.getElementById('country-detect-result').style.display = 'none'; });
+    }
+    adresseInput.addEventListener('input', function() { clearTimeout(timer); timer = setTimeout(detectCountry, 500); });
+    detectCountry();
+})();
+</script>
 {% endblock %}

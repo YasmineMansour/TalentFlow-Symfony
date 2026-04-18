@@ -542,18 +542,38 @@
                 {% if is_granted('ROLE_RH') or is_granted('ROLE_ADMIN') %}
                 <div class="tf-sidebar-section">Recrutement</div>
                 <li>
-                    <a href="#">
+                    <a href="{{ path('offre_index') }}" class="{% if 'offre' in app.request.attributes.get('_route') %}active{% endif %}">
                         <i class="fas fa-clipboard-list"></i> Offres d'emploi
                     </a>
                 </li>
                 <li>
-                    <a href="#">
+                    <a href="{{ path('app_candidature_index') }}" class="{% if 'app_candidature' in app.request.attributes.get('_route') %}active{% endif %}">
                         <i class="fas fa-file-alt"></i> Candidatures
                     </a>
                 </li>
                 <li>
-                    <a href="#">
+                    <a href="{{ path('app_entretien_index') }}" class="{% if 'app_entretien' in app.request.attributes.get('_route') %}active{% endif %}">
                         <i class="fas fa-calendar-check"></i> Entretiens
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_decision_finale_index') }}" class="{% if 'app_decision_finale' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-scale-balanced"></i> Décisions
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('avantage_index') }}" class="{% if 'avantage' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-gift"></i> Avantages
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('categorie_index') }}" class="{% if 'categorie' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-tags"></i> Catégories
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('entreprise_index') }}" class="{% if 'entreprise' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-building"></i> Entreprises
                     </a>
                 </li>
                 {% endif %}

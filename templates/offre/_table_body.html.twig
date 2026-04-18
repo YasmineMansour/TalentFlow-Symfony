@@ -8,7 +8,12 @@
         {% endif %}
     </div>
     <div class="offre-card-company">
-        <i class="fas fa-building"></i> {{ item.offre.entreprise ? item.offre.entreprise.nom : '—' }}
+        {% if item.offre.entreprise and item.offre.entreprise.logo %}
+            <img src="{{ asset('uploads/logos/' ~ item.offre.entreprise.logo) }}" alt="" style="width:20px;height:20px;border-radius:4px;object-fit:cover;vertical-align:middle;margin-right:4px;">
+        {% else %}
+            <i class="fas fa-building"></i>
+        {% endif %}
+        {{ item.offre.entreprise ? item.offre.entreprise.nom : '—' }}
     </div>
     <div class="offre-card-meta">
         <span><i class="fas fa-map-marker-alt"></i> {{ item.offre.localisation ?? '—' }}</span>

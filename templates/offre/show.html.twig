@@ -26,8 +26,27 @@
         <div class="col-md-6">
             <p><strong style="color: var(--tf-gold);">Description :</strong></p>
             <p style="color: var(--tf-gray);">{{ offre.description ?? 'Non renseignée' }}</p>
-            <p><strong style="color: var(--tf-gold);">Localisation :</strong> {{ offre.localisation ?? 'Non renseignée' }}</p>
-            <p><strong style="color: var(--tf-gold);">Entreprise :</strong> {{ offre.entreprise ? offre.entreprise.nom : 'Non renseignée' }}</p>
+            <p><strong style="color: var(--tf-gold);">Localisation :</strong> {{ offre.localisation ?? 'Non renseignée' }} <span id="country-flag-offre"></span></p>
+            <div id="country-info-offre" style="display:none; margin-top: 0.5rem; margin-bottom: 0.5rem; padding: 0.75rem; background: rgba(212,168,67,0.06); border: 1px solid var(--tf-border); border-radius: 10px;">
+                <div style="display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
+                    <span id="offre-country-flag-big" style="font-size: 2rem;"></span>
+                    <div>
+                        <div style="color: var(--tf-gold); font-weight: 600;" id="offre-country-name"></div>
+                        <div style="color: var(--tf-gray); font-size: 0.82rem;">
+                            <span><i class="fas fa-coins"></i> <span id="offre-country-currency"></span></span> &nbsp;
+                            <span><i class="fas fa-globe"></i> <span id="offre-country-code"></span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p><strong style="color: var(--tf-gold);">Entreprise :</strong>
+                {% if offre.entreprise %}
+                    {% if offre.entreprise.logo %}<img src="{{ asset('uploads/logos/' ~ offre.entreprise.logo) }}" alt="" style="width:22px;height:22px;border-radius:5px;object-fit:cover;vertical-align:middle;margin-right:4px;">{% endif %}
+                    {{ offre.entreprise.nom }}
+                {% else %}
+                    Non renseignée
+                {% endif %}
+            </p>
             <p><strong style="color: var(--tf-gold);">Catégorie :</strong> {{ offre.categorie ? offre.categorie.nom : 'Non renseignée' }}</p>
         </div>
         <div class="col-md-6">
@@ -43,6 +62,73 @@
                 {% endif %}
             </p>
             <p><strong style="color: var(--tf-gold);">Salaire :</strong> {{ offre.salaireRange }}</p>
+
+            {# --- Conversion Multi-Devises --- #}
+            {% if offre.salaireMin or offre.salaireMax %}
+            <div id="currency-converter" class="mt-2 p-3" style="background: var(--tf-dark-blue, #1a1a2e); border: 1px solid var(--tf-border, #333); border-radius: 10px;">
+                <label style="color: var(--tf-gold); font-weight: 600; font-size: 0.9rem;">
+                    <i class="fas fa-exchange-alt"></i> Convertir en :
+                </label>
+                <select id="currency-select" class="form-select form-select-sm mt-1" style="max-width: 250px; background: #16213e; color: #fff; border-color: var(--tf-border, #333);">
+                    <option value="">-- Choisir une devise --</option>
+                </select>
+                <div id="currency-result" class="mt-2" style="display:none;">
+                    <span id="converted-salary" style="color: #2ecc71; font-weight: 700; font-size: 1.05rem;"></span>
+                    <br>
+                    <small id="currency-rate-info" style="color: var(--tf-gray, #aaa);"></small>
+                </div>
+            </div>
+            <script>
+            (function() {
+                const salaireMin = {{ offre.salaireMin ?? 'null' }};
+                const salaireMax = {{ offre.salaireMax ?? 'null' }};
+                const select = document.getElementById('currency-select');
+                const resultDiv = document.getElementById('currency-result');
+                const convertedEl = document.getElementById('converted-salary');
+                const rateInfoEl = document.getElementById('currency-rate-info');
+
+                fetch('/api/currency/rates')
+                    .then(r => r.json())
+                    .then(data => {
+                        Object.entries(data.currencies).forEach(([code, label]) => {
+                            const opt = document.createElement('option');
+                            opt.value = code;
+                            opt.textContent = code + ' - ' + label;
+                            select.appendChild(opt);
+                        });
+                    });
+
+                select.addEventListener('change', function() {
+                    if (!this.value) { resultDiv.style.display = 'none'; return; }
+                    const params = new URLSearchParams({ to: this.value });
+                    if (salaireMin !== null) params.set('min', salaireMin);
+                    if (salaireMax !== null) params.set('max', salaireMax);
+
+                    fetch('/api/currency/convert-range?' + params)
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.error) { convertedEl.textContent = data.error; rateInfoEl.textContent = ''; }
+                            else {
+                                let text = '';
+                                if (data.min !== null && data.max !== null) {
+                                    text = data.min.toLocaleString('fr-FR') + ' – ' + data.max.toLocaleString('fr-FR') + ' ' + data.currency;
+                                } else if (data.max !== null) {
+                                    text = data.max.toLocaleString('fr-FR') + ' ' + data.currency;
+                                } else {
+                                    text = data.min.toLocaleString('fr-FR') + ' ' + data.currency;
+                                }
+                                convertedEl.textContent = text;
+                                rateInfoEl.textContent = 'Taux : 1 DT = ' + data.rate + ' ' + data.currency +
+                                    (data.source === 'api' ? ' (taux réel)' : ' (taux indicatif)');
+                            }
+                            resultDiv.style.display = 'block';
+                        });
+                });
+            })();
+            </script>
+            {% endif %}
+            {# --- Fin Conversion --- #}
+
             <p><strong style="color: var(--tf-gold);">Active :</strong> {{ offre.active ? 'Oui' : 'Non' }}</p>
         </div>
     </div>
@@ -150,4 +236,23 @@
     </form>
     {% endif %}
 </div>
+
+{% if offre.localisation %}
+<script>
+(function() {
+    fetch('/api/country/detect?localisation=' + encodeURIComponent('{{ offre.localisation|e('js') }}'))
+        .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+        .then(data => {
+            document.getElementById('country-flag-offre').textContent = data.flag;
+            document.getElementById('offre-country-flag-big').textContent = data.flag;
+            document.getElementById('offre-country-name').textContent = data.name;
+            document.getElementById('offre-country-capital').textContent = data.capital;
+            document.getElementById('offre-country-currency').textContent = data.currency + (data.currencySymbol ? ' (' + data.currencySymbol + ')' : '');
+            document.getElementById('offre-country-code').textContent = data.code;
+            document.getElementById('country-info-offre').style.display = 'block';
+        })
+        .catch(() => {});
+})();
+</script>
+{% endif %}
 {% endblock %}

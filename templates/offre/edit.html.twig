@@ -12,9 +12,17 @@
         </div>
         <div class="mb-3">
             {{ form_row(form.description) }}
+            <button type="button" id="btn-ai-improve-desc" class="btn btn-sm mt-1" style="background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none; border-radius: 8px; padding: 6px 16px;">
+                <i class="fas fa-magic"></i> IA : Améliorer la description
+            </button>
         </div>
         <div class="mb-3">
             {{ form_row(form.localisation) }}
+            <div id="country-detect-result" style="display:none; margin-top: 0.5rem; padding: 0.5rem 0.75rem; background: rgba(212,168,67,0.06); border: 1px solid var(--tf-border); border-radius: 8px; font-size: 0.85rem;">
+                <span id="detect-flag" style="font-size: 1.3rem;"></span>
+                <span id="detect-name" style="color: var(--tf-gold); font-weight: 600;"></span>
+                <span style="color: var(--tf-gray);"> — <i class="fas fa-coins"></i> <span id="detect-currency"></span> · <span id="detect-code"></span></span>
+            </div>
         </div>
         <div class="row">
             <div class="col-md-6 mb-3">
@@ -49,8 +57,124 @@
 
         <div class="d-flex justify-content-between mt-3">
             <a href="{{ path('offre_index') }}" class="btn-outline-gold"><i class="fas fa-arrow-left"></i> Retour</a>
-            <button type="submit" class="btn-gold"><i class="fas fa-save"></i> Enregistrer</button>
+            <div class="d-flex gap-2">
+                <button type="button" id="btn-ai-suggest-avantages" class="btn" style="background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none; border-radius: 8px; padding: 8px 18px;">
+                    <i class="fas fa-lightbulb"></i> IA : Suggérer des avantages
+                </button>
+                <button type="submit" class="btn-gold"><i class="fas fa-save"></i> Enregistrer</button>
+            </div>
+        </div>
+
+        {# Panel suggestions IA #}
+        <div id="ai-suggestions-panel" class="mt-3" style="display:none;">
+            <div class="tf-card" style="background: linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.1)); border: 1px solid #667eea;">
+                <h6 style="color: #667eea;"><i class="fas fa-robot"></i> Suggestions IA – Avantages recommandés</h6>
+                <div id="ai-suggestions-list"></div>
+            </div>
         </div>
     </div>
 {{ form_end(form) }}
+
+<script>
+(function() {
+    document.getElementById('btn-ai-improve-desc').addEventListener('click', function() {
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Génération...';
+
+        const titre = document.getElementById('offre_titre')?.value || '';
+        const desc = document.getElementById('offre_description')?.value || '';
+        const typeContrat = document.getElementById('offre_typeContrat')?.value || '';
+        const localisation = document.getElementById('offre_localisation')?.value || '';
+        const modeTravail = document.getElementById('offre_modeTravail')?.value || '';
+
+        fetch('/api/ai/improve-offre-description', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ titre, description: desc, typeContrat, localisation, modeTravail })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.description) {
+                document.getElementById('offre_description').value = data.description;
+            }
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-magic"></i> IA : Améliorer la description';
+        });
+    });
+
+    document.getElementById('btn-ai-suggest-avantages').addEventListener('click', function() {
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyse...';
+
+        const titre = document.getElementById('offre_titre')?.value || '';
+        const typeContrat = document.getElementById('offre_typeContrat')?.value || '';
+        const modeTravail = document.getElementById('offre_modeTravail')?.value || '';
+        const salaireMax = document.getElementById('offre_salaireMax')?.value || null;
+        const categorieSelect = document.getElementById('offre_categorie');
+        const categorie = categorieSelect?.options[categorieSelect.selectedIndex]?.text || '';
+
+        fetch('/api/ai/suggest-avantages', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ titre, typeContrat, modeTravail, categorie, salaireMax: salaireMax ? parseFloat(salaireMax) : null })
+        })
+        .then(r => r.json())
+        .then(data => {
+            const panel = document.getElementById('ai-suggestions-panel');
+            const list = document.getElementById('ai-suggestions-list');
+            list.innerHTML = '';
+
+            if (data.suggestions && data.suggestions.length > 0) {
+                data.suggestions.forEach(s => {
+                    const card = document.createElement('div');
+                    card.className = 'p-2 mb-2';
+                    card.style.cssText = 'background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid var(--tf-border, #333);';
+                    const typeBadge = {'Financier':'tf-tag-green','Bien-être':'tf-tag-purple','Matériel':'tf-tag-blue'}[s.type] || 'tf-tag-gray';
+                    card.innerHTML = '<div class="d-flex justify-content-between align-items-start">' +
+                        '<div><strong style="color: var(--tf-gold);">' + s.nom + '</strong> <span class="tf-tag-sm ' + typeBadge + '">' + s.type + '</span>' +
+                        '<br><small style="color: var(--tf-gray);">' + s.description + '</small>' +
+                        '<br><small style="color: #667eea;"><i class="fas fa-info-circle"></i> ' + s.raison + '</small></div>' +
+                        '</div>';
+                    list.appendChild(card);
+                });
+                panel.style.display = 'block';
+            } else {
+                list.innerHTML = '<p style="color:var(--tf-gray);">Aucune suggestion disponible.</p>';
+                panel.style.display = 'block';
+            }
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-lightbulb"></i> IA : Suggérer des avantages';
+        });
+    });
+
+    // Auto-detect country from localisation
+    const locInput = document.getElementById('offre_localisation');
+    if (locInput) {
+        let locTimer;
+        function detectCountry() {
+            const val = locInput.value.trim();
+            if (val.length < 3) { document.getElementById('country-detect-result').style.display = 'none'; return; }
+            fetch('/api/country/detect?localisation=' + encodeURIComponent(val))
+                .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+                .then(data => {
+                    document.getElementById('detect-flag').textContent = data.flag;
+                    document.getElementById('detect-name').textContent = data.name;
+                    document.getElementById('detect-capital').textContent = data.capital;
+                    document.getElementById('detect-currency').textContent = data.currency;
+                    document.getElementById('detect-code').textContent = data.code;
+                    document.getElementById('country-detect-result').style.display = 'block';
+                })
+                .catch(() => { document.getElementById('country-detect-result').style.display = 'none'; });
+        }
+        locInput.addEventListener('input', function() { clearTimeout(locTimer); locTimer = setTimeout(detectCountry, 500); });
+        detectCountry();
+    }
+})();
+</script>
 {% endblock %}

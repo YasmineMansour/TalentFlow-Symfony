@@ -9,6 +9,9 @@
     {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'tf-form', 'onsubmit': "if(!this.dataset.confirmed){event.preventDefault(); confirmFormSubmit(this, 'edit', 'cet avantage');}" }}) }}
 
         {{ form_row(form.nom) }}
+        <button type="button" id="btn-ai-suggest-av-nom" class="btn btn-sm mt-1 mb-3" style="background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none; border-radius: 8px; padding: 6px 16px;">
+            <i class="fas fa-magic"></i> IA : Suggérer un nom
+        </button>
         {{ form_row(form.description) }}
         {{ form_row(form.type) }}
         {{ form_row(form.offre) }}
@@ -20,4 +23,33 @@
 
     {{ form_end(form) }}
 </div>
+
+<script>
+(function() {
+    document.getElementById('btn-ai-suggest-av-nom').addEventListener('click', function() {
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Génération...';
+
+        const desc = document.getElementById('avantage_description')?.value || '';
+        const type = document.getElementById('avantage_type')?.value || '';
+
+        fetch('/api/ai/suggest-avantage-nom', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ description: desc, type })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.nom) {
+                document.getElementById('avantage_nom').value = data.nom;
+            }
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-magic"></i> IA : Suggérer un nom';
+        });
+    });
+})();
+</script>
 {% endblock %}

@@ -6,10 +6,13 @@ use App\Repository\EntrepriseRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Validator\Constraints as Assert;
+use Vich\UploaderBundle\Mapping\Attribute as Vich;
 
 #[ORM\Entity(repositoryClass: EntrepriseRepository::class)]
 #[ORM\Table(name: 'entreprise')]
+#[Vich\Uploadable]
 class Entreprise
 {
     #[ORM\Id]
@@ -64,8 +67,18 @@ class Entreprise
     private ?string $description = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Assert\Url(message: 'L\'URL du logo n\'est pas valide.')]
     private ?string $logo = null;
+
+    #[Vich\UploadableField(mapping: 'entreprise_logo', fileNameProperty: 'logo')]
+    #[Assert\File(
+        maxSize: '2M',
+        mimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'],
+        mimeTypesMessage: 'Veuillez uploader une image valide (JPEG, PNG, GIF, WebP ou SVG).'
+    )]
+    private ?File $logoFile = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $updatedAt = null;
 
     #[ORM\OneToMany(mappedBy: 'entreprise', targetEntity: Offre::class)]
     private Collection $offres;
@@ -154,6 +167,31 @@ class Entreprise
     public function setLogo(?string $logo): static
     {
         $this->logo = $logo;
+        return $this;
+    }
+
+    public function getLogoFile(): ?File
+    {
+        return $this->logoFile;
+    }
+
+    public function setLogoFile(?File $logoFile = null): void
+    {
+        $this->logoFile = $logoFile;
+
+        if (null !== $logoFile) {
+            $this->updatedAt = new \DateTime();
+        }
+    }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?\DateTimeInterface $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
         return $this;
     }
 

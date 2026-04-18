@@ -8,7 +8,9 @@ use App\Repository\CategorieRepository;
 use App\Repository\EntrepriseRepository;
 use App\Repository\OffreRepository;
 use App\Service\OffreBusinessService;
+use App\Service\OffrePdfMailerService;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -96,7 +98,7 @@ class OffreController extends AbstractController
 
     #[Route('/new', name: 'offre_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_RH')]
-    public function new(Request $request, EntityManagerInterface $em): Response
+    public function new(Request $request, EntityManagerInterface $em, OffrePdfMailerService $pdfMailer, LoggerInterface $logger): Response
     {
         $offre = new Offre();
 
@@ -115,7 +117,17 @@ class OffreController extends AbstractController
             }
             $em->persist($offre);
             $em->flush();
-            $this->addFlash('success', 'Offre créée avec succès.');
+
+            // Générer le PDF et envoyer par email à l'entreprise
+            try {
+                $pdfMailer->sendOffreEmail($offre);
+                $this->addFlash('success', 'Offre créée avec succès. Un email avec la fiche PDF a été envoyé à l\'entreprise.');
+            } catch (\Throwable $e) {
+                $logger->error('Erreur envoi email offre PDF: ' . $e->getMessage());
+                $this->addFlash('success', 'Offre créée avec succès.');
+                $this->addFlash('warning', 'L\'email avec la fiche PDF n\'a pas pu être envoyé.');
+            }
+
             return $this->redirectToRoute('offre_index');
         }
 
@@ -144,7 +156,7 @@ class OffreController extends AbstractController
 
     #[Route('/{id}/edit', name: 'offre_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     #[IsGranted('ROLE_RH')]
-    public function edit(Request $request, Offre $offre, EntityManagerInterface $em): Response
+    public function edit(Request $request, Offre $offre, EntityManagerInterface $em, OffrePdfMailerService $pdfMailer, LoggerInterface $logger): Response
     {
         // RH ne peut modifier que les offres de son entreprise
         if (!$this->isGranted('ROLE_ADMIN')) {
@@ -162,7 +174,17 @@ class OffreController extends AbstractController
                 $offre->setEntreprise($this->getUser()->getEntreprise());
             }
             $em->flush();
-            $this->addFlash('success', 'Offre modifiée avec succès.');
+
+            // Générer le PDF mis à jour et envoyer par email à l'entreprise
+            try {
+                $pdfMailer->sendOffreEmail($offre);
+                $this->addFlash('success', 'Offre modifiée avec succès. Un email avec la fiche PDF mise à jour a été envoyé à l\'entreprise.');
+            } catch (\Throwable $e) {
+                $logger->error('Erreur envoi email offre PDF: ' . $e->getMessage());
+                $this->addFlash('success', 'Offre modifiée avec succès.');
+                $this->addFlash('warning', 'L\'email avec la fiche PDF n\'a pas pu être envoyé.');
+            }
+
             return $this->redirectToRoute('offre_index');
         }
 

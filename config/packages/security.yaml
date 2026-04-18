@@ -54,6 +54,7 @@ security:
         - { path: ^/css/, roles: PUBLIC_ACCESS }
         - { path: ^/js/, roles: PUBLIC_ACCESS }
         - { path: ^/chatbot, roles: PUBLIC_ACCESS }
+        - { path: ^/api/currency, roles: PUBLIC_ACCESS }
         - { path: ^/2fa, roles: IS_AUTHENTICATED_2FA_IN_PROGRESS }
         - { path: ^/dashboard, roles: ROLE_USER }
         - { path: ^/admin, roles: ROLE_ADMIN }

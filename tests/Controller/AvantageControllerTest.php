@@ -4,6 +4,7 @@ namespace App\Tests\Controller;
 
 use App\Entity\Avantage;
 use App\Entity\Offre;
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -16,6 +17,17 @@ class AvantageControllerTest extends WebTestCase
     {
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
+
+        $user = new User();
+        $user->setNom('Test');
+        $user->setPrenom('User');
+        $user->setEmail('test-' . uniqid() . '@test.com');
+        $user->setPassword('password');
+        $user->setRoles(['ROLE_ADMIN']);
+        $this->em->persist($user);
+        $this->em->flush();
+
+        $this->client->loginUser($user);
     }
 
     private function createOffre(): Offre
