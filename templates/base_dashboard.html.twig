@@ -1,20 +1,23 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ app.request.locale }}" data-theme="light">
     <head>
+        <script>(function(){var t=localStorage.getItem('tf-theme');if(!t)t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');})()</script>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{% block title %}TalentFlow - {{ 'nav.dashboard'|trans }}{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>💼</text></svg>">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+        <link href="/css/talentflow.css" rel="stylesheet">
         <style>
             :root {
                 --tf-midnight: #1a1a2e;
                 --tf-navy: #16213e;
                 --tf-dark-blue: #0f3460;
-                --tf-gold: #d4a843;
-                --tf-gold-light: #e8c96d;
-                --tf-gold-dark: #b8922f;
+            --tf-gold: #c9a227;
+            --tf-gold-light: #e2c355;
+            --tf-gold-dark: #a88720;
                 --tf-white: #f5f5f5;
                 --tf-gray: #a0a0b0;
                 --tf-card-bg: #1e2a3a;
@@ -27,40 +30,30 @@
 
             /* ── Light mode overrides ── */
             body.light-mode {
-                --tf-midnight: #f8f5f0;
+                --tf-midnight: #f0f2f5;
                 --tf-navy: #ffffff;
-                --tf-dark-blue: #e8e4de;
-                --tf-gold: #2563eb;
-                --tf-gold-light: #3b82f6;
-                --tf-gold-dark: #1d4ed8;
+                --tf-dark-blue: #e4e6eb;
                 --tf-white: #1c1e21;
                 --tf-gray: #65676b;
                 --tf-card-bg: #ffffff;
                 --tf-border: #dddfe2;
-                --tf-body-bg: #f8f5f0;
+                --tf-body-bg: #f0f2f5;
                 --tf-text: #1c1e21;
                 --tf-text-muted: #65676b;
             }
             body.light-mode .tf-sidebar {
                 background: linear-gradient(180deg, #ffffff 0%, #f7f8fa 100%);
             }
-            body.light-mode .tf-sidebar-brand a { color: #2563eb; }
-            body.light-mode .tf-sidebar-nav a:hover { background: rgba(37,99,235,0.06); color: #2563eb; }
-            body.light-mode .tf-sidebar-nav a.active { background: rgba(37,99,235,0.1); color: #2563eb; }
+            body.light-mode .tf-sidebar-brand a { color: var(--tf-gold-dark); }
             body.light-mode .tf-topbar { background: #ffffff; border-color: #dddfe2; }
             body.light-mode .tf-topbar-left h1 { color: #1c1e21; }
-            body.light-mode .badge-admin { background: rgba(37,99,235,0.15); color: #2563eb; }
-            body.light-mode .btn-gold { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; }
-            body.light-mode .btn-gold:hover { color: #ffffff; }
-            body.light-mode .btn-outline-gold { border-color: #2563eb; color: #2563eb; }
-            body.light-mode .btn-outline-gold:hover { background: rgba(37,99,235,0.08); }
-            body.light-mode .tf-avatar-sm { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
-            body.light-mode .tf-card-header h3 { color: #2563eb; }
+            body.light-mode .badge-admin { background: #c0392b; }
+            body.light-mode .btn-gold { color: #1a1a2e; }
 
             * { margin: 0; padding: 0; box-sizing: border-box; }
 
             body {
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                font-family: var(--tf-font, 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif);
                 background-color: var(--tf-body-bg);
                 color: var(--tf-text);
                 min-height: 100vh;
@@ -123,7 +116,9 @@
                 padding: 0 0.6rem;
                 flex: 1;
             }
-            .tf-sidebar-nav li { margin-bottom: 2px; }
+            .tf-sidebar-nav li {
+                margin-bottom: 2px;
+            }
             .tf-sidebar-nav a {
                 display: flex;
                 align-items: center;
@@ -145,7 +140,11 @@
                 color: var(--tf-gold);
                 font-weight: 600;
             }
-            .tf-sidebar-nav a i { width: 20px; text-align: center; font-size: 0.95rem; }
+            .tf-sidebar-nav a i {
+                width: 20px;
+                text-align: center;
+                font-size: 0.95rem;
+            }
 
             .tf-sidebar-footer {
                 padding: 1rem;
@@ -170,7 +169,9 @@
                 font-size: 0.8rem;
                 flex-shrink: 0;
             }
-            .tf-sidebar-footer .user-details { overflow: hidden; }
+            .tf-sidebar-footer .user-details {
+                overflow: hidden;
+            }
             .tf-sidebar-footer .user-name {
                 font-weight: 600;
                 font-size: 0.85rem;
@@ -179,8 +180,12 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
-            .tf-sidebar-footer .user-role { font-size: 0.7rem; color: var(--tf-gold); }
+            .tf-sidebar-footer .user-role {
+                font-size: 0.7rem;
+                color: var(--tf-gold);
+            }
 
+            /* ==================== TOPBAR ==================== */
             .tf-topbar {
                 position: fixed;
                 top: 0;
@@ -208,22 +213,33 @@
             .tf-topbar-nav a.active { color: var(--tf-gold); background: rgba(212,168,67,0.12); }
             .tf-topbar-nav a i { font-size: 0.9rem; }
             body.light-mode .tf-topbar-nav a { color: #65676b; }
-            body.light-mode .tf-topbar-nav a:hover { background: rgba(37,99,235,0.06); color: #2563eb; }
-            body.light-mode .tf-topbar-nav a.active { color: #2563eb; background: rgba(37,99,235,0.1); }
+            body.light-mode .tf-topbar-nav a:hover { background: #f0f2f5; color: var(--tf-gold-dark); }
+            body.light-mode .tf-topbar-nav a.active { color: var(--tf-gold-dark); background: rgba(212,168,67,0.1); }
             .tf-topbar-sep { width: 1px; height: 24px; background: var(--tf-border); margin: 0 0.3rem; flex-shrink: 0; }
             body.light-mode .tf-topbar-sep { background: #dddfe2; }
             .tf-topbar-center { flex: 1; display: flex; align-items: center; justify-content: flex-end; padding: 0 0.8rem; min-width: 0; position: relative; }
             .tf-topbar-right { display: flex; align-items: center; gap: 1.2rem; flex-shrink: 0; }
             .tf-topbar-right .top-user { display: flex; align-items: center; gap: 0.6rem; color: var(--tf-white); font-size: 0.9rem; }
             .tf-topbar-right .tf-avatar-sm {
-                width: 34px; height: 34px; border-radius: 50%;
+                width: 34px;
+                height: 34px;
+                border-radius: 50%;
                 background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
-                color: var(--tf-midnight); display: flex; align-items: center; justify-content: center;
-                font-weight: 700; font-size: 0.75rem;
+                color: var(--tf-midnight);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 0.75rem;
             }
             .tf-topbar-right a {
-                color: var(--tf-gray); text-decoration: none; font-size: 0.85rem;
-                transition: color 0.2s; display: flex; align-items: center; gap: 0.3rem;
+                color: var(--tf-gray);
+                text-decoration: none;
+                font-size: 0.85rem;
+                transition: color 0.2s;
+                display: flex;
+                align-items: center;
+                gap: 0.3rem;
             }
             .tf-topbar-right a:hover { color: #e74c3c; }
 
@@ -236,38 +252,7 @@
             }
             .theme-toggle:hover { border-color: var(--tf-gold); color: var(--tf-gold); background: rgba(212,168,67,0.08); }
             body.light-mode .theme-toggle { border-color: #dddfe2; color: #65676b; }
-            body.light-mode .theme-toggle:hover { border-color: #2563eb; color: #2563eb; }
-
-            /* Language switcher */
-            .tf-lang-switcher { position: relative; display: inline-flex; }
-            .tf-lang-btn {
-                width: 38px; height: 38px; border-radius: 50%;
-                border: 1px solid var(--tf-border); background: transparent; color: var(--tf-gray);
-                cursor: pointer; display: flex; align-items: center; justify-content: center;
-                font-size: 0.75rem; font-weight: 700; transition: all 0.2s; text-transform: uppercase;
-            }
-            .tf-lang-btn:hover { background: rgba(37,99,235,0.08); color: var(--tf-gold); border-color: var(--tf-gold); }
-            .tf-lang-dropdown {
-                position: absolute; top: calc(100% + 8px); right: 0;
-                background: var(--tf-card-bg); border: 1px solid var(--tf-border);
-                border-radius: 10px; padding: 0.4rem; min-width: 150px;
-                box-shadow: 0 8px 25px rgba(0,0,0,0.3); display: none; z-index: 9999;
-            }
-            .tf-lang-dropdown.show { display: block; }
-            .tf-lang-dropdown a {
-                display: flex; align-items: center; gap: 0.6rem;
-                padding: 0.55rem 0.8rem; color: var(--tf-gray); text-decoration: none;
-                border-radius: 6px; font-size: 0.85rem; transition: all 0.15s;
-            }
-            .tf-lang-dropdown a:hover { background: rgba(37,99,235,0.06); color: var(--tf-gold); }
-            .tf-lang-dropdown a.active { color: var(--tf-gold); font-weight: 600; background: rgba(37,99,235,0.1); }
-            .tf-lang-dropdown a .flag-icon { font-size: 1.1rem; }
-            body.light-mode .tf-lang-btn { border-color: #dddfe2; color: #65676b; }
-            body.light-mode .tf-lang-btn:hover { border-color: #2563eb; color: #2563eb; background: rgba(37,99,235,0.08); }
-            body.light-mode .tf-lang-dropdown { background: #fff; border-color: #dddfe2; box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
-            body.light-mode .tf-lang-dropdown a { color: #4b5563; }
-            body.light-mode .tf-lang-dropdown a:hover { background: rgba(37,99,235,0.06); color: #2563eb; }
-            body.light-mode .tf-lang-dropdown a.active { color: #2563eb; background: rgba(37,99,235,0.1); }
+            body.light-mode .theme-toggle:hover { border-color: var(--tf-gold); color: var(--tf-gold); }
 
             .tf-main {
                 margin-left: var(--sidebar-width);
@@ -276,128 +261,313 @@
                 min-height: calc(100vh - 60px);
             }
 
+            /* ==================== WIDGETS ==================== */
             .tf-widget {
-                background: var(--tf-card-bg); border: 1px solid var(--tf-border);
-                border-radius: 12px; padding: 1.5rem; display: flex; align-items: center;
-                gap: 1.2rem; transition: transform 0.2s, box-shadow 0.2s;
+                background: var(--tf-card-bg);
+                border: 1px solid var(--tf-border);
+                border-radius: 12px;
+                padding: 1.5rem;
+                display: flex;
+                align-items: center;
+                gap: 1.2rem;
+                transition: transform 0.2s, box-shadow 0.2s;
             }
-            .tf-widget:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); }
+            .tf-widget:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            }
             .tf-widget-icon {
-                width: 55px; height: 55px; border-radius: 12px;
-                display: flex; align-items: center; justify-content: center;
-                font-size: 1.4rem; flex-shrink: 0;
+                width: 55px;
+                height: 55px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.4rem;
+                flex-shrink: 0;
             }
             .tf-widget-icon.gold { background: rgba(212, 168, 67, 0.15); color: var(--tf-gold); }
             .tf-widget-icon.blue { background: rgba(15, 52, 96, 0.4); color: #5dade2; }
             .tf-widget-icon.green { background: rgba(39, 174, 96, 0.15); color: #2ecc71; }
             .tf-widget-icon.red { background: rgba(192, 57, 43, 0.15); color: #e74c3c; }
             .tf-widget-icon.purple { background: rgba(142, 68, 173, 0.15); color: #9b59b6; }
-            .tf-widget-info h3 { font-size: 1.8rem; font-weight: 700; color: var(--tf-white); margin: 0; line-height: 1; }
-            .tf-widget-info p { font-size: 0.8rem; color: var(--tf-gray); margin: 0.2rem 0 0; }
-            .tf-widget-info .trend { font-size: 0.75rem; font-weight: 600; margin-top: 0.2rem; }
+            .tf-widget-info h3 {
+                font-size: 1.8rem;
+                font-weight: 700;
+                color: var(--tf-white);
+                margin: 0;
+                line-height: 1;
+            }
+            .tf-widget-info p {
+                font-size: 0.8rem;
+                color: var(--tf-gray);
+                margin: 0.2rem 0 0;
+            }
+            .tf-widget-info .trend {
+                font-size: 0.75rem;
+                font-weight: 600;
+                margin-top: 0.2rem;
+            }
             .tf-widget-info .trend.up { color: #2ecc71; }
             .tf-widget-info .trend.down { color: #e74c3c; }
 
+            /* ==================== CARDS ==================== */
             .tf-card {
-                background: var(--tf-card-bg); border: 1px solid var(--tf-border);
-                border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+                background: var(--tf-card-bg);
+                border: 1px solid var(--tf-border);
+                border-radius: 12px;
+                padding: 1.5rem;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             }
             .tf-card-header {
-                display: flex; justify-content: space-between; align-items: center;
-                margin-bottom: 1.2rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--tf-border);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1.2rem;
+                padding-bottom: 0.8rem;
+                border-bottom: 1px solid var(--tf-border);
             }
             .tf-card-header h3 {
-                font-size: 1rem; font-weight: 700; color: var(--tf-gold); margin: 0;
-                display: flex; align-items: center; gap: 0.5rem;
+                font-size: 1rem;
+                font-weight: 700;
+                color: var(--tf-gold);
+                margin: 0;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
             }
 
-            .tf-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+            /* ==================== TABLE ==================== */
+            .tf-table {
+                width: 100%;
+                border-collapse: separate;
+                border-spacing: 0;
+            }
             .tf-table thead th {
-                background: var(--tf-navy); color: var(--tf-gold); padding: 0.8rem 1rem;
-                text-align: left; font-weight: 600; font-size: 0.8rem; text-transform: uppercase;
-                letter-spacing: 0.5px; border-bottom: 2px solid var(--tf-gold); white-space: nowrap;
+                background: var(--tf-navy);
+                color: var(--tf-gold);
+                padding: 0.8rem 1rem;
+                text-align: left;
+                font-weight: 600;
+                font-size: 0.8rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                border-bottom: 2px solid var(--tf-gold);
+                white-space: nowrap;
             }
             .tf-table tbody tr { transition: background 0.2s; }
             .tf-table tbody tr:hover { background: rgba(212, 168, 67, 0.05); }
             .tf-table tbody td {
-                padding: 0.7rem 1rem; border-bottom: 1px solid var(--tf-border);
-                vertical-align: middle; font-size: 0.88rem;
+                padding: 0.7rem 1rem;
+                border-bottom: 1px solid var(--tf-border);
+                vertical-align: middle;
+                font-size: 0.88rem;
             }
 
-            .badge-role { padding: 0.25rem 0.7rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+            /* ==================== BADGES ==================== */
+            .badge-role {
+                padding: 0.25rem 0.7rem;
+                border-radius: 20px;
+                font-size: 0.75rem;
+                font-weight: 600;
+            }
             .badge-admin { background: #c0392b; color: white; }
             .badge-rh { background: var(--tf-dark-blue); color: var(--tf-gold); border: 1px solid var(--tf-gold); }
             .badge-candidat { background: #27ae60; color: white; }
 
+            /* ==================== BUTTONS ==================== */
             .btn-gold {
                 background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
-                color: var(--tf-midnight); border: none; padding: 0.5rem 1.2rem; border-radius: 8px;
-                font-weight: 600; transition: all 0.3s; text-decoration: none;
-                display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.88rem; cursor: pointer;
+                color: var(--tf-midnight);
+                border: none;
+                padding: 0.5rem 1.2rem;
+                border-radius: 8px;
+                font-weight: 600;
+                transition: all 0.3s;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                font-size: 0.88rem;
+                cursor: pointer;
             }
             .btn-gold:hover {
                 background: linear-gradient(135deg, var(--tf-gold-light), var(--tf-gold));
-                color: var(--tf-midnight); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(212, 168, 67, 0.3);
+                color: var(--tf-midnight);
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(212, 168, 67, 0.3);
             }
             .btn-outline-gold {
-                border: 1px solid var(--tf-gold); color: var(--tf-gold); background: transparent;
-                padding: 0.5rem 1.2rem; border-radius: 8px; font-weight: 600; transition: all 0.3s;
-                text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;
-                font-size: 0.88rem; cursor: pointer;
+                border: 1px solid var(--tf-gold);
+                color: var(--tf-gold);
+                background: transparent;
+                padding: 0.5rem 1.2rem;
+                border-radius: 8px;
+                font-weight: 600;
+                transition: all 0.3s;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                font-size: 0.88rem;
+                cursor: pointer;
             }
-            .btn-outline-gold:hover { background: var(--tf-gold); color: var(--tf-midnight); }
+            .btn-outline-gold:hover {
+                background: var(--tf-gold);
+                color: var(--tf-midnight);
+            }
             .btn-danger-tf {
-                background: #c0392b; color: white; border: none; padding: 0.4rem 1rem;
-                border-radius: 8px; font-weight: 600; transition: all 0.3s; cursor: pointer;
+                background: #c0392b;
+                color: white;
+                border: none;
+                padding: 0.4rem 1rem;
+                border-radius: 8px;
+                font-weight: 600;
+                transition: all 0.3s;
+                cursor: pointer;
             }
             .btn-danger-tf:hover { background: #e74c3c; }
-            .btn-sm-tf { padding: 0.3rem 0.7rem; font-size: 0.8rem; border-radius: 6px; }
 
-            .tf-form .form-label { color: var(--tf-gold); font-weight: 600; margin-bottom: 0.3rem; font-size: 0.85rem; }
+            .btn-sm-tf {
+                padding: 0.3rem 0.7rem;
+                font-size: 0.8rem;
+                border-radius: 6px;
+            }
+
+            /* ==================== FORMS ==================== */
+            .tf-form .form-label {
+                color: var(--tf-gold);
+                font-weight: 600;
+                margin-bottom: 0.3rem;
+                font-size: 0.85rem;
+            }
             .tf-form .form-control, .tf-form .form-select {
-                background: var(--tf-navy); border: 1px solid var(--tf-border);
-                color: var(--tf-white); border-radius: 8px; padding: 0.6rem 1rem;
+                background: var(--tf-navy);
+                border: 1px solid var(--tf-border);
+                color: var(--tf-white);
+                border-radius: 8px;
+                padding: 0.6rem 1rem;
             }
             .tf-form .form-control:focus, .tf-form .form-select:focus {
-                border-color: var(--tf-gold); box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.15);
-                background: var(--tf-navy); color: var(--tf-white);
+                border-color: var(--tf-gold);
+                box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.15);
+                background: var(--tf-navy);
+                color: var(--tf-white);
             }
             .tf-form .form-control::placeholder { color: var(--tf-gray); }
-            .tf-form .form-control.is-invalid, .tf-form .form-select.is-invalid {
-                border-color: #e74c3c; box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.15);
+            .tf-form .form-control.is-invalid,
+            .tf-form .form-select.is-invalid {
+                border-color: #e74c3c;
+                box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.15);
             }
-            .tf-form .invalid-feedback, .tf-form ul li { color: #e74c3c; font-size: 0.8rem; margin-top: 0.25rem; }
-            .form-hint { display: block; color: var(--tf-gray); font-size: 0.75rem; margin-top: 0.3rem; font-style: italic; }
+            .tf-form .invalid-feedback,
+            .tf-form ul li {
+                color: #e74c3c;
+                font-size: 0.8rem;
+                margin-top: 0.25rem;
+            }
+            .form-hint {
+                display: block;
+                color: var(--tf-gray);
+                font-size: 0.75rem;
+                margin-top: 0.3rem;
+                font-style: italic;
+            }
             .form-hint i { margin-right: 0.2rem; }
 
-            .tf-flash { padding: 0.8rem 1.2rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid; display: flex; align-items: center; gap: 0.5rem; }
+            /* ==================== FLASH ==================== */
+            .tf-flash {
+                padding: 0.8rem 1.2rem;
+                border-radius: 8px;
+                margin-bottom: 1rem;
+                border-left: 4px solid;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
             .tf-flash-success { background: rgba(39, 174, 96, 0.12); border-color: #27ae60; color: #2ecc71; }
             .tf-flash-error { background: rgba(192, 57, 43, 0.12); border-color: #c0392b; color: #e74c3c; }
             .tf-flash-warning { background: rgba(243, 156, 18, 0.12); border-color: #f39c12; color: #f1c40f; }
 
+            /* ==================== AVATAR ==================== */
             .tf-avatar {
-                width: 40px; height: 40px; border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
                 background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
-                color: var(--tf-midnight); display: inline-flex; align-items: center;
-                justify-content: center; font-weight: 700; font-size: 0.9rem;
+                color: var(--tf-midnight);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 0.9rem;
             }
 
-            .tf-detail dt { color: var(--tf-gold); font-weight: 600; margin-bottom: 0.2rem; }
-            .tf-detail dd { color: var(--tf-white); margin-bottom: 1rem; padding-left: 0; }
+            /* ==================== DETAIL ==================== */
+            .tf-detail dt {
+                color: var(--tf-gold);
+                font-weight: 600;
+                margin-bottom: 0.2rem;
+            }
+            .tf-detail dd {
+                color: var(--tf-white);
+                margin-bottom: 1rem;
+                padding-left: 0;
+            }
 
-            .tf-search { display: flex; gap: 0.8rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+            /* ==================== SEARCH ==================== */
+            .tf-search {
+                display: flex;
+                gap: 0.8rem;
+                margin-bottom: 1.5rem;
+                flex-wrap: wrap;
+            }
             .tf-search input, .tf-search select {
-                background: var(--tf-navy); border: 1px solid var(--tf-border); color: var(--tf-white);
-                padding: 0.6rem 1rem; border-radius: 8px; flex: 1; min-width: 200px;
+                background: var(--tf-navy);
+                border: 1px solid var(--tf-border);
+                color: var(--tf-white);
+                padding: 0.6rem 1rem;
+                border-radius: 8px;
+                flex: 1;
+                min-width: 200px;
             }
             .tf-search input:focus, .tf-search select:focus {
-                border-color: var(--tf-gold); outline: none; box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.15);
+                border-color: var(--tf-gold);
+                outline: none;
+                box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.15);
             }
             .tf-search input::placeholder { color: var(--tf-gray); }
+            input.tf-search, select.tf-search {
+                background: var(--tf-navy);
+                border: 1px solid var(--tf-border);
+                color: var(--tf-white);
+                padding: 0.6rem 1rem;
+                border-radius: 8px;
+                width: 100%;
+            }
+            input.tf-search:focus, select.tf-search:focus {
+                border-color: var(--tf-gold);
+                outline: none;
+                box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.15);
+            }
+            input.tf-search::placeholder { color: var(--tf-gray); }
+            select.tf-search option { background: var(--tf-navy); color: var(--tf-white); }
 
-            .tf-activity-item { display: flex; gap: 0.8rem; padding: 0.7rem 0; border-bottom: 1px solid var(--tf-border); }
+            /* ==================== ACTIVITY ==================== */
+            .tf-activity-item {
+                display: flex;
+                gap: 0.8rem;
+                padding: 0.7rem 0;
+                border-bottom: 1px solid var(--tf-border);
+            }
             .tf-activity-item:last-child { border-bottom: none; }
-            .tf-activity-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+            .tf-activity-dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                margin-top: 5px;
+                flex-shrink: 0;
+            }
             .tf-activity-dot.green { background: #2ecc71; }
             .tf-activity-dot.gold { background: var(--tf-gold); }
             .tf-activity-dot.blue { background: #5dade2; }
@@ -405,53 +575,121 @@
             .tf-activity-text { font-size: 0.85rem; color: var(--tf-white); }
             .tf-activity-time { font-size: 0.72rem; color: var(--tf-gray); margin-top: 0.1rem; }
 
+            /* ==================== QUICK ACTION ==================== */
             .tf-quick-action {
-                display: flex; flex-direction: column; align-items: center; justify-content: center;
-                padding: 1.2rem; background: var(--tf-navy); border: 1px solid var(--tf-border);
-                border-radius: 12px; text-decoration: none; color: var(--tf-white);
-                transition: all 0.2s; text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 1.2rem;
+                background: var(--tf-navy);
+                border: 1px solid var(--tf-border);
+                border-radius: 12px;
+                text-decoration: none;
+                color: var(--tf-white);
+                transition: all 0.2s;
+                text-align: center;
             }
             .tf-quick-action:hover {
-                border-color: var(--tf-gold); background: rgba(212, 168, 67, 0.08);
-                color: var(--tf-gold); transform: translateY(-2px);
+                border-color: var(--tf-gold);
+                background: rgba(212, 168, 67, 0.08);
+                color: var(--tf-gold);
+                transform: translateY(-2px);
             }
-            .tf-quick-action i { font-size: 1.5rem; color: var(--tf-gold); margin-bottom: 0.5rem; }
-            .tf-quick-action span { font-size: 0.8rem; font-weight: 600; }
+            .tf-quick-action i {
+                font-size: 1.5rem;
+                color: var(--tf-gold);
+                margin-bottom: 0.5rem;
+            }
+            .tf-quick-action span {
+                font-size: 0.8rem;
+                font-weight: 600;
+            }
 
-            .tf-actions { display: flex; gap: 0.4rem; flex-wrap: nowrap; }
-            .tf-actions a, .tf-actions button { padding: 0.35rem 0.7rem; font-size: 0.85rem; border-radius: 6px; }
+            /* ==================== ACTIONS ==================== */
+            .tf-actions {
+                display: flex;
+                gap: 0.4rem;
+                flex-wrap: nowrap;
+            }
+            .tf-actions a, .tf-actions button {
+                padding: 0.35rem 0.7rem;
+                font-size: 0.85rem;
+                border-radius: 6px;
+            }
 
-            .tf-login-wrapper {
+            /* ==================== CONFIRMATION MODAL ==================== */
+            .tf-modal-backdrop {
+                position: fixed;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(10, 10, 20, 0.85);
+                z-index: 9998;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                animation: fadeIn 0.2s ease;
+            }
+            .tf-modal-backdrop.show { display: flex; }
+            .tf-modal-box {
+                background: var(--tf-card-bg);
+                border: 1px solid var(--tf-border);
+                border-radius: 16px;
+                padding: 2rem;
+                max-width: 450px;
+                width: 90%;
+                text-align: center;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+                animation: slideUp 0.25s ease;
+            }
+            .tf-modal-icon {
+                width: 70px; height: 70px;
+                border-radius: 50%;
                 display: flex; align-items: center; justify-content: center;
-                min-height: 100vh; background: var(--tf-midnight);
+                margin: 0 auto 1.2rem;
+                font-size: 1.8rem;
             }
-            .tf-login-card {
-                background: var(--tf-card-bg); border: 1px solid var(--tf-border); border-radius: 16px;
-                padding: 2.5rem; width: 100%; max-width: 420px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            .tf-modal-icon.danger { background: rgba(192,57,43,0.15); color: #e74c3c; }
+            .tf-modal-icon.warning { background: rgba(243,156,18,0.15); color: #f39c12; }
+            .tf-modal-icon.success { background: rgba(39,174,96,0.15); color: #2ecc71; }
+            .tf-modal-icon.info { background: rgba(212,168,67,0.15); color: var(--tf-gold); }
+            .tf-modal-title {
+                font-size: 1.2rem; font-weight: 700;
+                color: var(--tf-white); margin-bottom: 0.5rem;
             }
-            .brand-lg { text-align: center; margin-bottom: 2rem; }
-            .brand-lg h1 { color: var(--tf-gold); font-size: 1.8rem; font-weight: 800; }
-            .brand-lg p { color: var(--tf-gray); font-size: 0.85rem; }
-
-            /* Form styles */
-            .tf-form-group { margin-bottom: 1.2rem; }
-            .tf-label { display: block; color: var(--tf-gold); font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; }
-            .tf-input, .tf-input.form-control, .tf-input.form-select {
-                background: var(--tf-navy); border: 1px solid var(--tf-border); color: var(--tf-white);
-                padding: 0.65rem 1rem; border-radius: 8px; width: 100%; font-size: 0.9rem;
-                transition: border-color 0.2s, box-shadow 0.2s;
+            .tf-modal-text {
+                font-size: 0.9rem; color: var(--tf-gray);
+                margin-bottom: 1.5rem; line-height: 1.5;
             }
-            .tf-input:focus { border-color: var(--tf-gold); outline: none; box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.15); background: var(--tf-navy); color: var(--tf-white); }
-            .tf-input::placeholder { color: var(--tf-gray); }
-            textarea.tf-input { resize: vertical; min-height: 100px; }
-            select.tf-input option { background: var(--tf-navy); color: var(--tf-white); }
-
-            /* Detail list for show pages */
-            .tf-detail-list { padding: 0; }
-            .tf-detail-item { display: flex; justify-content: space-between; align-items: center; padding: 0.7rem 0; border-bottom: 1px solid var(--tf-border); }
-            .tf-detail-item:last-child { border-bottom: none; }
-            .tf-detail-label { color: var(--tf-gray); font-size: 0.85rem; font-weight: 500; }
-            .tf-detail-value { color: var(--tf-white); font-weight: 600; font-size: 0.9rem; text-align: right; }
+            .tf-modal-actions {
+                display: flex; gap: 0.8rem; justify-content: center;
+            }
+            .tf-modal-actions .btn-cancel {
+                background: var(--tf-navy); color: var(--tf-gray);
+                border: 1px solid var(--tf-border); padding: 0.6rem 1.5rem;
+                border-radius: 8px; font-weight: 600; cursor: pointer;
+                transition: all 0.2s; font-size: 0.9rem;
+            }
+            .tf-modal-actions .btn-cancel:hover {
+                background: var(--tf-border); color: var(--tf-white);
+            }
+            .tf-modal-actions .btn-confirm-danger {
+                background: #c0392b; color: white; border: none;
+                padding: 0.6rem 1.5rem; border-radius: 8px;
+                font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;
+            }
+            .tf-modal-actions .btn-confirm-danger:hover { background: #e74c3c; }
+            .tf-modal-actions .btn-confirm-gold {
+                background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark));
+                color: var(--tf-midnight); border: none;
+                padding: 0.6rem 1.5rem; border-radius: 8px;
+                font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;
+            }
+            .tf-modal-actions .btn-confirm-gold:hover {
+                background: linear-gradient(135deg, var(--tf-gold-light), var(--tf-gold));
+                transform: translateY(-1px);
+            }
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+            @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 
             /* Topbar brand link (non-admin) */
             .tf-topbar-brand-link {
@@ -459,8 +697,8 @@
             }
             .tf-topbar-brand-link i { color: var(--tf-gold); font-size: 1.15rem; }
             .tf-topbar-brand-link span { font-weight: 800; font-size: 1.05rem; color: var(--tf-gold); }
-            body.light-mode .tf-topbar-brand-link span { color: #2563eb; }
-            body.light-mode .tf-topbar-brand-link i { color: #2563eb; }
+            body.light-mode .tf-topbar-brand-link span { color: var(--tf-gold-dark); }
+            body.light-mode .tf-topbar-brand-link i { color: var(--tf-gold-dark); }
 
             /* Collapsible search icon */
             .topbar-search-toggle {
@@ -471,7 +709,7 @@
             }
             .topbar-search-toggle:hover { border-color: var(--tf-gold); color: var(--tf-gold); }
             body.light-mode .topbar-search-toggle { border-color: #dddfe2; color: #65676b; }
-            body.light-mode .topbar-search-toggle:hover { border-color: #2563eb; color: #1d4ed8; }
+            body.light-mode .topbar-search-toggle:hover { border-color: var(--tf-gold); color: var(--tf-gold-dark); }
 
             /* Expanded search bar (slides in, replaces center) */
             .topbar-search-expanded {
@@ -504,7 +742,98 @@
                 .tf-topbar-nav { display: none; }
                 .topbar-search-expanded { max-width: calc(100vw - 120px); }
             }
+
+            /* ==================== BOOTSTRAP COMPAT (dark theme) ==================== */
+            .table { color: var(--tf-white); }
+            .table-striped > tbody > tr:nth-of-type(odd) { --bs-table-accent-bg: rgba(212, 168, 67, 0.03); color: var(--tf-white); }
+            .table-hover > tbody > tr:hover { --bs-table-hover-bg: rgba(212, 168, 67, 0.08); color: var(--tf-gold); }
+            .table-dark, .table thead.table-dark th { background-color: var(--tf-navy) !important; color: var(--tf-gold) !important; border-color: var(--tf-border) !important; }
+            .table td, .table th { border-color: var(--tf-border); }
+            .card { background: var(--tf-card-bg); border-color: var(--tf-border); color: var(--tf-white); }
+            .card-body { background: transparent; }
+            .card-header { background: var(--tf-navy); border-color: var(--tf-border); color: var(--tf-gold); }
+            .form-control, .form-select { background-color: var(--tf-navy); border-color: var(--tf-border); color: var(--tf-white); }
+            .form-control:focus, .form-select:focus { background-color: var(--tf-navy); border-color: var(--tf-gold); color: var(--tf-white); box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.15); }
+            .form-control::placeholder { color: var(--tf-gray); }
+            .form-label { color: var(--tf-gold); font-weight: 600; }
+            .input-group-text { background-color: var(--tf-navy); border-color: var(--tf-border); color: var(--tf-gold); }
+            .btn-primary { background: linear-gradient(135deg, var(--tf-gold), var(--tf-gold-dark)); border: none; color: var(--tf-midnight); font-weight: 600; }
+            .btn-primary:hover { background: linear-gradient(135deg, var(--tf-gold-light), var(--tf-gold)); color: var(--tf-midnight); }
+            .btn-outline-primary { border-color: var(--tf-gold); color: var(--tf-gold); }
+            .btn-outline-primary:hover { background: var(--tf-gold); color: var(--tf-midnight); }
+            .btn-outline-secondary { border-color: var(--tf-gray); color: var(--tf-gray); }
+            .btn-outline-secondary:hover { background: var(--tf-gray); color: var(--tf-midnight); }
+            .btn-outline-danger { border-color: #e74c3c; color: #e74c3c; }
+            .btn-outline-danger:hover { background: #e74c3c; color: white; }
+            .btn-danger { background: #c0392b; border-color: #c0392b; }
+            .btn-danger:hover { background: #e74c3c; border-color: #e74c3c; }
+            .btn-success { background: #27ae60; border-color: #27ae60; }
+            .btn-warning { background: var(--tf-gold); border-color: var(--tf-gold); color: var(--tf-midnight); }
+            .alert { border-radius: 8px; border-left-width: 4px; }
+            .alert-info { background: rgba(93, 173, 226, 0.1); border-color: #5dade2; color: #5dade2; }
+            .alert-success { background: rgba(39, 174, 96, 0.1); border-color: #27ae60; color: #2ecc71; }
+            .alert-danger { background: rgba(192, 57, 43, 0.1); border-color: #c0392b; color: #e74c3c; }
+            .alert-warning { background: rgba(243, 156, 18, 0.1); border-color: #f39c12; color: #f1c40f; }
+            .text-muted { color: var(--tf-gray) !important; }
+            .text-success { color: #2ecc71 !important; }
+            .text-danger { color: #e74c3c !important; }
+            h1, h2, h3, h4, h5, h6 { color: var(--tf-white); }
+            a { color: var(--tf-gold); }
+            a:hover { color: var(--tf-gold-light); }
+            .badge.bg-info { background-color: var(--tf-dark-blue) !important; color: var(--tf-gold) !important; }
+            .badge.bg-success { background-color: #27ae60 !important; }
+            .badge.bg-warning { background-color: var(--tf-gold) !important; color: var(--tf-midnight) !important; }
+            .badge.bg-secondary { background-color: var(--tf-navy) !important; border: 1px solid var(--tf-border); }
+            .badge.bg-danger { background-color: #c0392b !important; }
+            dl dt { color: var(--tf-gold); }
+            dl dd { color: var(--tf-white); }
+            .list-group-item { background: var(--tf-card-bg); border-color: var(--tf-border); color: var(--tf-white); }
+            .bi { font-style: normal; }
+
+            /* ==================== DARK/LIGHT MODE ==================== */
+            [data-theme="light"] {
+                --tf-midnight: #f4f6fb;
+                --tf-navy: #ffffff;
+                --tf-dark-blue: #e8ecf4;
+                --tf-white: #1a1a2e;
+                --tf-gray: #5a5f7a;
+                --tf-card-bg: #ffffff;
+                --tf-border: #e2e6ef;
+            }
+            [data-theme="light"] body { background: #f4f6fb; color: #1a1a2e; }
+            [data-theme="light"] .tf-sidebar { background: linear-gradient(180deg, #ffffff 0%, #f8f9fc 100%); border-right-color: #e2e6ef; }
+            [data-theme="light"] .tf-sidebar-nav a { color: #5a5f7a; }
+            [data-theme="light"] .tf-sidebar-nav a:hover { background: rgba(201,162,39,0.08); color: var(--tf-gold); }
+            [data-theme="light"] .tf-sidebar-nav a.active { background: rgba(201,162,39,0.12); color: var(--tf-gold); }
+            [data-theme="light"] .tf-topbar { background: #ffffff; border-bottom-color: #e2e6ef; }
+            [data-theme="light"] .tf-table thead th { background: #f0f2f8; color: #5a5f7a; }
+            [data-theme="light"] .tf-table tbody td { color: #1a1a2e; border-bottom-color: #e2e6ef; }
+            [data-theme="light"] .tf-table tbody tr:hover td { background: #f8f9fc; }
+            [data-theme="light"] .tf-widget { background: #ffffff; border-color: #e2e6ef; }
+            [data-theme="light"] .tf-flash { border-radius: 8px; }
+            [data-theme="light"] .tf-sidebar-brand a { color: var(--tf-gold); }
+            [data-theme="light"] .tf-sidebar-brand small { color: #8b90a5; }
+            [data-theme="light"] .tf-sidebar-section { color: #8b90a5; }
+            [data-theme="light"] .tf-sidebar-footer { border-top-color: #e2e6ef; }
+            [data-theme="light"] .tf-sidebar-footer .user-name { color: #1a1a2e; }
+            [data-theme="light"] .tf-search { background: #f0f2f8; border-color: #e2e6ef; color: #1a1a2e; }
+            [data-theme="light"] .form-control, [data-theme="light"] .form-select { background: #ffffff; border-color: #e2e6ef; color: #1a1a2e; }
+
+            .tf-theme-btn { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--tf-border); background: transparent; color: var(--tf-gray); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: all 0.2s; }
+            .tf-theme-btn:hover { background: rgba(212,168,67,0.1); color: var(--tf-gold); border-color: var(--tf-gold); transform: rotate(15deg); }
+
+            /* ==================== LANGUAGE SWITCHER ==================== */
+            .tf-lang-switcher { position: relative; display: inline-flex; }
+            .tf-lang-btn { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--tf-border); background: transparent; color: var(--tf-gray); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; transition: all 0.2s; text-transform: uppercase; }
+            .tf-lang-btn:hover { background: rgba(212,168,67,0.1); color: var(--tf-gold); border-color: var(--tf-gold); }
+            .tf-lang-dropdown { position: absolute; top: calc(100% + 8px); right: 0; background: var(--tf-card-bg); border: 1px solid var(--tf-border); border-radius: 10px; padding: 0.4rem; min-width: 140px; box-shadow: 0 8px 25px rgba(0,0,0,0.3); display: none; z-index: 9999; }
+            .tf-lang-dropdown.show { display: block; }
+            .tf-lang-dropdown a { display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 0.8rem; color: var(--tf-gray); text-decoration: none; border-radius: 6px; font-size: 0.85rem; transition: all 0.15s; }
+            .tf-lang-dropdown a:hover { background: rgba(212,168,67,0.08); color: var(--tf-gold); }
+            .tf-lang-dropdown a.active { color: var(--tf-gold); font-weight: 600; background: rgba(212,168,67,0.12); }
+            .tf-lang-dropdown a .flag-icon { font-size: 1.1rem; }
         </style>
+        <link rel="stylesheet" href="/css/cards.css">
         {% block stylesheets %}{% endblock %}
     </head>
     <body class="{{ not is_granted('ROLE_ADMIN') ? 'no-sidebar' : '' }}">
@@ -514,83 +843,118 @@
                 <a href="{{ path('app_dashboard') }}">
                     <i class="fas fa-briefcase"></i> TalentFlow
                 </a>
-                <small>Admin Connect</small>
+                <small>{{ app.user ? app.user.prenom ~ ' ' ~ app.user.nom ~ ' • ' ~ app.user.roleLabel : 'common.hr_management'|trans }}</small>
             </div>
 
-            <div class="tf-sidebar-section">Principal</div>
+            {# ── Principal ── #}
+            <div class="tf-sidebar-section">{{ 'section.main'|trans }}</div>
             <ul class="tf-sidebar-nav">
                 <li>
                     <a href="{{ path('app_dashboard') }}" class="{% if app.request.attributes.get('_route') == 'app_dashboard' %}active{% endif %}">
-                        <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                        <i class="fas fa-tachometer-alt"></i> {{ 'nav.dashboard'|trans }}
                     </a>
                 </li>
 
+                {# ── 👥 Utilisateurs (ADMIN uniquement) ── #}
                 {% if is_granted('ROLE_ADMIN') %}
-                <div class="tf-sidebar-section">Administration</div>
+                <div class="tf-sidebar-section">👥 {{ 'section.users'|trans }}</div>
                 <li>
                     <a href="{{ path('app_user_index') }}" class="{% if 'app_user' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-users-cog"></i> Gestion Utilisateurs
+                        <i class="fas fa-users-cog"></i> {{ 'nav.users'|trans }}
                     </a>
                 </li>
                 <li>
                     <a href="{{ path('app_user_new') }}">
-                        <i class="fas fa-user-plus"></i> Nouvel Utilisateur
+                        <i class="fas fa-user-plus"></i> {{ 'nav.new_user'|trans }}
                     </a>
                 </li>
                 {% endif %}
 
-                {% if is_granted('ROLE_RH') or is_granted('ROLE_ADMIN') %}
-                <div class="tf-sidebar-section">Recrutement</div>
+                {# ── 💼 Offres d'emploi (ADMIN + RH : gestion / CANDIDAT : consultation) ── #}
+                <div class="tf-sidebar-section">💼 {{ 'section.offers'|trans }}</div>
+                {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_RH') %}
                 <li>
                     <a href="{{ path('offre_index') }}" class="{% if 'offre' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-clipboard-list"></i> Offres d'emploi
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ path('app_candidature_index') }}" class="{% if 'app_candidature' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-file-alt"></i> Candidatures
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ path('app_entretien_index') }}" class="{% if 'app_entretien' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-calendar-check"></i> Entretiens
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ path('app_decision_finale_index') }}" class="{% if 'app_decision_finale' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-scale-balanced"></i> Décisions
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ path('avantage_index') }}" class="{% if 'avantage' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-gift"></i> Avantages
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ path('categorie_index') }}" class="{% if 'categorie' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-tags"></i> Catégories
+                        <i class="fas fa-clipboard-list"></i> {{ 'nav.offers'|trans }}
                     </a>
                 </li>
                 <li>
                     <a href="{{ path('entreprise_index') }}" class="{% if 'entreprise' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-building"></i> Entreprises
+                        <i class="fas fa-building"></i> {{ 'nav.companies'|trans }}
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('categorie_index') }}" class="{% if 'categorie' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-tags"></i> {{ 'nav.categories'|trans }}
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('avantage_index') }}" class="{% if 'avantage' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-gift"></i> {{ 'nav.benefits'|trans }}
+                    </a>
+                </li>
+                {% endif %}
+                {% if is_granted('ROLE_CANDIDAT') and not is_granted('ROLE_ADMIN') and not is_granted('ROLE_RH') %}
+                <li>
+                    <a href="{{ path('offre_index') }}" class="{% if 'offre' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-search"></i> {{ 'nav.browse_offers'|trans }}
                     </a>
                 </li>
                 {% endif %}
 
-                <div class="tf-sidebar-section">Forum</div>
+                {# ── 📄 Candidatures (tous, vue différente par rôle) ── #}
+                <div class="tf-sidebar-section">📄 {{ 'section.applications'|trans }}</div>
+                {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_RH') %}
+                <li>
+                    <a href="{{ path('app_candidature_index') }}" class="{% if 'app_candidature' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-folder-open"></i> {{ 'nav.applications'|trans }}
+                    </a>
+                </li>
+                {% endif %}
+                {% if is_granted('ROLE_CANDIDAT') and not is_granted('ROLE_ADMIN') and not is_granted('ROLE_RH') %}
+                <li>
+                    <a href="{{ path('app_candidature_index') }}" class="{% if 'app_candidature' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-paper-plane"></i> {{ 'nav.my_applications'|trans }}
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_candidature_new') }}">
+                        <i class="fas fa-plus-circle"></i> {{ 'nav.new_application'|trans }}
+                    </a>
+                </li>
+                {% endif %}
+
+                {# ── 📅 Entretiens (ADMIN + RH uniquement) ── #}
+                {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_RH') %}
+                <div class="tf-sidebar-section">📅 {{ 'section.interviews'|trans }}</div>
+                <li>
+                    <a href="{{ path('app_entretien_index') }}" class="{% if 'app_entretien' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-calendar-check"></i> {{ 'nav.interviews'|trans }}
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_decision_finale_index') }}" class="{% if 'app_decision_finale' in app.request.attributes.get('_route') %}active{% endif %}">
+                        <i class="fas fa-scale-balanced"></i> {{ 'nav.decisions'|trans }}
+                    </a>
+                </li>
+                {% endif %}
+
+                {# ── 💬 Gestion forum (admin) ── #}
+                <div class="tf-sidebar-section">💬 {{ 'section.forum_management'|trans }}</div>
                 <li>
                     <a href="{{ path('post_index') }}" class="{% if 'post' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-comments"></i> Posts
+                        <i class="fas fa-newspaper"></i> {{ 'nav.posts'|trans }}
                     </a>
                 </li>
                 {% if is_granted('ROLE_ADMIN') %}
                 <li>
                     <a href="{{ path('admin_reports') }}" class="{% if 'admin_reports' in app.request.attributes.get('_route') %}active{% endif %}">
-                        <i class="fas fa-flag"></i> Modération
+                        <i class="fas fa-flag"></i> {{ 'nav.moderation'|trans }}
                     </a>
                 </li>
                 {% endif %}
+
+                <div class="tf-sidebar-section">{{ 'section.communication'|trans }}</div>
                 <li>
                     <a href="{{ path('message_index') }}" class="{% if 'message' in app.request.attributes.get('_route') %}active{% endif %}" style="position:relative">
                         <i class="fas fa-paper-plane"></i> {{ 'nav.messages'|trans }}
@@ -601,17 +965,17 @@
                 {% if is_granted('ROLE_CANDIDAT') and not is_granted('ROLE_ADMIN') %}
                 <div class="tf-sidebar-section">{{ 'section.my_space'|trans }}</div>
                 <li>
-                    <a href="#">
+                    <a href="{{ path('app_candidature_index') }}" class="{% if 'app_candidature' in app.request.attributes.get('_route') %}active{% endif %}">
                         <i class="fas fa-paper-plane"></i> {{ 'nav.my_applications'|trans }}
                     </a>
                 </li>
                 <li>
-                    <a href="#">
+                    <a href="{{ path('offre_index') }}" class="{% if 'offre' in app.request.attributes.get('_route') %}active{% endif %}">
                         <i class="fas fa-search"></i> {{ 'nav.browse_offers'|trans }}
                     </a>
                 </li>
                 <li>
-                    <a href="#">
+                    <a href="{{ path('app_dashboard') }}" class="{% if app.request.attributes.get('_route') == 'app_dashboard' %}active{% endif %}">
                         <i class="fas fa-id-badge"></i> {{ 'nav.my_profile'|trans }}
                     </a>
                 </li>
@@ -619,12 +983,13 @@
 
                 <div class="tf-sidebar-section">{{ 'section.system'|trans }}</div>
                 <li>
-                    <a href="#">
+                    <a href="{{ path('app_dashboard') }}" class="{% if app.request.attributes.get('_route') == 'app_dashboard' %}active{% endif %}">
                         <i class="fas fa-cog"></i> {{ 'nav.settings'|trans }}
                     </a>
                 </li>
             </ul>
 
+            {# ── Déconnexion ── #}
             {% if app.user %}
             <div class="tf-sidebar-footer">
                 <div class="user-info">
@@ -636,11 +1001,15 @@
                         <div class="user-role">{{ app.user.roleLabel }}</div>
                     </div>
                 </div>
+                <a href="{{ path('app_logout') }}" class="btn-gold w-100 mt-2 justify-content-center" style="font-size:0.8rem;">
+                    <i class="fas fa-sign-out-alt"></i> {{ 'nav.logout'|trans }}
+                </a>
             </div>
             {% endif %}
         </aside>
         {% endif %}
 
+        {# ==================== TOPBAR ==================== #}
         <header class="tf-topbar">
             <div class="tf-topbar-left">
                 {% if not is_granted('ROLE_ADMIN') %}
@@ -661,15 +1030,15 @@
                         <span class="dm-unread-badge" style="display:none;min-width:16px;height:16px;line-height:16px;background:var(--tf-gold);color:var(--tf-midnight);font-size:0.6rem;font-weight:700;border-radius:50%;text-align:center;padding:0 3px;margin-left:4px"></span>
                     </a>
                     {% if is_granted('ROLE_RH') %}
-                    <a href="#">
+                    <a href="{{ path('offre_index') }}" class="{% if 'offre' in app.request.attributes.get('_route') %}active{% endif %}">
                         <i class="fas fa-clipboard-list"></i> {{ 'nav.offers_short'|trans }}
                     </a>
                     {% endif %}
                     {% if is_granted('ROLE_CANDIDAT') and not is_granted('ROLE_RH') %}
-                    <a href="#">
+                    <a href="{{ path('app_candidature_index') }}" class="{% if 'app_candidature' in app.request.attributes.get('_route') %}active{% endif %}">
                         <i class="fas fa-paper-plane"></i> {{ 'nav.my_applications'|trans }}
                     </a>
-                    <a href="#">
+                    <a href="{{ path('offre_index') }}" class="{% if 'offre' in app.request.attributes.get('_route') %}active{% endif %}">
                         <i class="fas fa-search"></i> {{ 'nav.offers_short'|trans }}
                     </a>
                     {% endif %}
@@ -707,13 +1076,15 @@
                     <span>{{ app.user.fullName }}</span>
                 </div>
                 <a href="{{ path('app_logout') }}">
-                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    <i class="fas fa-sign-out-alt"></i> {{ 'nav.logout'|trans }}
                 </a>
                 {% endif %}
             </div>
         </header>
 
+        {# ==================== MAIN CONTENT ==================== #}
         <main class="tf-main">
+            {# Flash messages #}
             {% for label, messages in app.flashes %}
                 {% for message in messages %}
                     <div class="tf-flash tf-flash-{{ label }}">

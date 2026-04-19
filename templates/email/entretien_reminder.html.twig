@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ app.request.locale|default('fr') }}">
 <head>
 <meta charset="UTF-8">
 <style>
@@ -24,53 +24,53 @@
 <div class="wrapper">
   <div class="header">
     <h1>TalentFlow RH</h1>
-    <p>Rappel d'entretien</p>
+    <p>{{ 'email.entretien_reminder.header_subtitle'|trans }}</p>
   </div>
   <div class="body">
-    <h2>Bonjour,</h2>
-    <p>Petit rappel: votre entretien est prevu dans <strong>{{ reminderLabel }}</strong>.</p>
+    <h2>{{ 'email.entretien_reminder.greeting'|trans }}</h2>
+    <p>{{ 'email.entretien_reminder.reminder_intro'|trans }} <strong>{{ reminderLabel }}</strong>.</p>
 
     <div class="alert">
-      <strong>Date et heure:</strong> {{ entretien.dateHeure ? entretien.dateHeure|date('d/m/Y a H:i') : '—' }}
+      <strong>{{ 'entretien.fields.date_time'|trans }}:</strong> {{ entretien.dateHeure ? entretien.dateHeure|date('d/m/Y a H:i') : '—' }}
     </div>
 
     <div class="info-box">
-      <p><strong>Poste:</strong> {{ candidature.titrePoste }}</p>
-      <p><strong>Entreprise:</strong> {{ candidature.entreprise }}</p>
+      <p><strong>{{ 'email.entretien_confirmation.position'|trans }}:</strong> {{ candidature.titrePoste }}</p>
+      <p><strong>{{ 'email.entretien_confirmation.company'|trans }}:</strong> {{ candidature.entreprise }}</p>
       <p>
-        <strong>Type:</strong>
+        <strong>{{ 'common.type'|trans }}:</strong>
         {% if entretien.type == 'EN_LIGNE' %}
-          <span class="tag tag-blue">En ligne</span>
+          <span class="tag tag-blue">{{ 'entretien.type.online'|trans }}</span>
         {% elseif entretien.type == 'PRESENTIEL' %}
-          <span class="tag tag-green">Presentiel</span>
+          <span class="tag tag-green">{{ 'entretien.type.onsite'|trans }}</span>
         {% else %}
-          <span class="tag tag-yellow">Telephonique</span>
+          <span class="tag tag-yellow">{{ 'entretien.type.phone'|trans }}</span>
         {% endif %}
       </p>
 
       {% if entretien.type == 'PRESENTIEL' and entretien.lieu %}
-        <p><strong>Lieu:</strong> {{ entretien.lieu }}</p>
+        <p><strong>{{ 'entretien.fields.location'|trans }}:</strong> {{ entretien.lieu }}</p>
       {% endif %}
 
       {% if entretien.type == 'TELEPHONIQUE' %}
-        <p>Merci de rester disponible sur votre numero de telephone.</p>
+        <p>{{ 'entretien.phone.be_available'|trans }}</p>
       {% endif %}
     </div>
 
     {% if meetUrl %}
-      <p>Pour l'entretien en ligne, utilisez ce lien:</p>
-      <a href="{{ meetUrl }}" class="meet-btn">Rejoindre l'entretien</a>
+      <p>{{ 'email.entretien_reminder.online_intro'|trans }}</p>
+      <a href="{{ meetUrl }}" class="meet-btn">{{ 'email.entretien_confirmation.join_button'|trans }}</a>
       <p style="font-size:12px; color:#666;">{{ meetUrl }}</p>
       
       {# Live Coding Link #}
       <div style="background: #f8f4ff; border: 2px solid #d4a843; border-radius: 8px; padding: 16px; margin: 20px 0;">
-        <p style="margin-top: 0; font-weight: bold; color: #1a2a4a;">💻 Test live coding</p>
-        <p style="margin: 8px 0; font-size: 14px; color: #333;">N'oubliez pas le test de codage en temps réel pendant l'entretien. Accédez à l'éditeur de code&nbsp;:</p>
-          <a href="{{ app.request.schemeAndHttpHost ~ path('app_live_coding_join', {'id': entretien.id}) }}" style="display: inline-block; padding: 10px 20px; background: #fbbf24; color: #000; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px;">Ouvrir Live Coding</a>
+        <p style="margin-top: 0; font-weight: bold; color: #1a2a4a;">💻 {{ 'email.entretien_confirmation.live_coding_title'|trans }}</p>
+        <p style="margin: 8px 0; font-size: 14px; color: #333;">{{ 'email.entretien_reminder.live_coding_intro'|trans }}</p>
+          <a href="{{ app.request.schemeAndHttpHost ~ path('app_live_coding_join', {'id': entretien.id}) }}" style="display: inline-block; padding: 10px 20px; background: #fbbf24; color: #000; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px;">{{ 'email.entretien_confirmation.live_coding_button'|trans }}</a>
       </div>
     {% endif %}
 
-    <p>A bientot,<br><strong>Le Service RH - TalentFlow</strong></p>
+    <p>{{ 'email.entretien_reminder.signature_intro'|trans }}<br><strong>{{ 'email.entretien_confirmation.signature_team'|trans }}</strong></p>
   </div>
   <div class="footer">
     © {{ "now"|date("Y") }} TalentFlow

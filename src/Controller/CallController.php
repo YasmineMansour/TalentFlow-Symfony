@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/call')]
 class CallController extends AbstractController
@@ -39,11 +40,11 @@ class CallController extends AbstractController
      * Register my PeerJS peer ID so the other side can discover it.
      */
     #[Route('/signal/{id}', name: 'call_signal', methods: ['POST'])]
-    public function signal(Conversation $conversation, Request $request): JsonResponse
+    public function signal(Conversation $conversation, Request $request, TranslatorInterface $translator): JsonResponse
     {
         $user = $this->getUser();
         if (!$user || !$conversation->involvesUser($user)) {
-            return new JsonResponse(['error' => 'Accès refusé'], 403);
+            return new JsonResponse(['error' => $translator->trans('api.auth.access_denied')], 403);
         }
 
         $peerId = $request->request->get('peerId', '');
@@ -117,11 +118,11 @@ class CallController extends AbstractController
     }
 
     #[Route('/end/{id}', name: 'call_end', methods: ['POST'])]
-    public function end(Conversation $conversation, Request $request, EntityManagerInterface $em): JsonResponse
+    public function end(Conversation $conversation, Request $request, EntityManagerInterface $em, TranslatorInterface $translator): JsonResponse
     {
         $user = $this->getUser();
         if (!$user || !$conversation->involvesUser($user)) {
-            return new JsonResponse(['error' => 'Accès refusé'], 403);
+            return new JsonResponse(['error' => $translator->trans('api.auth.access_denied')], 403);
         }
 
         // Read call status from the request

@@ -1,3 +1,4 @@
 body {
-    background-color: skyblue;
+    background: var(--tf-bg, #f8f9fc);
+    color: var(--tf-text, #1a1a2e);
 }

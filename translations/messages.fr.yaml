@@ -20,6 +20,7 @@ nav:
     forum: "Forum"
     posts: "Posts"
     messages: "Messages"
+    moderation: "Modération"
     comments: "Commentaires"
     my_profile: "Mon profil"
     settings: "Paramètres"
@@ -33,6 +34,8 @@ section:
     applications: "Candidatures"
     interviews: "Entretiens"
     forum: "Forum"
+    forum_management: "Gestion forum"
+    communication: "Communication"
     my_space: "Mon espace"
     system: "Système"
 
@@ -54,6 +57,7 @@ action:
     yes_create: "Oui, créer"
     yes_save: "Oui, enregistrer"
     new: "Nouveau"
+    export_pdf: "Export PDF"
 
 # ==================== THEME ====================
 theme:
@@ -110,6 +114,8 @@ common:
     author: "Auteur"
     content: "Contenu"
     title: "Titre"
+    error: "Erreur"
+    network_error: "Erreur réseau"
 
 # ==================== ROLES ====================
 role:
@@ -124,6 +130,7 @@ page:
         title: "Gestion des Utilisateurs"
         search_placeholder: "Rechercher par nom, prénom ou email..."
         all_roles: "Tous les rôles"
+        for_search: "pour"
         found: "utilisateur(s) trouvé(s)"
         no_users: "Aucun utilisateur trouvé."
         create_first: "Créer le premier utilisateur"
@@ -258,6 +265,149 @@ public:
         apply_now: "Postuler maintenant"
         login_to_apply: "Connectez-vous pour postuler"
         create_account: "Créer un compte"
+
+user:
+    status_active: "Actif"
+    status_disabled: "Désactivé"
+    disable_account: "Désactiver le compte"
+    reactivate_account: "Réactiver le compte"
+    toggle_confirm_fallback: "Confirmer le changement de statut pour"
+    confirm_disable_prefix: "Voulez-vous vraiment désactiver le compte de"
+    confirm_disable_help: "L'utilisateur ne pourra plus se connecter."
+    confirm_disable_action: "Oui, désactiver"
+    confirm_reactivate_prefix: "Voulez-vous réactiver le compte de"
+    confirm_reactivate_action: "Oui, réactiver"
+
+admin:
+    reports:
+        page_title: "Modération des posts"
+        pending_count: "Signalements en attente"
+        queue_title: "File de modération"
+        queue_description: "Examinez les signalements, rejetez les abus et masquez les posts qui enfreignent les règles communautaires."
+        view_forum: "Voir le forum"
+        pending_title: "Signalements en attente"
+        no_pending: "Aucun signalement en attente."
+        reported_on: "Signalé le"
+        reported_by: "Signalé par"
+        reason: "Motif"
+        report_description: "Description du signalement"
+        post_deleted: "Post supprimé"
+        deleted_user: "Utilisateur supprimé"
+        post_preview: "Aperçu du post"
+        no_text_content: "Aucun contenu texte."
+        no_description: "Aucune précision fournie."
+        linked_post_unavailable: "Le post lié n'est plus disponible."
+        dismiss: "Rejeter"
+        hide_post: "Masquer le post"
+        hidden_posts_title: "Posts masqués"
+        no_hidden_posts: "Aucun post masqué actuellement."
+        hidden_badge: "Masqué"
+        published_on: "Publié le"
+        by_author: "Par"
+        hidden_post_reason: "Post masqué"
+        hidden_post_description: "Visible uniquement par les administrateurs."
+        unhide_post: "Rendre visible"
+        full_post_content: "Contenu complet du post"
+
+api:
+    auth:
+        required: "Non authentifié"
+        access_denied: "Accès refusé"
+    message:
+        invalid_length: "Message invalide (1-2000 caractères)"
+        conversation_not_found: "Conversation introuvable"
+        cannot_message_self: "Vous ne pouvez pas vous envoyer un message."
+        edit_own_only: "Vous ne pouvez modifier que vos propres messages"
+        edit_window_expired: "Le délai de modification (15 min) est dépassé"
+        delete_own_only: "Vous ne pouvez supprimer que vos propres messages"
+        delete_window_expired: "Le délai de suppression (15 min) est dépassé"
+    post_report:
+        auth_required: "Vous devez être connecté pour signaler un post."
+        admin_use_panel: "Les administrateurs utilisent le panneau de modération."
+        already_hidden: "Ce post a déjà été retiré."
+        duplicate_pending: "Vous avez déjà un signalement en attente pour ce post."
+        invalid_reason: "Veuillez sélectionner un motif valide."
+        description_too_long: "La description ne peut pas dépasser 1000 caractères."
+        flash_dismissed: "Signalement rejeté."
+        flash_hidden: "Le post a été masqué."
+        flash_unhidden: "Le post est de nouveau visible."
+
+entretien:
+    page:
+        title: "Mon entretien"
+        title_with_id: "Mon entretien #%id%"
+    sidebar:
+        candidate: "Candidat"
+        details: "Détails"
+    fields:
+        date_time: "Date & heure"
+        location: "Lieu"
+    type:
+        online: "En ligne"
+        online_jitsi: "En ligne (Jitsi Meet)"
+        onsite: "Présentiel"
+        phone: "Téléphonique"
+    actions:
+        open_jitsi_direct: "Jitsi direct"
+        leave_code_mode: "Quitter mode code"
+        join_meeting_cta: "REJOINDRE LA RÉUNION"
+        join_jitsi: "REJOINDRE JITSI MEET"
+        open_live_coding: "Ouvrir Live Coding"
+        code_mode: "Mode Code"
+        edit: "Modifier cet entretien"
+        live_code_short: "Live Code"
+    meeting:
+        jitsi: "Jitsi Meet"
+        live_badge: "EN DIRECT"
+        iframe_title: "Entretien en ligne TalentFlow"
+        online_title: "Entretien en ligne - Jitsi Meet"
+    live_coding:
+        title: "Live Coding"
+        language: "Langage"
+        run: "Exécuter"
+        share: "Partager"
+        output: "Sortie de code"
+        running: "Exécution..."
+        no_output: "pas de sortie"
+        shared_prefix: "Code partagé:"
+        share_dialog_title: "Partage du code:"
+    phone:
+        title: "Entretien téléphonique"
+        be_available: "Restez disponible sur votre numéro de téléphone."
+        call_on: "Nous vous appellerons le"
+        ensure_available: "Assurez-vous d'être disponible sur votre numéro."
+    onsite:
+        title: "Entretien en présentiel"
+        meet_on: "Rendez-vous le"
+        address_intro: "à l'adresse suivante :"
+        address_tbd: "Adresse à confirmer"
+
+email:
+    entretien_confirmation:
+        header_subtitle: "Confirmation d'entretien"
+        greeting: "Bonjour,"
+        confirm_intro: "Nous vous confirmons votre entretien prévu le"
+        position: "Poste"
+        company: "Entreprise"
+        join_online_intro: "Rejoignez votre entretien en ligne en cliquant sur le bouton ci-dessous :"
+        join_button: "Rejoindre l'entretien"
+        link_label: "Lien"
+        live_coding_title: "Test live coding"
+        live_coding_intro: "Pendant votre entretien, vous ferez un test de codage en temps réel. Accédez directement à la plateforme :"
+        live_coding_button: "Ouvrir Live Coding"
+        portal_intro: "Vous pouvez également consulter votre entretien sur TalentFlow"
+        portal_link: "Voir mon entretien"
+        questions: "Si vous avez des questions, n'hésitez pas à contacter le service RH."
+        signature_intro: "Cordialement,"
+        signature_team: "Le Service RH - TalentFlow"
+        footer: "Plateforme de gestion des candidatures"
+    entretien_reminder:
+        header_subtitle: "Rappel d'entretien"
+        greeting: "Bonjour,"
+        reminder_intro: "Petit rappel : votre entretien est prévu dans"
+        online_intro: "Pour l'entretien en ligne, utilisez ce lien :"
+        live_coding_intro: "N'oubliez pas le test de codage en temps réel pendant l'entretien. Accédez à l'éditeur de code :"
+        signature_intro: "À bientôt,"
     register:
         page_title: "Inscription - TalentFlow"
         meta_description: "Créez votre compte TalentFlow gratuitement et accédez aux offres d'emploi, postulez et suivez vos candidatures."

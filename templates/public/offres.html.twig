@@ -54,7 +54,7 @@
 {% block body %}
 <section class="tf-section" aria-labelledby="offres-page-title">
     <div class="tf-section-header">
-        <h1 id="offres-page-title" style="font-size:2rem; font-weight:800;">{{ app.request.locale starts with 'en' ? 'Open Roles' : 'Offres d\'emploi' }}</h1>
+        <h1 id="offres-page-title" style="font-size:2rem; font-weight:800;">{{ 'public.offers.heading'|trans }}</h1>
         <p>{{ 'public.offers.count'|trans({'%count%': offres|length}) }}</p>
     </div>
 
@@ -89,7 +89,7 @@
                 <input type="text" name="localisation" id="filter-loc" value="{{ localisation }}" class="tf-input" placeholder="{{ 'public.offers.city_placeholder'|trans }}">
             </div>
             <button type="submit" class="tf-btn tf-btn-gold">
-                <i class="fas fa-filter" aria-hidden="true"></i> {{ app.request.locale starts with 'en' ? 'Apply filters' : 'Filtrer' }}
+                <i class="fas fa-filter" aria-hidden="true"></i> {{ 'public.offers.filter'|trans }}
             </button>
         </div>
         {% if search or categorieId or typeContrat or localisation %}
