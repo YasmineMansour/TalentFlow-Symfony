@@ -4,6 +4,7 @@ framework:
     annotations: false
     http_method_override: false
     handle_all_throwables: true
+    csrf_protection: true
     default_locale: '%app.default_locale%'
     enabled_locales: '%app.supported_locales%'
 

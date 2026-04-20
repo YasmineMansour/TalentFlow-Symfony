@@ -20,6 +20,10 @@ security:
                 check_path: app_login
                 default_target_path: app_dashboard
                 enable_csrf: true
+                csrf_token_id: authenticate
+                csrf_parameter: _csrf_token
+                username_parameter: _username
+                password_parameter: _password
             remember_me:
                 secret: '%kernel.secret%'
                 lifetime: 604800

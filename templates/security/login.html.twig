@@ -325,7 +325,7 @@
                     </div>
                 {% endif %}
 
-                <form method="post">
+                <form method="post" action="{{ path('app_login') }}">
                     <div class="mb-3">
                         <label for="inputEmail" class="form-label">
                                      <i class="fas fa-envelope"></i> {{ 'page.login.email'|trans }}
