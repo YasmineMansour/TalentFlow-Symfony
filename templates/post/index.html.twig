@@ -1353,22 +1353,22 @@
         <div class="sidebar-stats-grid">
             <div class="sidebar-stat-card">
                 <i class="fas fa-file-alt"></i>
-                <span class="sidebar-stat-value">{{ totalPosts }}</span>
+                <span class="sidebar-stat-value" id="forumTotalPosts">{{ totalPosts }}</span>
                 <span class="sidebar-stat-label">Posts</span>
             </div>
             <div class="sidebar-stat-card">
                 <i class="fas fa-comments"></i>
-                <span class="sidebar-stat-value">{{ totalComments }}</span>
+                <span class="sidebar-stat-value" id="forumTotalComments">{{ totalComments }}</span>
                 <span class="sidebar-stat-label">Commentaires</span>
             </div>
             <div class="sidebar-stat-card">
                 <i class="fas fa-users"></i>
-                <span class="sidebar-stat-value">{{ totalUsers }}</span>
+                <span class="sidebar-stat-value" id="forumTotalUsers">{{ totalUsers }}</span>
                 <span class="sidebar-stat-label">Membres</span>
             </div>
             <div class="sidebar-stat-card">
                 <i class="fas fa-thumbs-up"></i>
-                <span class="sidebar-stat-value">{{ totalVotes }}</span>
+                <span class="sidebar-stat-value" id="forumTotalVotes">{{ totalVotes }}</span>
                 <span class="sidebar-stat-label">Votes</span>
             </div>
         </div>
@@ -1616,6 +1616,7 @@
 </div>
 {% endblock %}
 {% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 (function() {
     /* ── Forum Rules Toggle ── */
@@ -1644,9 +1645,18 @@
     const resultCount = document.getElementById('resultCount');
     const searchUrl = '{{ path("post_search") }}';
     const createUrl = '{{ path("post_create_ajax") }}';
+    const forumStatsUrl = '{{ path("post_stats_ajax") }}';
     const isAdmin = {{ is_granted('ROLE_ADMIN') ? 'true' : 'false' }};
     const currentUserId = {{ app.user ? app.user.id : 'null' }};
     const hiddenPostMessage = 'This post was removed for violating community guidelines.';
+    const initialForumStats = {
+        totalPosts: {{ totalPosts }},
+        totalComments: {{ totalComments }},
+        totalUsers: {{ totalUsers }},
+        totalVotes: {{ totalVotes }},
+        postsPerDay: {{ postsPerDay|json_encode|raw }},
+        topAuthors: {{ topAuthors|json_encode|raw }}
+    };
 
     let debounceTimer = null;
     let currentSort = 'recent';
@@ -1657,6 +1667,159 @@
     let activeTtsButton = null;
     let activeUtterance = null;
     const ttsUnsupportedMsg = 'Text-to-speech is not supported in your browser.';
+    let activityChartInstance = null;
+    let authorsChartInstance = null;
+
+    function renderSidebarCharts(stats) {
+        if (typeof Chart === 'undefined') {
+            return;
+        }
+
+        const isLight = document.body.classList.contains('light-mode');
+        const gridColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
+        const textColor = isLight ? '#65676b' : '#b0b3b8';
+
+        const actCtx = document.getElementById('activityChart');
+        if (actCtx) {
+            if (activityChartInstance) {
+                activityChartInstance.destroy();
+            }
+
+            activityChartInstance = new Chart(actCtx, {
+                type: 'bar',
+                data: {
+                    labels: stats.postsPerDay.map(d => d.label),
+                    datasets: [{
+                        label: 'Posts',
+                        data: stats.postsPerDay.map(d => d.count),
+                        backgroundColor: 'rgba(212, 168, 67, 0.6)',
+                        borderColor: 'rgba(212, 168, 67, 1)',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: isLight ? '#fff' : '#1e1e2e',
+                            titleColor: isLight ? '#1c1e21' : '#e4e6eb',
+                            bodyColor: isLight ? '#333' : '#b0b3b8',
+                            borderColor: 'rgba(212,168,67,0.3)',
+                            borderWidth: 1,
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: textColor, font: { size: 10 } }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: gridColor },
+                            ticks: {
+                                color: textColor,
+                                font: { size: 10 },
+                                stepSize: 1,
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        const authCtx = document.getElementById('authorsChart');
+        const topAuthors = stats.topAuthors || {};
+
+        if (!authCtx) {
+            return;
+        }
+
+        if (authorsChartInstance) {
+            authorsChartInstance.destroy();
+            authorsChartInstance = null;
+        }
+
+        if (Object.keys(topAuthors).length === 0) {
+            return;
+        }
+
+        const authNames = Object.keys(topAuthors);
+        const authCounts = Object.values(topAuthors);
+        const palette = [
+            'rgba(212,168,67,0.85)',
+            'rgba(67,160,212,0.85)',
+            'rgba(212,67,100,0.85)',
+            'rgba(67,212,150,0.85)',
+            'rgba(160,67,212,0.85)',
+        ];
+
+        authorsChartInstance = new Chart(authCtx, {
+            type: 'doughnut',
+            data: {
+                labels: authNames,
+                datasets: [{
+                    data: authCounts,
+                    backgroundColor: palette.slice(0, authNames.length),
+                    borderColor: isLight ? '#fff' : '#1e1e2e',
+                    borderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '55%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: textColor,
+                            font: { size: 10 },
+                            padding: 8,
+                            boxWidth: 12,
+                            boxHeight: 12,
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: isLight ? '#fff' : '#1e1e2e',
+                        titleColor: isLight ? '#1c1e21' : '#e4e6eb',
+                        bodyColor: isLight ? '#333' : '#b0b3b8',
+                        borderColor: 'rgba(212,168,67,0.3)',
+                        borderWidth: 1,
+                    }
+                }
+            }
+        });
+    }
+
+    function applyForumStats(stats) {
+        const postsEl = document.getElementById('forumTotalPosts');
+        const commentsEl = document.getElementById('forumTotalComments');
+        const usersEl = document.getElementById('forumTotalUsers');
+        const votesEl = document.getElementById('forumTotalVotes');
+
+        if (postsEl) postsEl.textContent = String(stats.totalPosts ?? 0);
+        if (commentsEl) commentsEl.textContent = String(stats.totalComments ?? 0);
+        if (usersEl) usersEl.textContent = String(stats.totalUsers ?? 0);
+        if (votesEl) votesEl.textContent = String(stats.totalVotes ?? 0);
+
+        renderSidebarCharts(stats);
+    }
+
+    function refreshForumStats() {
+        fetch(forumStatsUrl, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(applyForumStats)
+        .catch(() => {});
+    }
 
     /* ── AI Summary state ── */
     const summaryCache = {};
@@ -1974,6 +2137,7 @@
             document.querySelectorAll(`.ln-vote-btn.downvote[data-id="${id}"]`).forEach(el => {
                 el.classList.toggle('voted', data.userVote === 'down');
             });
+            refreshForumStats();
             btn.style.pointerEvents = '';
         })
         .catch(() => { btn.style.pointerEvents = ''; });
@@ -2191,6 +2355,7 @@
                 if (newCard) translateCard(newCard, currentDisplayLang);
             }
             bindAll();
+            refreshForumStats();
         })
         .catch(() => {
             btn.disabled = false;
@@ -2379,6 +2544,8 @@
                 if (detailCommentsList.querySelectorAll('.mdl-comment').length === 0) {
                     detailCommentsList.innerHTML = '<div class="mdl-no-comments"><i class="far fa-comment-dots"></i>Aucun commentaire pour le moment</div>';
                 }
+
+                refreshForumStats();
             }
         });
     }
@@ -2494,6 +2661,8 @@
                     }
                 }
             }
+
+            refreshForumStats();
         })
         .catch(() => {
             btn.disabled = false;
@@ -2904,74 +3073,7 @@
 
     // Initial bind
     bindAll();
-
-    /* ══════════════════════════════════════════════
-       STATISTICS CHARTS (Chart.js)
-       ══════════════════════════════════════════════ */
-    const activityCtx = document.getElementById('activityChart');
-    if (activityCtx) {
-        const activityData = {{ postsPerDay|json_encode|raw }};
-        const existingActivity = Chart.getChart(activityCtx);
-        if (existingActivity) existingActivity.destroy();
-        new Chart(activityCtx, {
-            type: 'bar',
-            data: {
-                labels: activityData.map(d => d.label),
-                datasets: [{
-                    label: 'Posts',
-                    data: activityData.map(d => d.count),
-                    backgroundColor: 'rgba(212, 168, 67, 0.6)',
-                    borderColor: 'var(--tf-gold)',
-                    borderWidth: 1,
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { color: 'var(--tf-gray)', stepSize: 1 },
-                        grid: { color: 'var(--tf-border)' }
-                    },
-                    x: {
-                        ticks: { color: 'var(--tf-gray)' },
-                        grid: { color: 'var(--tf-border)' }
-                    }
-                }
-            }
-        });
-    }
-
-    const authorsCtx = document.getElementById('authorsChart');
-    if (authorsCtx) {
-        const topAuthorsData = {{ topAuthors|json_encode|raw }};
-        const colors = ['#d4a843', '#5dade2', '#2ecc71', '#f39c12', '#e74c3c'];
-        new Chart(authorsCtx, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(topAuthorsData),
-                datasets: [{
-                    data: Object.values(topAuthorsData),
-                    backgroundColor: colors.slice(0, Object.keys(topAuthorsData).length),
-                    borderColor: 'var(--tf-card-bg)',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: { color: 'var(--tf-gray)', padding: 12, font: { size: 11 } }
-                    }
-                }
-            }
-        });
-    }
+    applyForumStats(initialForumStats);
 
     /* ══════════════════════════════════════════════
        LANGUAGE PICKER
@@ -3036,120 +3138,6 @@
         updatePickerActive();
     })();
 
-    // ── Chart.js: Sidebar Charts ──
-    (function initSidebarCharts() {
-        const postsPerDay = {{ postsPerDay|json_encode|raw }};
-        const topAuthors = {{ topAuthors|json_encode|raw }};
-        const isLight = document.body.classList.contains('light-mode');
-        const gridColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
-        const textColor = isLight ? '#65676b' : '#b0b3b8';
-
-        // Activity bar chart
-        const actCtx = document.getElementById('activityChart');
-        if (actCtx) {
-            const prevActChart = Chart.getChart(actCtx);
-            if (prevActChart) prevActChart.destroy();
-            new Chart(actCtx, {
-                type: 'bar',
-                data: {
-                    labels: postsPerDay.map(d => d.label),
-                    datasets: [{
-                        label: 'Posts',
-                        data: postsPerDay.map(d => d.count),
-                        backgroundColor: 'rgba(212, 168, 67, 0.6)',
-                        borderColor: 'rgba(212, 168, 67, 1)',
-                        borderWidth: 1,
-                        borderRadius: 6,
-                        borderSkipped: false,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: isLight ? '#fff' : '#1e1e2e',
-                            titleColor: isLight ? '#1c1e21' : '#e4e6eb',
-                            bodyColor: isLight ? '#333' : '#b0b3b8',
-                            borderColor: 'rgba(212,168,67,0.3)',
-                            borderWidth: 1,
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: textColor, font: { size: 10 } }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: gridColor },
-                            ticks: {
-                                color: textColor,
-                                font: { size: 10 },
-                                stepSize: 1,
-                                precision: 0
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // Top authors doughnut
-        const authCtx = document.getElementById('authorsChart');
-        if (authCtx && Object.keys(topAuthors).length > 0) {
-            const prevAuthChart = Chart.getChart(authCtx);
-            if (prevAuthChart) prevAuthChart.destroy();
-            const authNames = Object.keys(topAuthors);
-            const authCounts = Object.values(topAuthors);
-            const palette = [
-                'rgba(212,168,67,0.85)',
-                'rgba(67,160,212,0.85)',
-                'rgba(212,67,100,0.85)',
-                'rgba(67,212,150,0.85)',
-                'rgba(160,67,212,0.85)',
-            ];
-            new Chart(authCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: authNames,
-                    datasets: [{
-                        data: authCounts,
-                        backgroundColor: palette.slice(0, authNames.length),
-                        borderColor: isLight ? '#fff' : '#1e1e2e',
-                        borderWidth: 2,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '55%',
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: textColor,
-                                font: { size: 10 },
-                                padding: 8,
-                                boxWidth: 12,
-                                boxHeight: 12,
-                                usePointStyle: true,
-                                pointStyle: 'circle',
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: isLight ? '#fff' : '#1e1e2e',
-                            titleColor: isLight ? '#1c1e21' : '#e4e6eb',
-                            bodyColor: isLight ? '#333' : '#b0b3b8',
-                            borderColor: 'rgba(212,168,67,0.3)',
-                            borderWidth: 1,
-                        }
-                    }
-                }
-            });
-        }
-    })();
 })();
 </script>
 

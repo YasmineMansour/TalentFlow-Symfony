@@ -42,39 +42,7 @@ class PostController extends AbstractController
             }
         }
 
-        // Stats for right sidebar
-        $userRepo = $em->getRepository(User::class);
-        $commentRepo = $em->getRepository(\App\Entity\Comment::class);
-        $totalUsers = $userRepo->count([]);
-        $totalPosts = count($posts);
-        $totalComments = $commentRepo->count([]);
-        $totalVotes = $voteRepo->count([]);
-
-        // Posts per day (last 7 days)
-        $postsPerDay = [];
-        for ($i = 6; $i >= 0; $i--) {
-            $dayStart = new \DateTimeImmutable("-{$i} days midnight");
-            $dayEnd = $dayStart->modify('+1 day');
-            $count = 0;
-            foreach ($posts as $p) {
-                if ($p->getCreatedAt() >= $dayStart && $p->getCreatedAt() < $dayEnd) {
-                    $count++;
-                }
-            }
-            $postsPerDay[] = [
-                'label' => $dayStart->format('D'),
-                'count' => $count,
-            ];
-        }
-
-        // Top 5 most active authors
-        $authorStats = [];
-        foreach ($posts as $p) {
-            $name = $p->getAuthorName();
-            $authorStats[$name] = ($authorStats[$name] ?? 0) + 1;
-        }
-        arsort($authorStats);
-        $topAuthors = array_slice($authorStats, 0, 5, true);
+        $stats = $this->buildForumStats($posts, $em, $voteRepo);
 
         // Detect language per post
         $postLangs = [];
@@ -87,13 +55,21 @@ class PostController extends AbstractController
             'users' => $em->getRepository(User::class)->findAll(),
             'userVotes' => $userVotes,
             'postLangs' => $postLangs,
-            'totalUsers' => $totalUsers,
-            'totalPosts' => $totalPosts,
-            'totalComments' => $totalComments,
-            'totalVotes' => $totalVotes,
-            'postsPerDay' => $postsPerDay,
-            'topAuthors' => $topAuthors,
+            'totalUsers' => $stats['totalUsers'],
+            'totalPosts' => $stats['totalPosts'],
+            'totalComments' => $stats['totalComments'],
+            'totalVotes' => $stats['totalVotes'],
+            'postsPerDay' => $stats['postsPerDay'],
+            'topAuthors' => $stats['topAuthors'],
         ]);
+    }
+
+    #[Route('/stats-ajax', name: 'post_stats_ajax', methods: ['GET'])]
+    public function statsAjax(PostRepository $repo, EntityManagerInterface $em, VoteRepository $voteRepo): JsonResponse
+    {
+        $posts = $repo->findAllOrderedByDate();
+
+        return $this->json($this->buildForumStats($posts, $em, $voteRepo));
     }
 
     #[Route('/search', name: 'post_search', methods: ['GET'])]
@@ -609,5 +585,54 @@ class PostController extends AbstractController
     private function canViewOriginalPost(Post $post): bool
     {
         return !$post->isHidden() || $this->isGranted('ROLE_ADMIN');
+    }
+
+    /**
+     * @param Post[] $posts
+     *
+     * @return array{totalUsers:int,totalPosts:int,totalComments:int,totalVotes:int,postsPerDay:array<int,array{label:string,count:int}>,topAuthors:array<string,int>}
+     */
+    private function buildForumStats(array $posts, EntityManagerInterface $em, VoteRepository $voteRepo): array
+    {
+        $userRepo = $em->getRepository(User::class);
+        $commentRepo = $em->getRepository(Comment::class);
+
+        $totalUsers = $userRepo->count([]);
+        $totalPosts = count($posts);
+        $totalComments = $commentRepo->count([]);
+        $totalVotes = $voteRepo->count([]);
+
+        $postsPerDay = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $dayStart = new \DateTimeImmutable("-{$i} days midnight");
+            $dayEnd = $dayStart->modify('+1 day');
+            $count = 0;
+            foreach ($posts as $p) {
+                if ($p->getCreatedAt() >= $dayStart && $p->getCreatedAt() < $dayEnd) {
+                    $count++;
+                }
+            }
+            $postsPerDay[] = [
+                'label' => $dayStart->format('D'),
+                'count' => $count,
+            ];
+        }
+
+        $authorStats = [];
+        foreach ($posts as $p) {
+            $name = $p->getAuthorName();
+            $authorStats[$name] = ($authorStats[$name] ?? 0) + 1;
+        }
+        arsort($authorStats);
+        $topAuthors = array_slice($authorStats, 0, 5, true);
+
+        return [
+            'totalUsers' => $totalUsers,
+            'totalPosts' => $totalPosts,
+            'totalComments' => $totalComments,
+            'totalVotes' => $totalVotes,
+            'postsPerDay' => $postsPerDay,
+            'topAuthors' => $topAuthors,
+        ];
     }
 }
