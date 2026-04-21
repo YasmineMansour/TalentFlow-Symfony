@@ -32,3 +32,23 @@ services:
     App\Service\DailyService:
         arguments:
             $dailyApiKey: '%env(DAILY_API_KEY)%'
+
+    App\Service\BrevoEmailService:
+        arguments:
+            $brevoApiKey: '%env(BREVO_API_KEY)%'
+            $brevoFromEmail: '%env(BREVO_FROM_EMAIL)%'
+            $brevoFromName: '%env(BREVO_FROM_NAME)%'
+
+    App\Service\BrevoSmsService:
+        arguments:
+            $brevoApiKey: '%env(BREVO_API_KEY)%'
+            $brevoSmsSender: '%env(BREVO_SMS_SENDER)%'
+            $brevoSmsEnabled: '%env(bool:BREVO_SMS_ENABLED)%'
+
+    App\Service\OpenAiCandidatureRecommendationService:
+        arguments:
+            $openAiApiKey: '%env(OPENAI_API_KEY)%'
+            $openAiModel: '%env(OPENAI_MODEL)%'
+            $openAiBaseUrl: '%env(OPENAI_BASE_URL)%'
+            $openAiOrganization: '%env(OPENAI_ORGANIZATION)%'
+            $openAiProject: '%env(OPENAI_PROJECT)%'

@@ -1,0 +1,181 @@
+<script>
+(function () {
+    const modalEl = document.getElementById('candidatureOpenAiModal');
+    if (!modalEl || typeof bootstrap === 'undefined' || !bootstrap.Modal) {
+        return;
+    }
+
+    const modalTitleEl = document.getElementById('candidatureOpenAiModalTitle');
+    const loadingEl = document.getElementById('openAiLoadingState');
+    const errorEl = document.getElementById('openAiErrorState');
+    const renderedEl = document.getElementById('openAiRenderedState');
+
+    const bsModal = new bootstrap.Modal(modalEl);
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function asArray(value) {
+        return Array.isArray(value) ? value : [];
+    }
+
+    function renderList(items) {
+        return '<ul class="mb-0 ps-3">' + items.map(function (item) {
+            return '<li>' + escapeHtml(item) + '</li>';
+        }).join('') + '</ul>';
+    }
+
+    function setLoading(title) {
+        modalTitleEl.textContent = title;
+        loadingEl.classList.remove('d-none');
+        errorEl.classList.add('d-none');
+        renderedEl.classList.add('d-none');
+        renderedEl.innerHTML = '';
+    }
+
+    function setError(message) {
+        loadingEl.classList.add('d-none');
+        renderedEl.classList.add('d-none');
+        errorEl.classList.remove('d-none');
+        errorEl.textContent = message;
+    }
+
+    function providerLabel(provider) {
+        const normalized = String(provider || '').toLowerCase();
+        return normalized === 'openai' ? 'OpenAI' : 'Fallback local';
+    }
+
+    function providerBadge(provider) {
+        const normalized = String(provider || '').toLowerCase();
+        if (normalized === 'openai') {
+            return '<span class="badge bg-info text-dark">OpenAI</span>';
+        }
+        return '<span class="badge bg-warning text-dark">Fallback</span>';
+    }
+
+    function getErrorMessage(statusCode) {
+        if (statusCode === 403) {
+            return 'Vous n\'êtes pas autorisé à consulter cette recommandation.';
+        }
+        if (statusCode === 404) {
+            return 'Cette candidature est introuvable.';
+        }
+        if (statusCode >= 500) {
+            return 'Impossible de charger la recommandation OpenAI.';
+        }
+        return 'Impossible de charger la recommandation OpenAI.';
+    }
+
+    function renderOpenAi(payload) {
+        const data = payload && payload.data ? payload.data : {};
+        const provider = String(data.provider || 'fallback').toLowerCase();
+        const model = data.model ? String(data.model) : 'Aucun';
+        const recommendations = asArray(data.recommendations);
+
+        const fallbackNotice = provider === 'fallback'
+            ? '<div class="alert alert-warning py-2 mb-3"><i class="fas fa-triangle-exclamation"></i> Une réponse de secours a été utilisée.</div>'
+            : '';
+
+        const html = ''
+            + '<div class="card mb-3" style="background: var(--tf-navy); border: 1px solid var(--tf-border);">'
+            + '<div class="card-body py-3">'
+            + '<h6 class="mb-3" style="color: var(--tf-gold);"><i class="fas fa-robot"></i> Recommandation OpenAI</h6>'
+            + '<div class="d-flex flex-wrap gap-3 mb-3">'
+            + '<span><strong>Fournisseur IA:</strong> ' + escapeHtml(providerLabel(provider)) + '</span>'
+            + '<span><strong>Modèle:</strong> ' + escapeHtml(model) + '</span>'
+            + providerBadge(provider)
+            + '</div>'
+            + fallbackNotice
+            + '<div class="alert alert-info py-2 mb-3"><strong>Message candidat:</strong><br>' + escapeHtml(data.candidateMessage || 'Aucun message disponible.') + '</div>'
+            + '{RH_SUMMARY}'
+            + '<h6 class="mb-2 mt-3" style="color: var(--tf-gold);"><i class="fas fa-list-check"></i> Actions IA prioritaires</h6>'
+            + (recommendations.length > 0 ? renderList(recommendations) : '<span style="color: var(--tf-gray);">Aucune recommandation disponible.</span>')
+            + '</div>'
+            + '</div>';
+
+        const rhSummaryBlock = {{ (is_granted('ROLE_RH') or is_granted('ROLE_ADMIN')) ? 'true' : 'false' }}
+            ? '<div class="alert alert-secondary py-2 mb-3"><strong>Résumé RH:</strong><br>' + escapeHtml(data.rhSummary || 'Aucun résumé disponible.') + '</div>'
+            : '';
+
+        renderedEl.innerHTML = html.replace('{RH_SUMMARY}', rhSummaryBlock);
+        loadingEl.classList.add('d-none');
+        errorEl.classList.add('d-none');
+        renderedEl.classList.remove('d-none');
+    }
+
+    document.addEventListener('click', function (event) {
+        const trigger = event.target.closest('[data-action="open-candidature-openai"]');
+        if (!trigger) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const openAiUrl = trigger.getAttribute('data-openai-url');
+        const candidatureId = trigger.getAttribute('data-candidature-id') || '';
+        const candidatureTitle = trigger.getAttribute('data-candidature-title') || '';
+
+        const modalTitle = candidatureTitle
+            ? 'Recommandation OpenAI - ' + candidatureTitle
+            : 'Recommandation OpenAI #' + candidatureId;
+
+        setLoading(modalTitle);
+        bsModal.show();
+
+        if (!openAiUrl) {
+            setError('Impossible de charger la recommandation OpenAI.');
+            return;
+        }
+
+        fetch(openAiUrl, {
+            method: 'GET',
+            headers: {
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        })
+            .then(function (response) {
+                return response.text().then(function (rawText) {
+                    let parsed;
+                    try {
+                        parsed = JSON.parse(rawText);
+                    } catch (e) {
+                        throw new Error('MALFORMED_JSON');
+                    }
+
+                    if (!response.ok || parsed.success !== true) {
+                        const message = getErrorMessage(response.status);
+                        const error = new Error(message);
+                        error.status = response.status;
+                        throw error;
+                    }
+
+                    return parsed;
+                });
+            })
+            .then(function (payload) {
+                renderOpenAi(payload);
+            })
+            .catch(function (error) {
+                if (error && error.message === 'MALFORMED_JSON') {
+                    setError('La réponse du serveur est invalide.');
+                    return;
+                }
+
+                if (error && error.status) {
+                    setError(error.message || getErrorMessage(error.status));
+                    return;
+                }
+
+                setError('Impossible de charger la recommandation OpenAI.');
+            });
+    });
+})();
+</script>

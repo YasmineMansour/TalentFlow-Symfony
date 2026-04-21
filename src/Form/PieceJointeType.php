@@ -5,10 +5,9 @@ namespace App\Form;
 use App\Entity\PieceJointe;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\File;
+use Vich\UploaderBundle\Form\Type\VichFileType;
 
 class PieceJointeType extends AbstractType
 {
@@ -27,23 +26,11 @@ class PieceJointeType extends AbstractType
                 'placeholder' => '-- Sélectionner --',
                 'attr' => ['class' => 'form-control'],
             ])
-            ->add('fichier', FileType::class, [
+            ->add('fichierFile', VichFileType::class, [
                 'label' => 'Fichier',
-                'mapped' => false,
                 'required' => true,
-                'constraints' => [
-                    new File([
-                        'maxSize' => '5M',
-                        'mimeTypes' => [
-                            'application/pdf',
-                            'application/msword',
-                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                            'image/jpeg',
-                            'image/png',
-                        ],
-                        'mimeTypesMessage' => 'Formats acceptés : PDF, DOC, DOCX, JPG, PNG (max 5 Mo).',
-                    ]),
-                ],
+                'allow_delete' => false,
+                'download_uri' => false,
                 'attr' => ['class' => 'form-control'],
             ])
         ;

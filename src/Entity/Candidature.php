@@ -134,6 +134,12 @@ class Candidature
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $confirmationEmailSentAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $blockingSmsSentAt = null;
+
     /** @var Collection<int, PieceJointe> */
     #[ORM\OneToMany(targetEntity: PieceJointe::class, mappedBy: 'candidature', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $piecesJointes;
@@ -248,4 +254,10 @@ class Candidature
 
     public function getEmail(): ?string { return $this->email; }
     public function setEmail(?string $email): static { $this->email = $email; return $this; }
+
+    public function getConfirmationEmailSentAt(): ?\DateTimeImmutable { return $this->confirmationEmailSentAt; }
+    public function setConfirmationEmailSentAt(?\DateTimeImmutable $confirmationEmailSentAt): static { $this->confirmationEmailSentAt = $confirmationEmailSentAt; return $this; }
+
+    public function getBlockingSmsSentAt(): ?\DateTimeImmutable { return $this->blockingSmsSentAt; }
+    public function setBlockingSmsSentAt(?\DateTimeImmutable $blockingSmsSentAt): static { $this->blockingSmsSentAt = $blockingSmsSentAt; return $this; }
 }

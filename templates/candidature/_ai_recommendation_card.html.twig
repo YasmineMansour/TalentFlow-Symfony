@@ -1,0 +1,27 @@
+<div class="tf-card mt-4" style="border-left: 4px solid var(--tf-gold);">
+    <h5 style="color: var(--tf-gold);"><i class="fas fa-robot"></i> Assistant IA de candidature</h5>
+    <hr style="border-color: var(--tf-border);">
+
+    <p class="mb-2" style="color: var(--tf-gray);">{{ aiRecommendation.summary }}</p>
+
+    <div class="alert alert-info py-2 mb-3" role="alert">
+        <strong>Message candidat :</strong><br>
+        {{ aiRecommendation.candidateMessage }}
+    </div>
+
+    {% if is_granted('ROLE_RH') or is_granted('ROLE_ADMIN') %}
+        <div class="alert alert-warning py-2 mb-3" role="alert">
+            <strong>Lecture RH :</strong><br>
+            {{ aiRecommendation.rhSummary }}
+        </div>
+    {% endif %}
+
+    {% if aiRecommendation.recommendations is not empty %}
+        <h6 style="color: var(--tf-gold);">Recommandations prioritaires</h6>
+        <ul class="mb-0" style="color: var(--tf-gray);">
+            {% for recommendation in aiRecommendation.recommendations %}
+                <li>{{ recommendation }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</div>

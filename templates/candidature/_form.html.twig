@@ -24,6 +24,12 @@
 
 {{ form_start(form, {'attr': {'class': 'tf-form', 'novalidate': 'novalidate', 'enctype': 'multipart/form-data'}}) }}
 
+    {% if form.vars.errors|length > 0 %}
+        <div class="alert alert-danger mb-3">
+            {{ form_errors(form) }}
+        </div>
+    {% endif %}
+
     {# ====== SECTION 1: POSTE ====== #}
     <div class="candidature-section">
         <div class="candidature-section-title"><i class="fas fa-briefcase"></i> Informations du poste</div>

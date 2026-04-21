@@ -1,0 +1,425 @@
+<script>
+(function () {
+    const modalEl = document.getElementById('candidatureAnalysisModal');
+    if (!modalEl || typeof bootstrap === 'undefined' || !bootstrap.Modal) {
+        return;
+    }
+
+    const modalTitleEl = document.getElementById('candidatureAnalysisModalTitle');
+    const loadingEl = document.getElementById('analysisLoadingState');
+    const errorEl = document.getElementById('analysisErrorState');
+    const renderedEl = document.getElementById('analysisRenderedState');
+
+    const bsModal = new bootstrap.Modal(modalEl);
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function asArray(value) {
+        return Array.isArray(value) ? value : [];
+    }
+
+    function asNumber(value) {
+        const n = Number(value);
+        return Number.isFinite(n) ? Math.max(0, Math.min(100, Math.round(n))) : 0;
+    }
+
+    function boolBadge(value) {
+        return value
+            ? '<span class="badge bg-success-subtle text-success-emphasis border border-success-subtle">Oui</span>'
+            : '<span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">Non</span>';
+    }
+
+    function scoreColor(score) {
+        if (score >= 80) {
+            return 'bg-success';
+        }
+        if (score >= 50) {
+            return 'bg-warning';
+        }
+        return 'bg-danger';
+    }
+
+    function completenessBadge(level) {
+        const normalized = String(level ?? '').toUpperCase();
+        if (normalized === 'COMPLET') {
+            return '<span class="badge bg-success">Complet</span>';
+        }
+        if (normalized === 'A_COMPLETER') {
+            return '<span class="badge bg-warning text-dark">À compléter</span>';
+        }
+        return '<span class="badge bg-danger">Bloquant</span>';
+    }
+
+    function priorityBadge(category) {
+        const normalized = String(category ?? '').toUpperCase();
+        if (normalized === 'PRIORITAIRE') {
+            return '<span class="badge bg-success">Prioritaire</span>';
+        }
+        if (normalized === 'A_EXAMINER') {
+            return '<span class="badge bg-warning text-dark">À examiner</span>';
+        }
+        if (normalized === 'INCOMPLETE') {
+            return '<span class="badge bg-danger">Incomplète</span>';
+        }
+        return '<span class="badge bg-secondary">Faible priorité</span>';
+    }
+
+    function statusBadge(status) {
+        const value = String(status ?? 'En attente');
+        const normalized = value.toLowerCase();
+        if (normalized.includes('accept')) {
+            return '<span class="badge bg-success">' + escapeHtml(value) + '</span>';
+        }
+        if (normalized.includes('refus')) {
+            return '<span class="badge bg-danger">' + escapeHtml(value) + '</span>';
+        }
+        if (normalized.includes('entretien')) {
+            return '<span class="badge bg-warning text-dark">' + escapeHtml(value) + '</span>';
+        }
+        if (normalized.includes('valid')) {
+            return '<span class="badge bg-info text-dark">' + escapeHtml(value) + '</span>';
+        }
+        return '<span class="badge bg-secondary">' + escapeHtml(value) + '</span>';
+    }
+
+    function helperTextForScore(key, score) {
+        if (key === 'matching') {
+            if (score >= 80) {
+                return 'Profil très aligné avec l’offre.';
+            }
+            if (score >= 50) {
+                return 'Alignement partiel, à confirmer.';
+            }
+            return 'Alignement faible avec les critères du poste.';
+        }
+
+        if (key === 'completeness') {
+            if (score >= 80) {
+                return 'Dossier complet pour traitement RH.';
+            }
+            if (score >= 50) {
+                return 'Dossier partiel à compléter.';
+            }
+            return 'Dossier incomplet avec blocages.';
+        }
+
+        if (score >= 80) {
+            return 'Priorité élevée.';
+        }
+        if (score >= 50) {
+            return 'Priorité moyenne à examiner.';
+        }
+        return 'Priorité faible.';
+    }
+
+    function scoreBlock(key, label, score, icon) {
+        const value = asNumber(score);
+        const color = scoreColor(value);
+
+        return '<div class="col-md-4">'
+            + '<div class="card h-100" style="background: var(--tf-navy); border: 1px solid var(--tf-border);">'
+            + '<div class="card-body py-3">'
+            + '<div class="d-flex justify-content-between align-items-center mb-2">'
+            + '<span style="font-weight: 600;"><i class="fas ' + escapeHtml(icon) + '"></i> ' + escapeHtml(label) + '</span>'
+            + '<span class="badge ' + color + '">' + value + '/100</span>'
+            + '</div>'
+            + '<div class="progress" style="height: 8px; background: var(--tf-border);">'
+            + '<div class="progress-bar ' + color + '" role="progressbar" style="width:' + value + '%" aria-valuenow="' + value + '" aria-valuemin="0" aria-valuemax="100"></div>'
+            + '</div>'
+            + '<small style="color: var(--tf-gray); display: block; margin-top: 8px;">' + escapeHtml(helperTextForScore(key, value)) + '</small>'
+            + '</div></div></div>';
+    }
+
+    function renderList(items) {
+        return '<ul class="mb-0 ps-3">' + items.map(function (item) {
+            return '<li>' + escapeHtml(item) + '</li>';
+        }).join('') + '</ul>';
+    }
+
+    function setLoading(title) {
+        modalTitleEl.textContent = title;
+        loadingEl.classList.remove('d-none');
+        errorEl.classList.add('d-none');
+        renderedEl.classList.add('d-none');
+        renderedEl.innerHTML = '';
+    }
+
+    function setError(message) {
+        loadingEl.classList.add('d-none');
+        renderedEl.classList.add('d-none');
+        errorEl.classList.remove('d-none');
+        errorEl.textContent = message;
+    }
+
+    function mergeBusinessData(data) {
+        const legacyCandidature = data.candidature || {};
+        const legacyAnalysis = data.analysis || {};
+
+        const summary = data.summary || {};
+        const scores = data.scores || {};
+        const decision = data.decision || {};
+        const issues = data.issues || {};
+
+        return {
+            summary: {
+                id: summary.id !== undefined ? summary.id : legacyCandidature.id,
+                titrePoste: summary.titrePoste || legacyCandidature.titrePoste || '',
+                entreprise: summary.entreprise || legacyCandidature.entreprise || '',
+                currentStatus: summary.currentStatus || legacyCandidature.statut || 'En attente',
+                recommendedStatus: summary.recommendedStatus || legacyAnalysis.recommendedStatus || 'En attente',
+                priorityCategory: summary.priorityCategory || legacyAnalysis.priorityCategory || 'FAIBLE_PRIORITE',
+                priorityLabel: summary.priorityLabel || '',
+                completenessLevel: summary.completenessLevel || legacyAnalysis.completenessLevel || 'BLOQUANT',
+                completenessLabel: summary.completenessLabel || ''
+            },
+            scores: {
+                matching: scores.matching !== undefined ? scores.matching : legacyAnalysis.matchingScore,
+                completeness: scores.completeness !== undefined ? scores.completeness : legacyAnalysis.completenessScore,
+                priority: scores.priority !== undefined ? scores.priority : legacyAnalysis.priorityScore
+            },
+            decision: {
+                canMoveToRhValidation: decision.canMoveToRhValidation !== undefined ? decision.canMoveToRhValidation : legacyAnalysis.canMoveToRhValidation,
+                canMoveToInterview: decision.canMoveToInterview !== undefined ? decision.canMoveToInterview : legacyAnalysis.canMoveToInterview,
+                isDuplicate: decision.isDuplicate !== undefined ? decision.isDuplicate : legacyAnalysis.isDuplicate,
+                duplicateSeverity: decision.duplicateSeverity || legacyAnalysis.duplicateSeverity || 'NONE',
+                duplicateReason: decision.duplicateReason !== undefined ? decision.duplicateReason : legacyAnalysis.duplicateReason
+            },
+            issues: {
+                blockingReasons: asArray(issues.blockingReasons).length > 0 ? asArray(issues.blockingReasons) : asArray(legacyAnalysis.blockingReasons),
+                missingFields: asArray(issues.missingFields).length > 0 ? asArray(issues.missingFields) : asArray(legacyAnalysis.missingFields),
+                missingDocuments: asArray(issues.missingDocuments).length > 0 ? asArray(issues.missingDocuments) : asArray(legacyAnalysis.missingDocuments),
+                delayAlerts: asArray(issues.delayAlerts).length > 0 ? asArray(issues.delayAlerts) : asArray(legacyAnalysis.delayAlerts)
+            },
+            actions: asArray(data.actions)
+        };
+    }
+
+    function renderAnalysis(payload) {
+        const data = payload && payload.data ? payload.data : {};
+        const model = mergeBusinessData(data);
+
+        const summary = model.summary;
+        const scores = model.scores;
+        const decision = model.decision;
+        const issues = model.issues;
+        const actions = model.actions;
+
+        const summaryHtml = ''
+            + '<div class="card mb-3" style="background: var(--tf-navy); border: 1px solid var(--tf-border);">'
+            + '<div class="card-body py-3">'
+            + '<div class="row g-2">'
+            + '<div class="col-md-6"><strong>Titre du poste:</strong><br><span style="color: var(--tf-gray);">' + escapeHtml(summary.titrePoste || '-') + '</span></div>'
+            + '<div class="col-md-6"><strong>Entreprise:</strong><br><span style="color: var(--tf-gray);">' + escapeHtml(summary.entreprise || '-') + '</span></div>'
+            + '<div class="col-md-4 mt-2"><strong>Statut actuel:</strong><br>' + statusBadge(summary.currentStatus) + '</div>'
+            + '<div class="col-md-4 mt-2"><strong>Statut recommandé:</strong><br>' + statusBadge(summary.recommendedStatus) + '</div>'
+            + '<div class="col-md-4 mt-2"><strong>Catégorie RH:</strong><br>' + priorityBadge(summary.priorityCategory) + '</div>'
+            + '<div class="col-md-4 mt-2"><strong>Niveau de complétude:</strong><br>' + completenessBadge(summary.completenessLevel) + '</div>'
+            + '</div>'
+            + '</div>'
+            + '</div>';
+
+        const kpiHtml = '<div class="row g-3 mb-3">'
+            + scoreBlock('matching', 'Score de matching', scores.matching, 'fa-percentage')
+            + scoreBlock('completeness', 'Score de complétude', scores.completeness, 'fa-list-check')
+            + scoreBlock('priority', 'Score de priorité RH', scores.priority, 'fa-bullseye')
+            + '</div>';
+
+        const blockingHtml = issues.blockingReasons.length > 0
+            ? '<div class="alert alert-danger py-2 mb-2"><i class="fas fa-triangle-exclamation"></i> '
+                + issues.blockingReasons.map(escapeHtml).join('<br>')
+                + '</div>'
+            : '<div class="alert alert-success py-2 mb-2"><i class="fas fa-check-circle"></i> Aucune raison bloquante détectée.</div>';
+
+        const actionsHtml = actions.length > 0
+            ? renderList(actions)
+            : '<span style="color: var(--tf-gray);">Aucune action recommandée pour le moment.</span>';
+
+        const decisionHtml = ''
+            + '<div class="card mb-3" style="background: var(--tf-navy); border: 1px solid var(--tf-border);">'
+            + '<div class="card-body py-3">'
+            + '<h6 class="mb-2" style="color: var(--tf-gold);"><i class="fas fa-briefcase"></i> Panneau décision RH</h6>'
+            + '<div class="d-flex flex-wrap gap-2 mb-2">'
+            + '<span><strong>Passage RH autorisé:</strong> ' + boolBadge(Boolean(decision.canMoveToRhValidation)) + '</span>'
+            + '<span><strong>Passage entretien autorisé:</strong> ' + boolBadge(Boolean(decision.canMoveToInterview)) + '</span>'
+            + '<span><strong>Doublon:</strong> ' + boolBadge(Boolean(decision.isDuplicate)) + '</span>'
+            + '</div>'
+            + '<div class="mb-3" style="color: var(--tf-gray);">'
+            + '<strong>Sévérité doublon:</strong> ' + escapeHtml(decision.duplicateSeverity || 'NONE')
+            + (decision.duplicateReason ? ' | <strong>Raison:</strong> ' + escapeHtml(decision.duplicateReason) : '')
+            + '</div>'
+            + blockingHtml
+            + '<h6 class="mb-2 mt-3" style="color: var(--tf-gold);"><i class="fas fa-lightbulb"></i> Actions recommandées</h6>'
+            + actionsHtml
+            + '</div>'
+            + '</div>';
+
+        const sections = [];
+
+        if (issues.missingFields.length > 0) {
+            sections.push('<div class="col-md-6">'
+                + '<div class="card h-100" style="background: var(--tf-navy); border: 1px solid var(--tf-border);">'
+                + '<div class="card-body">'
+                + '<h6 class="card-title mb-2" style="color: var(--tf-gold);"><i class="fas fa-circle-exclamation"></i> Champs manquants</h6>'
+                + renderList(issues.missingFields)
+                + '</div>'
+                + '</div>'
+                + '</div>');
+        }
+
+        if (issues.missingDocuments.length > 0) {
+            sections.push('<div class="col-md-6">'
+                + '<div class="card h-100" style="background: var(--tf-navy); border: 1px solid var(--tf-border);">'
+                + '<div class="card-body">'
+                + '<h6 class="card-title mb-2" style="color: var(--tf-gold);"><i class="fas fa-file-circle-xmark"></i> Documents manquants</h6>'
+                + renderList(issues.missingDocuments)
+                + '</div>'
+                + '</div>'
+                + '</div>');
+        }
+
+        if (issues.delayAlerts.length > 0) {
+            const alertsHtml = issues.delayAlerts.map(function (item) {
+                const severity = String(item && item.severity ? item.severity : '').toLowerCase();
+                const levelClass = severity === 'danger' ? 'alert-danger' : 'alert-warning';
+                const label = item && item.label ? item.label : 'Alerte';
+                const days = item && item.days !== undefined ? ' (' + escapeHtml(item.days) + ' jours)' : '';
+                return '<div class="alert ' + levelClass + ' py-2 mb-2"><i class="fas fa-clock"></i> ' + escapeHtml(label) + days + '</div>';
+            }).join('');
+
+            sections.push('<div class="col-md-6">'
+                + '<div class="card h-100" style="background: var(--tf-navy); border: 1px solid var(--tf-border);">'
+                + '<div class="card-body">'
+                + '<h6 class="card-title mb-2" style="color: var(--tf-gold);"><i class="fas fa-hourglass-half"></i> Alertes de retard</h6>'
+                + alertsHtml
+                + '</div>'
+                + '</div>'
+                + '</div>');
+        }
+
+        if (Boolean(decision.isDuplicate) || (decision.duplicateReason && String(decision.duplicateReason).trim() !== '')) {
+            sections.push('<div class="col-md-6">'
+                + '<div class="card h-100" style="background: var(--tf-navy); border: 1px solid var(--tf-border);">'
+                + '<div class="card-body">'
+                + '<h6 class="card-title mb-2" style="color: var(--tf-gold);"><i class="fas fa-copy"></i> Informations doublon</h6>'
+                + '<p class="mb-1"><strong>Sévérité:</strong> ' + escapeHtml(decision.duplicateSeverity || 'NONE') + '</p>'
+                + (decision.duplicateReason ? '<p class="mb-0"><strong>Raison:</strong> ' + escapeHtml(decision.duplicateReason) + '</p>' : '')
+                + '</div>'
+                + '</div>'
+                + '</div>');
+        }
+
+        const detailsHtml = sections.length > 0
+            ? '<div class="row g-3">' + sections.join('') + '</div>'
+            : '';
+
+        const detailsAccordionHtml = sections.length > 0
+            ? ''
+                + '<div class="accordion mt-2" id="analysisAccordion">'
+                + '<div class="accordion-item" style="background: var(--tf-navy); border: 1px solid var(--tf-border);">'
+                + '<h2 class="accordion-header" id="analysisDetailsHeading">'
+                + '<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#analysisDetailsCollapse" aria-expanded="false" aria-controls="analysisDetailsCollapse" style="background: var(--tf-navy); color: var(--tf-gold);">Détails complémentaires</button>'
+                + '</h2>'
+                + '<div id="analysisDetailsCollapse" class="accordion-collapse collapse" aria-labelledby="analysisDetailsHeading" data-bs-parent="#analysisAccordion">'
+                + '<div class="accordion-body">' + detailsHtml + '</div>'
+                + '</div>'
+                + '</div>'
+                + '</div>'
+            : '';
+
+        renderedEl.innerHTML = summaryHtml + kpiHtml + decisionHtml + detailsAccordionHtml;
+        loadingEl.classList.add('d-none');
+        errorEl.classList.add('d-none');
+        renderedEl.classList.remove('d-none');
+    }
+
+    function getErrorMessage(statusCode) {
+        if (statusCode === 403) {
+            return 'Vous n\'êtes pas autorisé à consulter cette analyse.';
+        }
+        if (statusCode === 404) {
+            return 'Candidature introuvable.';
+        }
+        if (statusCode >= 500) {
+            return 'Le serveur a rencontré une erreur. Veuillez réessayer plus tard.';
+        }
+        return 'Impossible de charger l\'analyse de cette candidature.';
+    }
+
+    document.addEventListener('click', function (event) {
+        const trigger = event.target.closest('[data-action="open-candidature-analysis"]');
+        if (!trigger) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const analysisUrl = trigger.getAttribute('data-analysis-url');
+        const candidatureId = trigger.getAttribute('data-candidature-id') || '';
+        const candidatureTitle = trigger.getAttribute('data-candidature-title') || '';
+        const modalTitle = candidatureTitle
+            ? 'Analyse - ' + candidatureTitle
+            : 'Analyse de la candidature #' + candidatureId;
+
+        setLoading(modalTitle);
+        bsModal.show();
+
+        if (!analysisUrl) {
+            setError('Impossible de charger l\'analyse de cette candidature.');
+            return;
+        }
+
+        fetch(analysisUrl, {
+            method: 'GET',
+            headers: {
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        })
+            .then(function (response) {
+                return response.text().then(function (rawText) {
+                    let parsed;
+                    try {
+                        parsed = JSON.parse(rawText);
+                    } catch (e) {
+                        throw new Error('MALFORMED_JSON');
+                    }
+
+                    if (!response.ok || parsed.success !== true) {
+                        const message = parsed && parsed.message
+                            ? String(parsed.message)
+                            : getErrorMessage(response.status);
+                        const error = new Error(message);
+                        error.status = response.status;
+                        throw error;
+                    }
+
+                    return parsed;
+                });
+            })
+            .then(function (payload) {
+                renderAnalysis(payload);
+            })
+            .catch(function (error) {
+                if (error && error.message === 'MALFORMED_JSON') {
+                    setError('La réponse du serveur est invalide.');
+                    return;
+                }
+
+                if (error && error.status) {
+                    setError(error.message || getErrorMessage(error.status));
+                    return;
+                }
+
+                setError('Une erreur réseau est survenue.');
+            });
+    });
+})();
+</script>

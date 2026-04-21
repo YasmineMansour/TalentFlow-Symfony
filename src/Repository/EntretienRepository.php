@@ -154,4 +154,18 @@ class EntretienRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findFuturePlannedInterviewForCandidatureId(int $candidatureId): ?\App\Entity\Entretien
+    {
+        return $this->createQueryBuilder('e')
+            ->andWhere('e.candidatureId = :candidatureId')
+            ->andWhere('e.statut = :statut')
+            ->andWhere('e.dateHeure > :now')
+            ->setParameter('candidatureId', $candidatureId)
+            ->setParameter('statut', 'PLANIFIE')
+            ->setParameter('now', new \DateTimeImmutable())
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

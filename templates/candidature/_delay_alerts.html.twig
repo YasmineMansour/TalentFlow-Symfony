@@ -1,0 +1,16 @@
+{#
+  Alertes de retard RH — à inclure dans show.html.twig ou dashboard.
+  Variables attendues :
+    - delayAlerts (array retourné par CandidaturePriorityService::getDelayAlerts())
+#}
+{% if delayAlerts is defined and delayAlerts|length > 0 %}
+    {% for alert in delayAlerts %}
+    <div class="alert alert-{{ alert.severity }} d-flex align-items-start gap-2 py-2 px-3 mb-2" role="alert" style="font-size: 0.85rem;">
+        <i class="fas fa-clock mt-1" style="flex-shrink: 0;"></i>
+        <div>
+            <strong>{{ alert.label }}</strong>
+            <div class="small">{{ alert.days }} jour{{ alert.days > 1 ? 's' : '' }} écoulé{{ alert.days > 1 ? 's' : '' }}</div>
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}

@@ -321,7 +321,7 @@
                 {% if remaining_attempts is not null and remaining_attempts > 0 %}
                     <div class="tf-alert tf-alert-warning">
                         <i class="fas fa-exclamation-triangle"></i>
-                        <div>{{ 'login.remaining_attempts'|trans({'%count%': remaining_attempts}) }}</div>
+                        <div>{{ 'login.remaining_attempts'|trans({'%count%': remaining_attempts})|raw }}</div>
                     </div>
                 {% endif %}
 

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+  .wrapper { max-width: 580px; margin: 30px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+  .header { background: #1a2a4a; padding: 28px 32px; text-align: center; }
+  .header h1 { color: #d4a843; margin: 0; font-size: 22px; letter-spacing: 0.5px; }
+  .header p { color: #c0cce0; margin: 6px 0 0; font-size: 13px; }
+  .body { padding: 32px; color: #333; line-height: 1.7; }
+  .body h2 { color: #1a2a4a; font-size: 18px; margin-top: 0; }
+  .info-box { background: #f0f5ff; border-left: 4px solid #1a2a4a; border-radius: 4px; padding: 16px 20px; margin: 20px 0; }
+  .info-box p { margin: 6px 0; font-size: 14px; }
+  .info-box strong { color: #1a2a4a; }
+  .highlight { color: #1a2a4a; font-weight: bold; }
+  .footer { background: #f0f0f0; padding: 16px 32px; text-align: center; font-size: 12px; color: #888; }
+  .footer a { color: #1a2a4a; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="header">
+    <h1>TalentFlow RH</h1>
+    <p>Plateforme de gestion des recrutements</p>
+  </div>
+
+  <div class="body">
+    <h2>Confirmation de réception de votre candidature</h2>
+
+    <p>Bonjour <span class="highlight">{{ recipientName }}</span>,</p>
+
+    <p>
+      Nous vous remercions vivement pour l'intérêt que vous portez à
+      {% if titrePoste %}
+        notre opportunité de poste <strong>{{ titrePoste }}</strong>{% if entreprise %} au sein de <strong>{{ entreprise }}</strong>{% endif %}.
+      {% else %}
+        notre offre d'emploi{% if entreprise %} au sein de <strong>{{ entreprise }}</strong>{% endif %}.
+      {% endif %}
+    </p>
+
+    <div class="info-box">
+      <p>✅ <strong>Votre candidature a bien été reçue</strong> par notre équipe de recrutement.</p>
+      {% if titrePoste %}
+        <p><strong>Poste&nbsp;:</strong> {{ titrePoste }}</p>
+      {% endif %}
+      {% if entreprise %}
+        <p><strong>Entreprise&nbsp;:</strong> {{ entreprise }}</p>
+      {% endif %}
+    </div>
+
+    <p>
+      Notre équipe examinera votre dossier avec la plus grande attention dans les meilleurs délais.
+      Si votre profil correspond aux critères recherchés, nous reviendrons vers vous pour vous informer
+      de la suite du processus de recrutement.
+    </p>
+
+    <p>
+      En attendant, nous vous invitons à vous connecter à votre espace candidat pour suivre l'évolution
+      de votre candidature.
+    </p>
+
+    <p>Nous vous remercions pour votre confiance et vous souhaitons pleine réussite dans vos démarches.</p>
+
+    <p>
+      Cordialement,<br>
+      <strong>L'équipe TalentFlow</strong>
+    </p>
+  </div>
+
+  <div class="footer">
+    <p>
+      Cet email a été envoyé automatiquement par la plateforme TalentFlow.<br>
+      Merci de ne pas répondre directement à ce message.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

@@ -73,7 +73,37 @@
             {{ c.competences }}
         </div>
         {% endif %}
+        {% if completenessMap[c.id] is defined %}
+            {% include 'candidature/_completeness_badge.html.twig' with {
+                completenessScore: completenessMap[c.id].score,
+                completenessLevel: completenessMap[c.id].level,
+                completenessLabel: completenessMap[c.id].label
+            } %}
+        {% endif %}
+        {% if priorityMap[c.id] is defined %}
+            {% include 'candidature/_priority_badge.html.twig' with { prioritySummary: priorityMap[c.id] } %}
+        {% endif %}
         <div class="tf-item-card-actions">
+            <button
+                type="button"
+                class="btn btn-sm btn-outline-info"
+                data-action="open-candidature-analysis"
+                data-analysis-url="{{ path('api_candidature_analyse', {id: c.id}) }}"
+                data-candidature-id="{{ c.id }}"
+                data-candidature-title="{{ c.titrePoste }}"
+            >
+                <i class="fas fa-chart-bar"></i> Analyse
+            </button>
+            <button
+                type="button"
+                class="btn btn-sm btn-outline-primary"
+                data-action="open-candidature-openai"
+                data-openai-url="{{ path('api_candidature_ai_recommendation', {id: c.id}) }}"
+                data-candidature-id="{{ c.id }}"
+                data-candidature-title="{{ c.titrePoste }}"
+            >
+                <i class="fas fa-robot"></i> OpenAI
+            </button>
             <a href="{{ path('app_candidature_show', {id: c.id}) }}" class="btn btn-sm btn-outline-light"><i class="fas fa-eye"></i> Voir</a>
             <a href="{{ path('app_candidature_edit', {id: c.id}) }}" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i> Modifier</a>
             <form method="post" action="{{ path('app_candidature_delete', {id: c.id}) }}" onsubmit="event.preventDefault(); confirmDelete(this, '{{ c.titrePoste|e('js') }}');" style="display:inline;">
@@ -92,6 +122,9 @@
 <div class="mt-3" style="color: var(--tf-gray);">
     <small>{{ candidatures|length }} candidature(s) trouvée(s)</small>
 </div>
+
+{% include 'candidature/_analysis_modal.html.twig' %}
+{% include 'candidature/_openai_modal.html.twig' %}
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -121,4 +154,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {% include 'candidature/_analysis_modal_script.html.twig' %}
+    {% include 'candidature/_openai_modal_script.html.twig' %}
 {% endblock %}

@@ -9,8 +9,14 @@ use App\Form\CandidatureType;
 use App\Form\PieceJointeType;
 use App\Repository\CandidatureRepository;
 use App\Repository\CandidatureStatusHistoryRepository;
+use App\Service\CandidatureNotificationOrchestrator;
 use App\Service\CandidatureMatchingService;
+use App\Service\CandidatureAnalysisService;
+use App\Service\CandidatureAiRecommendationService;
 use App\Service\CandidatureWorkflowService;
+use App\Service\CandidatureCompletenessService;
+use App\Service\CandidatureDuplicateGuardService;
+use App\Service\CandidaturePriorityService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -49,7 +55,7 @@ class CandidatureController extends AbstractController
     }
 
     #[Route('/', name: 'app_candidature_index', methods: ['GET'])]
-    public function index(Request $request, CandidatureRepository $repository): Response
+    public function index(Request $request, CandidatureRepository $repository, CandidatureCompletenessService $completenessService, CandidaturePriorityService $priorityService): Response
     {
         $search = $request->query->get('search', '');
         $typeContrat = $request->query->get('type', '');
@@ -67,18 +73,39 @@ class CandidatureController extends AbstractController
         }
         $candidatures = $repository->findFiltered($search, $typeContrat, $statut, $sortBy, $sortDir, $entrepriseFilter, $candidatFilter);
 
+        $completenessMap = [];
+        $priorityMap     = [];
+        foreach ($candidatures as $c) {
+            $analysis = $completenessService->analyze($c);
+            $completenessMap[$c->getId()] = [
+                'score' => $analysis['score'],
+                'level' => $analysis['level'],
+                'label' => $analysis['label'],
+            ];
+            $priorityMap[$c->getId()] = $priorityService->summarize($c);
+        }
+
         return $this->render('candidature/index.html.twig', [
-            'candidatures' => $candidatures,
-            'search' => $search,
-            'typeContrat' => $typeContrat,
-            'statut' => $statut,
-            'sortBy' => $sortBy,
-            'sortDir' => $sortDir,
+            'candidatures'    => $candidatures,
+            'search'          => $search,
+            'typeContrat'     => $typeContrat,
+            'statut'          => $statut,
+            'sortBy'          => $sortBy,
+            'sortDir'         => $sortDir,
+            'completenessMap' => $completenessMap,
+            'priorityMap'     => $priorityMap,
         ]);
     }
 
     #[Route('/new', name: 'app_candidature_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $em, SluggerInterface $slugger, CandidatureMatchingService $matchingService): Response
+    public function new(
+        Request $request,
+        EntityManagerInterface $em,
+        SluggerInterface $slugger,
+        CandidatureMatchingService $matchingService,
+        CandidatureDuplicateGuardService $duplicateGuard,
+        CandidatureNotificationOrchestrator $notificationOrchestrator,
+    ): Response
     {
         $offreId = $request->query->get('offre');
         $user = $this->getUser();
@@ -129,6 +156,24 @@ class CandidatureController extends AbstractController
                 $candidature->setDateCandidature(new \DateTimeImmutable());
             }
 
+            $duplicateAnalysis = $duplicateGuard->analyze($candidature);
+            if ($duplicateAnalysis['severity'] === 'BLOCKING') {
+                $form->addError(new \Symfony\Component\Form\FormError('Une candidature en doublon existe deja pour cette offre. Veuillez consulter la candidature existante avant d\'en creer une nouvelle.'));
+                $this->addFlash('error', (string) ($duplicateAnalysis['reason'] ?? 'Candidature en doublon bloquante.'));
+
+                return $this->render('candidature/new.html.twig', [
+                    'candidature' => $candidature,
+                    'form' => $form,
+                    'offre' => $offre,
+                    'isCandidat' => $isCandidat,
+                    'duplicateAnalysis' => $duplicateAnalysis,
+                ]);
+            }
+
+            if ($duplicateAnalysis['severity'] === 'WARNING') {
+                $this->addFlash('warning', 'Une ancienne candidature existe deja pour cette offre. La nouvelle candidature est autorisee mais sera signalee comme doublon potentiel.');
+            }
+
             $candidature->setMatchingScore($matchingService->computeScore($candidature));
 
             // Upload CV
@@ -157,6 +202,9 @@ class CandidatureController extends AbstractController
             $em->persist($history);
 
             $em->flush();
+
+            $notificationOrchestrator->handlePostSubmissionNotifications($candidature);
+
             $this->addFlash('success', 'Candidature pour "' . $candidature->getTitrePoste() . '" créée avec succès !');
             return $this->redirectToRoute('app_candidature_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -166,6 +214,7 @@ class CandidatureController extends AbstractController
             'form' => $form,
             'offre' => $offre,
             'isCandidat' => $isCandidat,
+            'duplicateAnalysis' => null,
         ]);
     }
 
@@ -190,40 +239,31 @@ class CandidatureController extends AbstractController
         Request $request,
         Candidature $candidature,
         EntityManagerInterface $em,
-        SluggerInterface $slugger,
         CandidatureStatusHistoryRepository $historyRepository,
+        CandidatureAnalysisService $analysisService,
+        CandidatureAiRecommendationService $aiRecommendationService,
         CandidatureWorkflowService $workflowService,
+        CandidatureCompletenessService $completenessService,
+        CandidatureDuplicateGuardService $duplicateGuard,
+        CandidaturePriorityService $priorityService,
     ): Response
     {
         $pieceJointe = new PieceJointe();
+        $pieceJointe->setCandidature($candidature);
         $form = $this->createForm(PieceJointeType::class, $pieceJointe);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $fichier = $form->get('fichier')->getData();
-            if ($fichier) {
-                $originalFilename = pathinfo($fichier->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename . '-' . uniqid() . '.' . $fichier->guessExtension();
-                $fileSize = $fichier->getSize() ?: 0;
+            $em->persist($pieceJointe);
+            $em->flush();
 
-                $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/pieces_jointes';
-                $fichier->move($uploadDir, $newFilename);
-
-                $pieceJointe->setNomFichier($fichier->getClientOriginalName());
-                $pieceJointe->setCheminFichier('uploads/pieces_jointes/' . $newFilename);
-                $pieceJointe->setTailleFichier($fileSize);
-                $pieceJointe->setCandidature($candidature);
-
-                $em->persist($pieceJointe);
-                $em->flush();
-
-                $this->addFlash('success', 'Pièce jointe ajoutée avec succès.');
-                return $this->redirectToRoute('app_candidature_show', ['id' => $candidature->getId()]);
-            }
+            $this->addFlash('success', 'Pièce jointe ajoutée avec succès.');
+            return $this->redirectToRoute('app_candidature_show', ['id' => $candidature->getId()]);
         }
 
         $history = $historyRepository->findByCandidatureOrdered($candidature);
+        $analysisPayload = $analysisService->analyze($candidature);
+        $aiRecommendation = $aiRecommendationService->generateRecommendation($candidature, $analysisPayload);
         $acceptedSnapshot = $historyRepository->findAcceptedTransition($candidature);
         $timeToHireDays = null;
         if ($acceptedSnapshot !== null && $candidature->getDateCandidature() !== null) {
@@ -234,11 +274,15 @@ class CandidatureController extends AbstractController
         }
 
         return $this->render('candidature/show.html.twig', [
-            'candidature' => $candidature,
-            'pieceJointeForm' => $form,
-            'statusHistory' => $history,
+            'candidature'          => $candidature,
+            'pieceJointeForm'      => $form,
+            'statusHistory'        => $history,
             'availableTransitions' => $workflowService->getEnabledTransitions($candidature),
-            'timeToHireDays' => $timeToHireDays,
+            'timeToHireDays'       => $timeToHireDays,
+            'completeness'         => $completenessService->analyze($candidature),
+            'duplicateAnalysis'    => $duplicateGuard->analyze($candidature, $candidature->getId()),
+            'priorityAnalysis'     => $priorityService->analyze($candidature),
+            'aiRecommendation'     => $aiRecommendation,
         ]);
     }
 
@@ -250,6 +294,7 @@ class CandidatureController extends AbstractController
         SluggerInterface $slugger,
         CandidatureMatchingService $matchingService,
         CandidatureWorkflowService $workflowService,
+        CandidatureDuplicateGuardService $duplicateGuard,
     ): Response
     {
         $isCandidat = $this->isGranted('ROLE_CANDIDAT') && !$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_RH');
@@ -293,8 +338,26 @@ class CandidatureController extends AbstractController
                         'candidature' => $candidature,
                         'form' => $form,
                         'isCandidat' => $isCandidat,
+                        'duplicateAnalysis' => $duplicateGuard->analyze($candidature, $candidature->getId()),
                     ]);
                 }
+            }
+
+            $duplicateAnalysis = $duplicateGuard->analyze($candidature, $candidature->getId());
+            if ($duplicateAnalysis['severity'] === 'BLOCKING') {
+                $form->addError(new \Symfony\Component\Form\FormError('Une candidature en doublon existe deja pour cette offre. Veuillez consulter la candidature existante avant d\'en creer une nouvelle.'));
+                $this->addFlash('error', (string) ($duplicateAnalysis['reason'] ?? 'Candidature en doublon bloquante.'));
+
+                return $this->render('candidature/edit.html.twig', [
+                    'candidature' => $candidature,
+                    'form' => $form,
+                    'isCandidat' => $isCandidat,
+                    'duplicateAnalysis' => $duplicateAnalysis,
+                ]);
+            }
+
+            if ($duplicateAnalysis['severity'] === 'WARNING') {
+                $this->addFlash('warning', 'Une ancienne candidature existe deja pour cette offre. La nouvelle candidature est autorisee mais sera signalee comme doublon potentiel.');
             }
 
             $candidature->setMatchingScore($matchingService->computeScore($candidature));
@@ -308,6 +371,7 @@ class CandidatureController extends AbstractController
             'candidature' => $candidature,
             'form' => $form,
             'isCandidat' => $isCandidat,
+            'duplicateAnalysis' => $duplicateGuard->analyze($candidature, $candidature->getId()),
         ]);
     }
 
@@ -328,7 +392,21 @@ class CandidatureController extends AbstractController
     #[Route('/piece-jointe/{id}/download', name: 'app_piece_jointe_download', requirements: ['id' => '\d+'])]
     public function downloadPieceJointe(PieceJointe $pieceJointe): BinaryFileResponse
     {
-        $filePath = $this->getParameter('kernel.project_dir') . '/public/' . $pieceJointe->getCheminFichier();
+        $storedFilename = $pieceJointe->getCheminFichier();
+        if ($storedFilename === null || $storedFilename === '') {
+            throw $this->createNotFoundException('Fichier introuvable.');
+        }
+
+        // Backward compatibility: older rows may store a relative path (uploads/pieces_jointes/xxx)
+        if (str_contains($storedFilename, '/')) {
+            $filePath = $this->getParameter('kernel.project_dir') . '/public/' . ltrim($storedFilename, '/');
+        } else {
+            $filePath = $this->getParameter('kernel.project_dir') . '/public/uploads/pieces_jointes/' . $storedFilename;
+        }
+
+        if (!file_exists($filePath)) {
+            throw $this->createNotFoundException('Fichier introuvable.');
+        }
 
         return $this->file($filePath, $pieceJointe->getNomFichier());
     }
@@ -339,10 +417,6 @@ class CandidatureController extends AbstractController
         $candidatureId = $pieceJointe->getCandidature()->getId();
 
         if ($this->isCsrfTokenValid('delete_pj' . $pieceJointe->getId(), $request->request->get('_token'))) {
-            $filePath = $this->getParameter('kernel.project_dir') . '/public/' . $pieceJointe->getCheminFichier();
-            if (file_exists($filePath)) {
-                unlink($filePath);
-            }
             $em->remove($pieceJointe);
             $em->flush();
             $this->addFlash('success', 'Pièce jointe supprimée.');

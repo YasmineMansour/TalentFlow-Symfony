@@ -30,6 +30,8 @@
 
 <h2 class="tf-title"><i class="fas fa-paper-plane"></i> Postuler</h2>
 
+{% include 'candidature/_duplicate_alert.html.twig' with { duplicateAnalysis: duplicateAnalysis|default(null) } %}
+
 {{ include('candidature/_form.html.twig', {button_label: 'Envoyer ma candidature', isCandidat: isCandidat|default(false)}) }}
 
 <a href="{{ path('app_candidature_index') }}" class="btn-outline-gold mt-3"><i class="fas fa-arrow-left"></i> Retour à la liste</a>

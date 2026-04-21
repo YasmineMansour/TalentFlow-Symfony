@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\Candidature;
+use App\Entity\Offre;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -143,5 +145,76 @@ class CandidatureRepository extends ServiceEntityRepository
         }
 
         return $map;
+    }
+
+    /**
+     * @return Candidature[]
+     */
+    public function findPotentialDuplicatesForCandidature(Candidature $candidature, ?int $excludeId = null): array
+    {
+        /** @var Offre|null $offre */
+        $offre = $candidature->getOffre();
+        /** @var User|null $candidat */
+        $candidat = $candidature->getCandidat();
+        $email = mb_strtolower(trim((string) $candidature->getEmail()));
+
+        if ($offre === null && $candidat === null && $email === '') {
+            return [];
+        }
+
+        $qb = $this->createQueryBuilder('c')
+            ->leftJoin('c.offre', 'o')->addSelect('o')
+            ->leftJoin('c.candidat', 'u')->addSelect('u');
+
+        $orX = $qb->expr()->orX();
+
+        if ($offre !== null) {
+            $orX->add('c.offre = :offre');
+            $qb->setParameter('offre', $offre);
+        }
+
+        if ($candidat !== null) {
+            $orX->add('c.candidat = :candidat');
+            $qb->setParameter('candidat', $candidat);
+        }
+
+        if ($email !== '') {
+            $orX->add('LOWER(TRIM(c.email)) = :email');
+            $qb->setParameter('email', $email);
+        }
+
+        $qb->andWhere($orX);
+
+        if ($excludeId !== null) {
+            $qb->andWhere('c.id != :excludeId')
+               ->setParameter('excludeId', $excludeId);
+        }
+
+        return $qb->orderBy('c.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Returns all candidatures that are not in a terminal status (Acceptée / Refusée).
+     * Used for priority/alert computations in the RH dashboard.
+     *
+     * @return Candidature[]
+     */
+    public function findNonTerminal(?object $entreprise = null): array
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->andWhere('c.statut NOT IN (:terminal)')
+            ->setParameter('terminal', ['Acceptée', 'Refusée'])
+            ->orderBy('c.createdAt', 'DESC');
+
+        if ($entreprise !== null) {
+            $qb->leftJoin('c.offre', 'o')
+               ->leftJoin('o.entreprise', 'e')
+               ->andWhere('e.id = :entrepriseId')
+               ->setParameter('entrepriseId', $entreprise->getId());
+        }
+
+        return $qb->getQuery()->getResult();
     }
 }

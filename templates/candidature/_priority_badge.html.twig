@@ -1,0 +1,22 @@
+{#
+  Badge compact de priorité RH — à inclure sur la page index dans les cartes.
+  Variables attendues :
+    - prioritySummary (array retourné par CandidaturePriorityService::summarize())
+#}
+{% set categoryConfig = {
+    'PRIORITAIRE':     { class: 'success',   icon: 'fas fa-star' },
+    'A_EXAMINER':      { class: 'warning',   icon: 'fas fa-search' },
+    'INCOMPLETE':      { class: 'danger',    icon: 'fas fa-exclamation-circle' },
+    'FAIBLE_PRIORITE': { class: 'secondary', icon: 'fas fa-minus-circle' }
+} %}
+{% set cfg = categoryConfig[prioritySummary.category] ?? { class: 'secondary', icon: 'fas fa-circle' } %}
+
+<div class="d-flex align-items-center gap-1 mt-1" style="font-size: 0.72rem;">
+    <span class="badge bg-{{ cfg.class }}" title="Priorité RH : {{ prioritySummary.label }}">
+        <i class="{{ cfg.icon }}"></i> {{ prioritySummary.label }}
+    </span>
+    <span style="color: var(--tf-gray);">{{ prioritySummary.priorityScore }}/100</span>
+    {% if prioritySummary.isLate is defined and prioritySummary.isLate %}
+        <span class="badge bg-warning text-dark" title="Candidature en retard"><i class="fas fa-clock"></i></span>
+    {% endif %}
+</div>
