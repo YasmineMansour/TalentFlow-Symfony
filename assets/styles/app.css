@@ -1,4 +1,1 @@
-body {
-    background: var(--tf-bg, #f8f9fc);
-    color: var(--tf-text, #1a1a2e);
-}
+/* Intentionally minimal: TalentFlow UI styling is handled in /public/css/talentflow.css */

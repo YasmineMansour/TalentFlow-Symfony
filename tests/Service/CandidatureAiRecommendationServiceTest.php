@@ -118,6 +118,54 @@ class CandidatureAiRecommendationServiceTest extends TestCase
         $this->assertNotEmpty($result['candidateMessage']);
     }
 
+    public function testPartialAnalysisDoesNotCrashAndReturnsSafePayload(): void
+    {
+        $candidature = $this->makeCandidature('QA Engineer');
+
+        $result = $this->service->generateRecommendation($candidature, [
+            'summary' => [],
+            'decision' => ['duplicateSeverity' => 'NONE'],
+            'issues' => [
+                'missingFields' => ['Compétences', 123, null],
+                'missingDocuments' => [],
+                'blockingReasons' => [],
+            ],
+        ]);
+
+        $this->assertArrayHasKey('summary', $result);
+        $this->assertArrayHasKey('candidateMessage', $result);
+        $this->assertArrayHasKey('rhSummary', $result);
+        $this->assertArrayHasKey('recommendations', $result);
+        $this->assertArrayHasKey('tone', $result);
+        $this->assertArrayHasKey('status', $result);
+        $this->assertSame('professional', $result['tone']);
+        $this->assertNotEmpty($result['recommendations']);
+    }
+
+    public function testBlockingCandidatureRhSummaryMentionsBlockingState(): void
+    {
+        $candidature = $this->makeCandidature('Développeur Symfony');
+
+        $result = $this->service->generateRecommendation($candidature, [
+            'summary' => [
+                'completenessLevel' => 'BLOQUANT',
+                'priorityCategory' => 'INCOMPLETE',
+            ],
+            'decision' => [
+                'canMoveToRhValidation' => false,
+                'duplicateSeverity' => 'NONE',
+            ],
+            'issues' => [
+                'missingFields' => ['Compétences'],
+                'missingDocuments' => ['CV'],
+                'blockingReasons' => ['CV manquant'],
+            ],
+        ]);
+
+        $this->assertSame('needs_improvement', $result['status']);
+        $this->assertStringContainsString('bloquant', mb_strtolower($result['rhSummary']));
+    }
+
     private function makeCandidature(string $titre): Candidature
     {
         $candidature = new Candidature();

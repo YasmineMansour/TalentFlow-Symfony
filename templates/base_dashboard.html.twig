@@ -1256,6 +1256,7 @@
         })();
         </script>
         {% endif %}
+        {{ importmap('app') }}
         {% block javascripts %}{% endblock %}
         {% include 'chatbot/_widget.html.twig' %}
     </body>

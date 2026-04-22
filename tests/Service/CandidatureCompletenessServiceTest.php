@@ -145,6 +145,40 @@ class CandidatureCompletenessServiceTest extends TestCase
         $this->assertTrue($analysis['hasLettreMotivation']);
     }
 
+    public function testCvDocumentNormalizationWithUppercaseCurriculumVitae(): void
+    {
+        $c = new Candidature();
+
+        $pj = new PieceJointe();
+        $pj->setTypeDocument('CURRICULUM_VITAE');
+        $pj->setNomFichier('cv.pdf');
+        $pj->setCheminFichier('uploads/cv.pdf');
+        $pj->setTailleFichier(12000);
+        $pj->setCandidature($c);
+        $c->getPiecesJointes()->add($pj);
+
+        $analysis = $this->service->analyze($c);
+
+        $this->assertTrue($analysis['hasCv']);
+    }
+
+    public function testLettreDocumentNormalizationWithUnderscoreLabel(): void
+    {
+        $c = new Candidature();
+
+        $pj = new PieceJointe();
+        $pj->setTypeDocument('lettre_motivation');
+        $pj->setNomFichier('lettre.pdf');
+        $pj->setCheminFichier('uploads/lettre.pdf');
+        $pj->setTailleFichier(12000);
+        $pj->setCandidature($c);
+        $c->getPiecesJointes()->add($pj);
+
+        $analysis = $this->service->analyze($c);
+
+        $this->assertTrue($analysis['hasLettreMotivation']);
+    }
+
     public function testMissingEmailIsBloquant(): void
     {
         $c = $this->makeCompleteCandidature();

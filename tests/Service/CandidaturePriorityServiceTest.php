@@ -190,6 +190,34 @@ class CandidaturePriorityServiceTest extends TestCase
         $this->assertCount(0, $alerts);
     }
 
+    public function testSortByPriorityOrdersCandidaturesDescending(): void
+    {
+        $high = $this->makeCompleteCandidature();
+        $high->setTitrePoste('High');
+        $high->setMatchingScore(90);
+        $high->setAnneesExperience(5);
+        $high->setNiveauEtudes('Bac+5');
+
+        $medium = $this->makeSufficientCandidature();
+        $medium->setTitrePoste('Medium');
+        $medium->setMatchingScore(70);
+        $medium->setAnneesExperience(2);
+        $medium->setNiveauEtudes('Bac+2');
+
+        $low = $this->makeSufficientCandidature();
+        $low->setTitrePoste('Low');
+        $low->setMatchingScore(10);
+        $low->setAnneesExperience(null);
+        $low->setNiveauEtudes(null);
+
+        $sorted = $this->service->sortByPriority([$medium, $low, $high]);
+
+        $this->assertCount(3, $sorted);
+        $this->assertSame('High', $sorted[0]->getTitrePoste());
+        $this->assertSame('Medium', $sorted[1]->getTitrePoste());
+        $this->assertSame('Low', $sorted[2]->getTitrePoste());
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     private function makeCompleteCandidature(): Candidature

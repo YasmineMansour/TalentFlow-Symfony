@@ -18,6 +18,7 @@ use App\Service\CandidatureCompletenessService;
 use App\Service\CandidatureDuplicateGuardService;
 use App\Service\CandidaturePriorityService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,65 +26,113 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
+use Symfony\UX\Chartjs\Model\Chart;
 
 #[Route('/candidature')]
 #[IsGranted('ROLE_USER')]
 class CandidatureController extends AbstractController
 {
     #[Route('/search', name: 'app_candidature_search', methods: ['GET'])]
-    public function search(Request $request, CandidatureRepository $repository): Response
+    public function search(
+        Request $request,
+        CandidatureRepository $repository,
+        PaginatorInterface $paginator,
+        CandidatureCompletenessService $completenessService,
+        CandidaturePriorityService $priorityService,
+    ): Response
     {
         $search = $request->query->get('search', '');
         $typeContrat = $request->query->get('type', '');
         $statut = $request->query->get('statut', '');
         $sortBy = $request->query->get('sort', 'createdAt');
         $sortDir = $request->query->get('dir', 'DESC');
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = 10;
 
-        $entrepriseFilter = null;
-        $candidatFilter = null;
-        if ($this->isGranted('ROLE_RH') && !$this->isGranted('ROLE_ADMIN')) {
-            $entrepriseFilter = $this->getUser()->getEntreprise();
-        }
-        if ($this->isGranted('ROLE_CANDIDAT') && !$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_RH')) {
-            $candidatFilter = $this->getUser();
-        }
-        $candidatures = $repository->findFiltered($search, $typeContrat, $statut, $sortBy, $sortDir, $entrepriseFilter, $candidatFilter);
+        [$entrepriseFilter, $candidatFilter] = $this->resolveCandidatureScopeFilters();
+        $qb = $repository->createFilteredQueryBuilder(
+            $search,
+            $typeContrat,
+            $statut,
+            $sortBy,
+            $sortDir,
+            $entrepriseFilter,
+            $candidatFilter
+        );
 
-        return $this->render('candidature/_table_body.html.twig', [
+        $candidatures = $this->paginateSafe($paginator, $qb, $page, $limit);
+
+        [$completenessMap, $priorityMap] = $this->buildCandidatureAnalysisMaps(
+            $candidatures,
+            $completenessService,
+            $priorityService
+        );
+
+        return $this->render('candidature/_results.html.twig', [
             'candidatures' => $candidatures,
+            'completenessMap' => $completenessMap,
+            'priorityMap' => $priorityMap,
         ]);
     }
 
     #[Route('/', name: 'app_candidature_index', methods: ['GET'])]
-    public function index(Request $request, CandidatureRepository $repository, CandidatureCompletenessService $completenessService, CandidaturePriorityService $priorityService): Response
+    public function index(
+        Request $request,
+        CandidatureRepository $repository,
+        PaginatorInterface $paginator,
+        CandidatureCompletenessService $completenessService,
+        CandidaturePriorityService $priorityService,
+        ChartBuilderInterface $chartBuilder,
+    ): Response
     {
         $search = $request->query->get('search', '');
         $typeContrat = $request->query->get('type', '');
         $statut = $request->query->get('statut', '');
         $sortBy = $request->query->get('sort', 'createdAt');
         $sortDir = $request->query->get('dir', 'DESC');
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = 10;
 
-        $entrepriseFilter = null;
-        $candidatFilter = null;
-        if ($this->isGranted('ROLE_RH') && !$this->isGranted('ROLE_ADMIN')) {
-            $entrepriseFilter = $this->getUser()->getEntreprise();
-        }
-        if ($this->isGranted('ROLE_CANDIDAT') && !$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_RH')) {
-            $candidatFilter = $this->getUser();
-        }
-        $candidatures = $repository->findFiltered($search, $typeContrat, $statut, $sortBy, $sortDir, $entrepriseFilter, $candidatFilter);
+        [$entrepriseFilter, $candidatFilter] = $this->resolveCandidatureScopeFilters();
+        $qb = $repository->createFilteredQueryBuilder(
+            $search,
+            $typeContrat,
+            $statut,
+            $sortBy,
+            $sortDir,
+            $entrepriseFilter,
+            $candidatFilter
+        );
 
-        $completenessMap = [];
-        $priorityMap     = [];
-        foreach ($candidatures as $c) {
-            $analysis = $completenessService->analyze($c);
-            $completenessMap[$c->getId()] = [
-                'score' => $analysis['score'],
-                'level' => $analysis['level'],
-                'label' => $analysis['label'],
-            ];
-            $priorityMap[$c->getId()] = $priorityService->summarize($c);
-        }
+        $candidatures = $this->paginateSafe($paginator, $qb, $page, $limit);
+
+        $statsQb = $repository->createFilteredQueryBuilder(
+            '',
+            '',
+            '',
+            'createdAt',
+            'DESC',
+            $entrepriseFilter,
+            $candidatFilter
+        );
+
+        /** @var Candidature[] $candidaturesForStats */
+        $candidaturesForStats = $statsQb->getQuery()->getResult();
+
+        $statistics = $this->computeCandidatureStatistics(
+            $candidaturesForStats,
+            $completenessService,
+            $priorityService
+        );
+
+        $charts = $this->buildCandidatureCharts($chartBuilder, $statistics);
+
+        [$completenessMap, $priorityMap] = $this->buildCandidatureAnalysisMaps(
+            $candidatures,
+            $completenessService,
+            $priorityService
+        );
 
         return $this->render('candidature/index.html.twig', [
             'candidatures'    => $candidatures,
@@ -94,7 +143,240 @@ class CandidatureController extends AbstractController
             'sortDir'         => $sortDir,
             'completenessMap' => $completenessMap,
             'priorityMap'     => $priorityMap,
+            'candidatureStats' => $statistics,
+            'statutChart' => $charts['statutChart'],
+            'completenessChart' => $charts['completenessChart'],
+            'priorityChart' => $charts['priorityChart'],
+            'evolutionChart' => $charts['evolutionChart'],
         ]);
+    }
+
+    /**
+     * @param Candidature[] $candidatures
+     * @return array{
+     *   total: int,
+     *   statut: array<string,int>,
+     *   completeness: array<string,int>,
+     *   priority: array<string,int>,
+     *   evolution: array<string,int>,
+     *   completeCount: int,
+     *   blockingCount: int,
+     *   prioritaireCount: int
+     * }
+     */
+    private function computeCandidatureStatistics(
+        array $candidatures,
+        CandidatureCompletenessService $completenessService,
+        CandidaturePriorityService $priorityService,
+    ): array {
+        $statutCounts = [
+            'En attente' => 0,
+            'Validée RH' => 0,
+            'Entretien' => 0,
+            'Acceptée' => 0,
+            'Refusée' => 0,
+        ];
+
+        $completenessCounts = [
+            'Complet' => 0,
+            'À compléter' => 0,
+            'Bloquante' => 0,
+        ];
+
+        $priorityCounts = [
+            'Prioritaire' => 0,
+            'À examiner' => 0,
+            'Incomplète' => 0,
+            'Faible priorité' => 0,
+        ];
+
+        $evolutionCounts = [];
+        $completeCount = 0;
+        $blockingCount = 0;
+        $prioritaireCount = 0;
+
+        foreach ($candidatures as $candidature) {
+            $statut = (string) $candidature->getStatut();
+            if (array_key_exists($statut, $statutCounts)) {
+                $statutCounts[$statut]++;
+            }
+
+            $completenessSummary = $completenessService->analyze($candidature);
+            $level = (string) ($completenessSummary['level'] ?? '');
+            if ($level === 'COMPLET') {
+                $completenessCounts['Complet']++;
+                $completeCount++;
+            } elseif ($level === 'A_COMPLETER') {
+                $completenessCounts['À compléter']++;
+            } else {
+                $completenessCounts['Bloquante']++;
+                $blockingCount++;
+            }
+
+            $prioritySummary = $priorityService->summarize($candidature);
+            $category = (string) ($prioritySummary['category'] ?? '');
+            if ($category === 'PRIORITAIRE') {
+                $priorityCounts['Prioritaire']++;
+                $prioritaireCount++;
+            } elseif ($category === 'A_EXAMINER') {
+                $priorityCounts['À examiner']++;
+            } elseif ($category === 'INCOMPLETE') {
+                $priorityCounts['Incomplète']++;
+            } else {
+                $priorityCounts['Faible priorité']++;
+            }
+
+            $date = $candidature->getDateCandidature() ?? $candidature->getCreatedAt();
+            if ($date !== null) {
+                $monthLabel = $date->format('m/Y');
+                $evolutionCounts[$monthLabel] = ($evolutionCounts[$monthLabel] ?? 0) + 1;
+            }
+        }
+
+        ksort($evolutionCounts);
+
+        return [
+            'total' => count($candidatures),
+            'statut' => $statutCounts,
+            'completeness' => $completenessCounts,
+            'priority' => $priorityCounts,
+            'evolution' => $evolutionCounts,
+            'completeCount' => $completeCount,
+            'blockingCount' => $blockingCount,
+            'prioritaireCount' => $prioritaireCount,
+        ];
+    }
+
+    /**
+     * @param array{
+     *   statut: array<string,int>,
+     *   completeness: array<string,int>,
+     *   priority: array<string,int>,
+     *   evolution: array<string,int>
+     * } $statistics
+     * @return array{statutChart: Chart, completenessChart: Chart, priorityChart: Chart, evolutionChart: Chart}
+     */
+    private function buildCandidatureCharts(ChartBuilderInterface $chartBuilder, array $statistics): array
+    {
+        $statutChart = $chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
+        $statutChart->setData([
+            'labels' => array_keys($statistics['statut']),
+            'datasets' => [[
+                'data' => array_values($statistics['statut']),
+                'backgroundColor' => ['#6c757d', '#0dcaf0', '#ffc107', '#198754', '#dc3545'],
+                'borderWidth' => 1,
+            ]],
+        ]);
+        $statutChart->setOptions([
+            'plugins' => ['legend' => ['position' => 'bottom']],
+            'maintainAspectRatio' => false,
+        ]);
+
+        $completenessChart = $chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
+        $completenessChart->setData([
+            'labels' => array_keys($statistics['completeness']),
+            'datasets' => [[
+                'data' => array_values($statistics['completeness']),
+                'backgroundColor' => ['#198754', '#ffc107', '#dc3545'],
+                'borderWidth' => 1,
+            ]],
+        ]);
+        $completenessChart->setOptions([
+            'plugins' => ['legend' => ['position' => 'bottom']],
+            'maintainAspectRatio' => false,
+        ]);
+
+        $priorityChart = $chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
+        $priorityChart->setData([
+            'labels' => array_keys($statistics['priority']),
+            'datasets' => [[
+                'data' => array_values($statistics['priority']),
+                'backgroundColor' => ['#198754', '#0dcaf0', '#fd7e14', '#6c757d'],
+                'borderWidth' => 1,
+            ]],
+        ]);
+        $priorityChart->setOptions([
+            'plugins' => ['legend' => ['position' => 'bottom']],
+            'maintainAspectRatio' => false,
+        ]);
+
+        $evolutionChart = $chartBuilder->createChart(Chart::TYPE_BAR);
+        $evolutionChart->setData([
+            'labels' => array_keys($statistics['evolution']),
+            'datasets' => [[
+                'label' => 'Candidatures',
+                'data' => array_values($statistics['evolution']),
+                'backgroundColor' => '#0d6efd',
+                'borderRadius' => 6,
+            ]],
+        ]);
+        $evolutionChart->setOptions([
+            'plugins' => ['legend' => ['display' => false]],
+            'scales' => ['y' => ['beginAtZero' => true, 'ticks' => ['precision' => 0]]],
+            'maintainAspectRatio' => false,
+        ]);
+
+        return [
+            'statutChart' => $statutChart,
+            'completenessChart' => $completenessChart,
+            'priorityChart' => $priorityChart,
+            'evolutionChart' => $evolutionChart,
+        ];
+    }
+
+    private function paginateSafe(
+        PaginatorInterface $paginator,
+        mixed $target,
+        int $page,
+        int $limit
+    ): \Knp\Component\Pager\Pagination\PaginationInterface {
+        $pagination = $paginator->paginate($target, $page, $limit);
+
+        // If the requested page exceeds the available pages (e.g. filters narrowed
+        // the result set after the user navigated to a later page), fall back to
+        // page 1 so we never render an empty out-of-range page.
+        if ($page > 1 && $pagination->getTotalItemCount() > 0 && $page > $pagination->getPageCount()) {
+            $pagination = $paginator->paginate($target, 1, $limit);
+        }
+
+        return $pagination;
+    }
+
+    private function resolveCandidatureScopeFilters(): array
+    {
+        $entrepriseFilter = null;
+        $candidatFilter = null;
+
+        if ($this->isGranted('ROLE_RH') && !$this->isGranted('ROLE_ADMIN')) {
+            $entrepriseFilter = $this->getUser()->getEntreprise();
+        }
+
+        if ($this->isGranted('ROLE_CANDIDAT') && !$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_RH')) {
+            $candidatFilter = $this->getUser();
+        }
+
+        return [$entrepriseFilter, $candidatFilter];
+    }
+
+    private function buildCandidatureAnalysisMaps(
+        iterable $candidatures,
+        CandidatureCompletenessService $completenessService,
+        CandidaturePriorityService $priorityService
+    ): array {
+        $completenessMap = [];
+        $priorityMap = [];
+
+        foreach ($candidatures as $candidature) {
+            $analysis = $completenessService->analyze($candidature);
+            $completenessMap[$candidature->getId()] = [
+                'score' => $analysis['score'],
+                'level' => $analysis['level'],
+                'label' => $analysis['label'],
+            ];
+            $priorityMap[$candidature->getId()] = $priorityService->summarize($candidature);
+        }
+
+        return [$completenessMap, $priorityMap];
     }
 
     #[Route('/new', name: 'app_candidature_new', methods: ['GET', 'POST'])]

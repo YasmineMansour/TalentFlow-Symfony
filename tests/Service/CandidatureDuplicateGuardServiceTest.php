@@ -63,6 +63,27 @@ class CandidatureDuplicateGuardServiceTest extends TestCase
         $this->assertFalse($analysis['canSubmit']);
     }
 
+    public function testSameCandidateDifferentOfferIsNotDuplicate(): void
+    {
+        $candidate = $this->makeUser(61, 'different-offer@test.tn');
+        $offreCourante = $this->makeOffre(110);
+        $offreExistante = $this->makeOffre(111);
+
+        $current = $this->makeCandidature($offreCourante, $candidate, 'different-offer@test.tn', 'En attente');
+        $existing = $this->makeCandidature($offreExistante, $candidate, 'different-offer@test.tn', 'En attente');
+
+        $this->candidatureRepository
+            ->method('findPotentialDuplicatesForCandidature')
+            ->with($current, null)
+            ->willReturn([$existing]);
+
+        $analysis = $this->service->analyze($current);
+
+        $this->assertFalse($analysis['isDuplicate']);
+        $this->assertSame('NONE', $analysis['severity']);
+        $this->assertTrue($analysis['canSubmit']);
+    }
+
     public function testSameCandidateSameOfferRefusedOlderThan30DaysIsWarning(): void
     {
         $offre = $this->makeOffre(12);
@@ -151,6 +172,34 @@ class CandidatureDuplicateGuardServiceTest extends TestCase
         $this->assertSame('fallback_text', $analysis['matchingStrategy']);
         $this->assertSame('WARNING', $analysis['severity']);
         $this->assertTrue($analysis['canSubmit']);
+    }
+
+    public function testFindDuplicatesReturnsExpectedDisplayStructure(): void
+    {
+        $offre = $this->makeOffre(200);
+        $candidate = $this->makeUser(201, 'dup@test.tn');
+
+        $current = $this->makeCandidature($offre, $candidate, 'dup@test.tn', 'En attente', 'Dev PHP', 'Tech Corp');
+        $existing = $this->makeCandidature($offre, $candidate, 'dup@test.tn', 'Validée RH', 'Dev PHP', 'Tech Corp');
+        $this->setEntityId($existing, 202);
+
+        $this->candidatureRepository
+            ->method('findPotentialDuplicatesForCandidature')
+            ->with($current, null)
+            ->willReturn([$existing]);
+
+        $rows = $this->service->findDuplicates($current);
+
+        $this->assertCount(1, $rows);
+        $this->assertArrayHasKey('id', $rows[0]);
+        $this->assertArrayHasKey('statut', $rows[0]);
+        $this->assertArrayHasKey('dateCandidature', $rows[0]);
+        $this->assertArrayHasKey('offreLabel', $rows[0]);
+        $this->assertArrayHasKey('candidateLabel', $rows[0]);
+        $this->assertSame(202, $rows[0]['id']);
+        $this->assertSame('Validée RH', $rows[0]['statut']);
+        $this->assertSame('Offre 200', $rows[0]['offreLabel']);
+        $this->assertSame('User TEST', $rows[0]['candidateLabel']);
     }
 
     private function makeCandidature(?Offre $offre, ?User $candidat, string $email, string $statut, string $titre = 'Poste', string $entreprise = 'Entreprise'): Candidature

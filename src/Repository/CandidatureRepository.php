@@ -6,6 +6,7 @@ use App\Entity\Candidature;
 use App\Entity\Offre;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -65,9 +66,24 @@ class CandidatureRepository extends ServiceEntityRepository
         $entreprise = null,
         $candidat = null
     ): array {
+        return $this->createFilteredQueryBuilder($search, $typeContrat, $statut, $sortBy, $sortDir, $entreprise, $candidat)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function createFilteredQueryBuilder(
+        string $search = '',
+        string $typeContrat = '',
+        string $statut = '',
+        string $sortBy = 'createdAt',
+        string $sortDir = 'DESC',
+        $entreprise = null,
+        $candidat = null
+    ): QueryBuilder {
         $qb = $this->createQueryBuilder('c')
             ->leftJoin('c.offre', 'o')
-            ->leftJoin('o.entreprise', 'e');
+            ->leftJoin('o.entreprise', 'e')
+            ->addSelect('o', 'e');
 
         if (!empty($search)) {
             $qb->andWhere('c.titrePoste LIKE :search OR c.entreprise LIKE :search OR c.lieu LIKE :search')
@@ -102,7 +118,7 @@ class CandidatureRepository extends ServiceEntityRepository
 
         $qb->orderBy('c.' . $sortBy, $sortDir);
 
-        return $qb->getQuery()->getResult();
+        return $qb;
     }
 
     public function countByStatut(): array

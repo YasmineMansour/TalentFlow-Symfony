@@ -602,6 +602,7 @@
         <script>
         var TFTheme={toggle:function(){var c=document.documentElement.getAttribute('data-theme')||'dark';var n=c==='dark'?'light':'dark';localStorage.setItem('tf-theme',n);document.documentElement.setAttribute('data-theme',n);document.documentElement.classList.toggle('dark',n==='dark');TFTheme._icons();},_icons:function(){var t=document.documentElement.getAttribute('data-theme');var s=document.getElementById('theme-icon-sun');var m=document.getElementById('theme-icon-moon');if(s&&m){s.style.display=t==='dark'?'':'none';m.style.display=t==='dark'?'none':'';}}};document.addEventListener('DOMContentLoaded',function(){TFTheme._icons();});
         </script>
+        {{ importmap('app') }}
         {% block javascripts %}{% endblock %}
         {% include 'chatbot/_widget.html.twig' %}
     </body>
