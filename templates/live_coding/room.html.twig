@@ -10,7 +10,7 @@
     
     .lc-main { display: flex; flex-direction: column; gap: 12px; }
     .lc-editor-panel { flex: 1; display: flex; flex-direction: column; gap: 8px; background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 14px; }
-    .lc-output-panel { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 14px; max-height: 200px; overflow-y: auto; }
+    .lc-output-panel { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 14px; max-height: 200px; overflow-y: auto; color: #e2e8f0; font-family: Consolas, 'Courier New', monospace; font-size: 13px; white-space: pre-wrap; word-wrap: break-word; }
     .lc-sidebar { background: #0f172a; border: 1px solid #334155; border-radius: 10px; display: flex; flex-direction: column; font-size: 0.85rem; }
     
     .lc-tab-bar { display: flex; gap: 8px; border-bottom: 1px solid #334155; }
@@ -301,10 +301,20 @@
                 })
             });
 
-            const data = await response.json();
-            if (!response.ok || data.ok === false) {
-                outputEl.textContent = data.error || 'Erreur d exécution';
+            let data = null;
+            try {
+                data = await response.json();
+            } catch (e) {
+                outputEl.textContent = 'Erreur: Reponse serveur invalide (HTTP ' + response.status + ')';
                 runnerMetaEl.textContent = 'Erreur';
+                return;
+            }
+            
+            if (!response.ok || data.ok === false) {
+                const errorMsg = data?.error || 'Erreur HTTP ' + response.status + ': ' + response.statusText;
+                outputEl.textContent = errorMsg;
+                runnerMetaEl.textContent = 'Erreur';
+                console.error('Live Coding Error:', {status: response.status, error: errorMsg});
                 return;
             }
 

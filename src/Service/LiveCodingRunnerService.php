@@ -72,11 +72,17 @@ class LiveCodingRunnerService
     {
         $command = $this->resolveInterpreter($language);
         if ($command === null) {
+            $availInterpreters = [];
+            if ($this->isExecutableCommandAvailable('php')) $availInterpreters[] = 'php';
+            if ($this->isExecutableCommandAvailable('python')) $availInterpreters[] = 'python';
+            if ($this->isExecutableCommandAvailable('node')) $availInterpreters[] = 'node';
+            
             return [
                 'ok' => false,
                 'error' => sprintf(
-                    'Runner indisponible et aucun interprete local trouve pour %s. Détail: %s',
+                    'Runner indisponible et aucun interprete local trouve pour %s. Interpretes disponibles: %s. Détail: %s',
                     $language,
+                    empty($availInterpreters) ? 'aucun' : implode(', ', $availInterpreters),
                     $transportError
                 ),
             ];
@@ -98,7 +104,14 @@ class LiveCodingRunnerService
         }
 
         $filePath = $tempDir . DIRECTORY_SEPARATOR . 'main.' . $extension;
-        file_put_contents($filePath, $code);
+        
+        // Wrap code with language-specific boilerplate if needed
+        $wrappedCode = $code;
+        if ($language === 'php' && !str_starts_with(trim($code), '<?')) {
+            $wrappedCode = '<?php ' . $code;
+        }
+        
+        file_put_contents($filePath, $wrappedCode);
 
         $startedAt = microtime(true);
         $process = new Process([$command, $filePath], null, null, $stdin, self::LOCAL_TIMEOUT_SECONDS);
@@ -126,11 +139,15 @@ class LiveCodingRunnerService
             ];
         }
 
+        $stdout = $process->getOutput() ?? '';
+        $stderr = $process->getErrorOutput() ?? '';
+        $exitCode = $process->getExitCode();
+        
         $result = [
             'ok' => true,
-            'stdout' => $process->getOutput(),
-            'stderr' => $process->getErrorOutput(),
-            'exitCode' => $process->getExitCode() ?? 1,
+            'stdout' => (string) $stdout,
+            'stderr' => (string) $stderr,
+            'exitCode' => $exitCode !== null ? (int) $exitCode : 0,
             'timedOut' => false,
             'durationMs' => (int) round((microtime(true) - $startedAt) * 1000),
             'engine' => 'local',
