@@ -1,0 +1,18 @@
+# Full configuration reference available at:
+# https://damienharper.github.io/auditor-docs/docs/auditor-bundle/configuration/reference.html
+dh_auditor:
+    enabled: true
+    providers:
+        doctrine:
+            table_prefix: null
+            table_suffix: '_audit'
+            viewer:
+                enabled: true
+                page_size: 50
+            entities:
+                App\Entity\Post: ~
+                App\Entity\Comment: ~
+                App\Entity\Vote: ~
+                App\Entity\PostReport: ~
+                App\Entity\Conversation: ~
+                App\Entity\Message: ~

@@ -306,3 +306,96 @@ chatbot:
         error: "Le chatbot a rencontré une erreur. Veuillez réessayer."
         unavailable: "Réponse indisponible pour le moment."
         connection_error: "⚠️ Erreur de connexion. Veuillez réessayer."
+
+# ==================== FORUM ====================
+forum:
+    rules:
+        title: "Règles du Forum"
+        rule1: "Respect"
+        rule1_desc: "Restez courtois."
+        rule2: "Pas d'insultes"
+        rule2_desc: "Langage poli exigé."
+        rule3: "Pas de spam"
+        rule3_desc: "Pas de doublons."
+        rule4: "Pro uniquement"
+        rule4_desc: "Contenu RH/emploi."
+        rule5: "0 discrimination"
+        rule5_desc: "Tolérance zéro."
+        rule6: "Données privées"
+        rule6_desc: "Rien de sensible."
+        rule7: "Qualité"
+        rule7_desc: "Titres clairs, contenu utile."
+        rule8: "Signaler"
+        rule8_desc: "Alertez un admin."
+        footer: "Tout abus sera sanctionné."
+    ad:
+        title: "Espace publicitaire"
+        subtitle: "Votre annonce ici"
+    search:
+        placeholder: "Rechercher un post, un auteur..."
+    filter:
+        recent: "Récents"
+        top: "Top"
+        oldest: "Anciens"
+        commented: "Commentés"
+    start_post: "Commencer un post..."
+    time:
+        now: "à l'instant"
+        minutes_ago: "il y a %count% min"
+        hours_ago: "il y a %count% h"
+        days_ago: "il y a %count% j"
+    action:
+        comment: "Commenter"
+        listen: "Écouter"
+        summarize: "Résumer"
+        message: "Message"
+        report_btn: "Signaler ce post"
+        more_options: "Plus d'options"
+        confirm_delete: "Supprimer ce post ?"
+    content:
+        see_more: "...voir plus"
+        audio_memo: "Mémo vocal"
+        hidden_title: "Post retiré"
+        hidden_content: "Ce post a été retiré pour non-respect des règles de la communauté."
+    modal:
+        new_post:
+            title: "Créer un post"
+            select_author: "-- Sélectionner un auteur --"
+            title_placeholder: "De quoi voulez-vous parler ?"
+            content_placeholder: "Partagez vos idées, expériences ou questions..."
+            submit: "Publier"
+        edit_post:
+            title: "Modifier le post"
+        media:
+            photo: "Photo"
+            voice: "Vocal"
+            add_photo: "Ajouter une image"
+            voice_memo: "Mémo vocal"
+        comment:
+            header: "Commentaires"
+            placeholder: "Écrire un commentaire..."
+            select_author: "-- Auteur --"
+        report:
+            title: "Signaler ce post"
+            reason_label: "Motif"
+            select_reason: "-- Choisir un motif --"
+            description_label: "Description optionnelle"
+            description_placeholder: "Ajoutez un peu de contexte si nécessaire..."
+            submit: "Envoyer le signalement"
+            reason_spam: "Spam"
+            reason_inappropriate: "Contenu inapproprié"
+            reason_misinformation: "Désinformation"
+            reason_other: "Autre"
+    stats:
+        title: "Statistiques"
+        members: "Membres"
+        votes: "Votes"
+        activity: "Activité (7 jours)"
+        top_authors: "Top contributeurs"
+    translate:
+        title: "Traduire en"
+        arabic: "العربية"
+        show_original: "Afficher l'original"
+    no_search_results: "Aucun post ne correspond à votre recherche"
+    empty: "Aucun post pour le moment"
+    create_first: "Créer le premier post"

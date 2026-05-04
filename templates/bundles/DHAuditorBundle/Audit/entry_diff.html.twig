@@ -1,0 +1,24 @@
+{% import '@DHAuditor/Audit/helpers/helper.html.twig' as helper %}
+<tr>
+    <td class="col-key"><span class="audit-diff-key">{{ key }}</span></td>
+    <td class="col-val">
+        {% if values.old is defined %}
+            {% if values.old is null %}
+                <span class="audit-null">null</span>
+            {% else %}
+                <span class="audit-diff-old">{{ helper.dump(values.old)|raw }}</span>
+            {% endif %}
+        {% endif %}
+    </td>
+    <td class="col-val">
+        {% if values.new is defined %}
+            {% if values.new is null %}
+                <span class="audit-null">null</span>
+            {% elseif values.old is not defined or values.old is null %}
+                <span class="audit-diff-new">{{ helper.dump(values.new)|raw }}</span>
+            {% else %}
+                <span class="audit-diff-new">{{ helper.dump(values.new)|raw }}</span>
+            {% endif %}
+        {% endif %}
+    </td>
+</tr>

@@ -1,0 +1,51 @@
+{% macro render(entity, id = null, paginator, proximity = 3) %}
+    {% if paginator.haveToPaginate %}
+        {% set start = paginator.currentPage - proximity %}
+        {% set end = paginator.currentPage + proximity %}
+        {% if start < 1 %}
+            {% set end = min(end + (1 - start), paginator.numPages) %}
+            {% set start = 1 %}
+        {% endif %}
+        {% if end > paginator.numPages %}
+            {% set start = max(start - (end - paginator.numPages), 1) %}
+            {% set end = paginator.numPages %}
+        {% endif %}
+        <div class="audit-pager">
+            {% if paginator.hasPreviousPage %}
+                <a href="{{ path('dh_auditor_show_entity_history', {entity: entity, id: id, page: 1}) }}" title="Première page">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+                <a href="{{ path('dh_auditor_show_entity_history', {entity: entity, id: id, page: paginator.previousPage}) }}" title="Page précédente">
+                    <i class="fas fa-angle-left"></i>
+                </a>
+            {% else %}
+                <span class="disabled"><i class="fas fa-angle-double-left"></i></span>
+                <span class="disabled"><i class="fas fa-angle-left"></i></span>
+            {% endif %}
+
+            {% if start > 1 %}<span class="disabled">…</span>{% endif %}
+            {% for i in start..end %}
+                <a href="{{ path('dh_auditor_show_entity_history', {entity: entity, id: id, page: i}) }}"{% if i == paginator.currentPage %} class="active"{% endif %}>{{ i }}</a>
+            {% endfor %}
+            {% if end < paginator.numPages %}<span class="disabled">…</span>{% endif %}
+
+            {% if paginator.hasNextPage %}
+                <a href="{{ path('dh_auditor_show_entity_history', {entity: entity, id: id, page: paginator.nextPage}) }}" title="Page suivante">
+                    <i class="fas fa-angle-right"></i>
+                </a>
+                <a href="{{ path('dh_auditor_show_entity_history', {entity: entity, id: id, page: paginator.numPages}) }}" title="Dernière page">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+            {% else %}
+                <span class="disabled"><i class="fas fa-angle-right"></i></span>
+                <span class="disabled"><i class="fas fa-angle-double-right"></i></span>
+            {% endif %}
+
+            <span class="pager-info">
+                Page {{ paginator.currentPage }} / {{ paginator.numPages }}
+                &nbsp;·&nbsp;
+                {{ paginator.numResults }} résultat{{ paginator.numResults != 1 ? 's' }}
+            </span>
+        </div>
+    {% endif %}
+{% endmacro render %}

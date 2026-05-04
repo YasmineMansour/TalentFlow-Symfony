@@ -1,0 +1,49 @@
+{% extends "@DHAuditor/layout.html.twig" %}
+{% import '@DHAuditor/Audit/helpers/helper.html.twig' as helper %}
+
+{% set entityMeta = {
+    'Post':         {'icon': 'fa-file-alt',    'color': 'gold'},
+    'Comment':      {'icon': 'fa-comment-alt', 'color': 'blue'},
+    'Vote':         {'icon': 'fa-thumbs-up',   'color': 'green'},
+    'PostReport':   {'icon': 'fa-flag',        'color': 'red'},
+    'Conversation': {'icon': 'fa-comments',    'color': 'purple'},
+    'Message':      {'icon': 'fa-envelope',    'color': 'teal'},
+} %}
+
+{% block dh_auditor_header %}
+<nav class="audit-breadcrumb">
+    <i class="fas fa-shield-alt"></i>
+    <span class="current">Journal d'Audit</span>
+    <span class="badge">{{ audited|length }} entité{{ audited|length != 1 ? 's' }}</span>
+</nav>
+{% endblock %}
+
+{% block dh_auditor_content %}
+<div class="audit-entity-grid">
+    {% for entity, table in audited %}
+        {% set shortName = entity|split('\\')|last %}
+        {% set meta = entityMeta[shortName] ?? {'icon': 'fa-database', 'color': 'gold'} %}
+        {% set count = reader.createQuery(entity).count() %}
+        <div class="audit-entity-card">
+            <div class="audit-entity-card-body">
+                <div class="audit-entity-icon {{ meta.color }}">
+                    <i class="fas {{ meta.icon }}"></i>
+                </div>
+                <div class="audit-entity-info">
+                    <h4>{{ shortName }}</h4>
+                    <span class="table-name">{{ table }}</span>
+                </div>
+            </div>
+            <div class="audit-entity-card-footer">
+                <span class="op-count">
+                    <i class="fas fa-history"></i>
+                    {{ count|number_format }} opération{{ count != 1 ? 's' }}
+                </span>
+                <a href="{{ path('dh_auditor_show_entity_history', {'entity': helper.namespaceToParam(entity)}) }}">
+                    Voir <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% macro shortEntity(fqn) -%}
+    {%- if '\\' in fqn -%}{{- fqn|split('\\')|last -}}{%- else -%}{{- fqn -}}{%- endif -%}
+{%- endmacro %}
+
+{% macro dump(value, separator) %}
+    {%- import _self as helper -%}
+    {%- if value is null -%}
+        <span class="audit-null">null</span>
+    {%- elseif value is same as(true) -%}
+        <span class="audit-bool-true">true</span>
+    {%- elseif value is same as(false) -%}
+        <span class="audit-bool-false">false</span>
+    {%- elseif value is iterable -%}
+        {%- if value.label is defined -%}
+            {%- set label = (value.label ~ '')|trim -%}
+            {%- if '\\' in label -%}
+                {%- set hp = label|split('#') -%}
+                {%- set cn = hp[0]|split('\\')|last -%}
+                {%- if hp[1] is defined -%}<span class="audit-entity-ref">{{ cn }}<span class="audit-entity-id"> #{{ hp[1]|trim }}</span></span>
+                {%- else -%}<span class="audit-entity-ref">{{ cn }}</span>{%- endif -%}
+            {%- else -%}{{- label -}}{%- endif -%}
+        {%- else -%}
+            {%- for k, v in value -%}<div style="font-size:0.78rem;">{{ k }}: {{ helper.dump(v)|raw }}</div>{%- endfor -%}
+        {%- endif -%}
+    {%- else -%}
+        {%- set sv = (value ~ '') -%}
+        {%- if '\\' in sv -%}
+            {%- set hp = sv|split('#') -%}
+            {%- set cn = hp[0]|split('\\')|last -%}
+            {%- if hp[1] is defined -%}<span class="audit-entity-ref">{{ cn }}<span class="audit-entity-id"> #{{ hp[1]|trim }}</span></span>
+            {%- else -%}<span class="audit-entity-ref">{{ cn }}</span>{%- endif -%}
+        {%- else -%}{{- sv -}}{%- endif -%}
+    {%- endif -%}
+{% endmacro %}
+
+{% macro namespaceToParam(entity) %}
+{{- entity|replace({'\\': '-'}) -}}
+{% endmacro %}
+
+{% macro summarize(entity, entry) %}
+    {%- import _self as helper -%}
+    {%- set shortName = helper.shortEntity(entity) -%}
+    {%- set entityUrl = path('dh_auditor_show_entity_history', {'entity': helper.namespaceToParam(entity), 'id': entry.getObjectId()}) -%}
+    {%- if entry.getType() == 'insert' -%}{%- set typeLabel = 'ajouté' %}{%- set typeClass = 'audit-action-insert' -%}
+    {%- elseif entry.getType() == 'update' -%}{%- set typeLabel = 'modifié' %}{%- set typeClass = 'audit-action-update' -%}
+    {%- elseif entry.getType() == 'remove' -%}{%- set typeLabel = 'supprimé' %}{%- set typeClass = 'audit-action-remove' -%}
+    {%- elseif entry.getType() == 'associate' -%}{%- set typeLabel = 'associé' %}{%- set typeClass = 'audit-action-associate' -%}
+    {%- elseif entry.getType() == 'dissociate' -%}{%- set typeLabel = 'dissocié' %}{%- set typeClass = 'audit-action-dissociate' -%}
+    {%- else -%}{%- set typeLabel = entry.getType() %}{%- set typeClass = '' -%}
+    {%- endif -%}
+    <a href="{{ entityUrl }}" class="audit-entity-link">{{ shortName }} <span class="audit-id-badge">#{{ entry.getObjectId() }}</span></a>
+    <span class="{{ typeClass }}">{{ typeLabel }}</span>
+    par <strong class="audit-user">{{ entry.getUsername() ?? 'système' }}</strong>
+    {%- if entry.getIp() is not empty %} <span class="audit-ip">· {{ entry.getIp() }}</span>{%- endif -%}
+{% endmacro %}
+
+{% macro icon_type(value) %}
+    {%- if value == 'insert' -%}<i class="fas fa-plus"></i>
+    {%- elseif value == 'update' -%}<i class="fas fa-pen"></i>
+    {%- elseif value == 'remove' -%}<i class="fas fa-minus"></i>
+    {%- elseif value == 'associate' -%}<i class="fas fa-link"></i>
+    {%- elseif value == 'dissociate' -%}<i class="fas fa-unlink"></i>
+    {%- else -%}<i class="fas fa-circle"></i>
+    {%- endif -%}
+{% endmacro %}
+
+{% macro label_type(value) -%}
+    {%- if value == 'insert' -%}audit-dot-insert
+    {%- elseif value == 'update' -%}audit-dot-update
+    {%- elseif value == 'remove' -%}audit-dot-remove
+    {%- elseif value == 'associate' -%}audit-dot-associate
+    {%- elseif value == 'dissociate' -%}audit-dot-dissociate
+    {%- else -%}audit-dot-default{%- endif -%}
+{%- endmacro %}

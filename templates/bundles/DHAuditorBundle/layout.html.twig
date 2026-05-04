@@ -1,0 +1,227 @@
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}Audit â€” TalentFlow{% endblock %}
+{% block page_title %}Journal d'Audit{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   AUDIT TRAIL â€” TalentFlow theme
+   All classes prefixed with audit-
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+
+/* â”€â”€ Breadcrumb â”€â”€ */
+.audit-breadcrumb {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.82rem; color: var(--tf-gray); flex-wrap: wrap;
+    margin-bottom: 1.4rem; padding: 0.7rem 1rem;
+    background: var(--tf-navy); border: 1px solid var(--tf-border); border-radius: 10px;
+}
+.audit-breadcrumb a { color: var(--tf-gold); text-decoration: none; font-weight: 600; transition: opacity 0.2s; }
+.audit-breadcrumb a:hover { opacity: 0.75; }
+.audit-breadcrumb .sep { color: var(--tf-border); font-size: 0.65rem; }
+.audit-breadcrumb .current { color: var(--tf-white); font-weight: 700; }
+.audit-breadcrumb .badge {
+    background: rgba(142,68,173,0.2); color: #c39bd3;
+    border: 1px solid rgba(142,68,173,0.3); border-radius: 20px;
+    padding: 0.15rem 0.65rem; font-size: 0.72rem; font-weight: 700; margin-left: 0.2rem;
+}
+
+/* â”€â”€ Entity cards grid (main audit page) â”€â”€ */
+.audit-entity-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+}
+.audit-entity-card {
+    background: var(--tf-card-bg); border: 1px solid var(--tf-border);
+    border-radius: 12px; overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+.audit-entity-card:hover {
+    border-color: var(--tf-gold);
+    box-shadow: 0 8px 24px rgba(212,168,67,0.12);
+    transform: translateY(-2px);
+}
+.audit-entity-card-body { padding: 1.2rem 1.3rem; display: flex; align-items: center; gap: 1rem; }
+.audit-entity-icon {
+    width: 48px; height: 48px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem; flex-shrink: 0;
+}
+.audit-entity-icon.gold   { background: rgba(212,168,67,0.12); color: var(--tf-gold); }
+.audit-entity-icon.blue   { background: rgba(41,128,185,0.15); color: #5dade2; }
+.audit-entity-icon.green  { background: rgba(39,174,96,0.15);  color: #2ecc71; }
+.audit-entity-icon.red    { background: rgba(192,57,43,0.15);  color: #e74c3c; }
+.audit-entity-icon.purple { background: rgba(142,68,173,0.15); color: #9b59b6; }
+.audit-entity-icon.teal   { background: rgba(26,188,156,0.15); color: #1abc9c; }
+.audit-entity-info h4 { font-size: 0.95rem; font-weight: 700; color: var(--tf-white); margin: 0 0 0.15rem; }
+.audit-entity-info .table-name { font-size: 0.72rem; color: var(--tf-gray); font-family: monospace; }
+.audit-entity-card-footer {
+    padding: 0.6rem 1.3rem; border-top: 1px solid var(--tf-border);
+    display: flex; justify-content: space-between; align-items: center;
+}
+.audit-entity-card-footer .op-count { font-size: 0.78rem; color: var(--tf-gray); }
+.audit-entity-card-footer a {
+    font-size: 0.78rem; color: var(--tf-gold); font-weight: 600;
+    text-decoration: none; display: flex; align-items: center; gap: 0.3rem; transition: opacity 0.2s;
+}
+.audit-entity-card-footer a:hover { opacity: 0.75; }
+
+/* â”€â”€ Timeline â”€â”€ */
+.audit-timeline { display: flex; flex-direction: column; gap: 0; }
+.audit-timeline-item { display: flex; gap: 1rem; padding-bottom: 1rem; position: relative; }
+.audit-timeline-item:not(:last-child)::before {
+    content: ''; position: absolute;
+    left: 1.1rem; top: 2.4rem; bottom: 0; width: 2px;
+    background: var(--tf-border); z-index: 0;
+}
+.audit-timeline-dot {
+    width: 1.6rem; height: 1.6rem; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; position: relative; z-index: 1;
+    border: 1.5px solid; margin-top: 0.15rem;
+}
+.audit-timeline-dot i { font-size: 0.55rem; line-height: 1; }
+.audit-dot-insert    { background: rgba(39,174,96,0.13);  color: #27ae60; border-color: rgba(39,174,96,0.5); }
+.audit-dot-update    { background: rgba(41,128,185,0.13); color: #2980b9; border-color: rgba(41,128,185,0.5); }
+.audit-dot-remove    { background: rgba(192,57,43,0.13);  color: #c0392b; border-color: rgba(192,57,43,0.5); }
+.audit-dot-associate { background: rgba(142,68,173,0.13); color: #8e44ad; border-color: rgba(142,68,173,0.5); }
+.audit-dot-dissociate{ background: rgba(127,140,141,0.13);color: #7f8c8d; border-color: rgba(127,140,141,0.5); }
+.audit-dot-default   { background: rgba(127,140,141,0.1); color: var(--tf-gray); border-color: var(--tf-border); }
+
+/* â”€â”€ Entry card â”€â”€ */
+.audit-entry-card {
+    background: var(--tf-card-bg); border: 1px solid var(--tf-border);
+    border-radius: 10px; flex: 1; overflow: hidden; transition: border-color 0.2s; min-width: 0;
+}
+.audit-entry-card:hover { border-color: rgba(212,168,67,0.35); }
+.audit-entry-header {
+    padding: 0.75rem 1rem;
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem;
+}
+.audit-entry-summary { font-size: 0.84rem; color: var(--tf-white); flex: 1; min-width: 0; line-height: 1.6; }
+.audit-entry-meta {
+    font-size: 0.74rem; color: var(--tf-gray); white-space: nowrap;
+    flex-shrink: 0; display: flex; align-items: center; gap: 0.3rem;
+}
+.audit-entry-diff { padding: 0 0.85rem 0.85rem; }
+.audit-entry-txn {
+    padding: 0.35rem 1rem 0.6rem; text-align: right;
+    border-top: 1px solid var(--tf-border);
+}
+.audit-entry-txn a {
+    font-size: 0.7rem; color: var(--tf-gray); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    transition: color 0.2s; font-family: monospace;
+}
+.audit-entry-txn a:hover { color: var(--tf-gold); }
+
+/* â”€â”€ Summarize text elements â”€â”€ */
+.audit-entity-link { color: var(--tf-gold); text-decoration: none; font-weight: 700; }
+.audit-entity-link:hover { text-decoration: underline; }
+.audit-id-badge {
+    background: rgba(212,168,67,0.12); color: var(--tf-gold);
+    border-radius: 4px; padding: 0.05rem 0.35rem; font-size: 0.7rem; font-weight: 700;
+}
+.audit-action-insert    { color: #2ecc71; font-weight: 600; }
+.audit-action-update    { color: #5dade2; font-weight: 600; }
+.audit-action-remove    { color: #e74c3c; font-weight: 600; }
+.audit-action-associate { color: #9b59b6; font-weight: 600; }
+.audit-action-dissociate{ color: var(--tf-gray); font-weight: 600; }
+.audit-user { color: var(--tf-white); }
+.audit-ip   { color: var(--tf-gray); font-size: 0.78rem; }
+
+/* â”€â”€ Diff values â”€â”€ */
+.audit-entity-ref { display: inline-flex; align-items: center; gap: 0; color: var(--tf-gold); font-weight: 600; font-size: 0.85rem; }
+.audit-entity-id  { background: rgba(212,168,67,0.1); border-radius: 4px; padding: 0.05rem 0.3rem; font-size: 0.7rem; margin-left: 0.1rem; }
+.audit-null       { color: var(--tf-gray); font-style: italic; font-size: 0.78rem; background: rgba(0,0,0,0.15); padding: 0.1rem 0.45rem; border-radius: 4px; }
+.audit-bool-true  { color: #2ecc71; font-weight: 600; }
+.audit-bool-false { color: #e74c3c; font-weight: 600; }
+
+/* â”€â”€ Diff table â”€â”€ */
+.audit-diff-container { border: 1px solid var(--tf-border); border-radius: 8px; overflow: hidden; }
+.audit-diff-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.audit-diff-table th {
+    background: var(--tf-navy); color: var(--tf-gold);
+    padding: 0.35rem 0.8rem; text-align: left;
+    font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;
+    border-bottom: 1px solid var(--tf-border);
+}
+.audit-diff-table td {
+    padding: 0.45rem 0.8rem; border-bottom: 1px solid var(--tf-border);
+    color: var(--tf-white); vertical-align: top; word-break: break-word;
+}
+.audit-diff-table tbody tr:last-child td { border-bottom: none; }
+.audit-diff-table .col-key { width: 24%; }
+.audit-diff-table .col-val { width: 38%; }
+.audit-diff-key   { color: var(--tf-gold); font-family: monospace; font-size: 0.78rem; }
+.audit-diff-old   { color: #e74c3c; }
+.audit-diff-new   { color: #2ecc71; }
+
+/* â”€â”€ Pager â”€â”€ */
+.audit-pager { display: flex; align-items: center; gap: 0.3rem; margin-top: 1.5rem; flex-wrap: wrap; }
+.audit-pager a, .audit-pager span.disabled {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 2rem; height: 2rem; padding: 0 0.6rem; border-radius: 6px;
+    border: 1px solid var(--tf-border); color: var(--tf-gray);
+    text-decoration: none; font-size: 0.82rem; font-weight: 600;
+    transition: all 0.2s; background: var(--tf-card-bg);
+}
+.audit-pager a:hover { border-color: var(--tf-gold); color: var(--tf-gold); background: rgba(212,168,67,0.05); }
+.audit-pager a.active { background: var(--tf-gold); color: var(--tf-midnight); border-color: var(--tf-gold); }
+.audit-pager span.disabled { opacity: 0.4; cursor: default; }
+.audit-pager .pager-info { font-size: 0.76rem; color: var(--tf-gray); margin-left: 0.5rem; }
+
+/* â”€â”€ Light mode overrides â”€â”€ */
+body.light-mode .audit-breadcrumb { background: #f8f9fa; border-color: #dddfe2; }
+body.light-mode .audit-breadcrumb .current { color: #1c1e21; }
+body.light-mode .audit-breadcrumb .badge { background: rgba(37,99,235,0.08); color: #2563eb; border-color: rgba(37,99,235,0.2); }
+body.light-mode .audit-entity-card { background: #fff; border-color: #dddfe2; }
+body.light-mode .audit-entity-card:hover { border-color: #2563eb; box-shadow: 0 8px 24px rgba(37,99,235,0.1); }
+body.light-mode .audit-entity-card-footer { border-color: #dddfe2; }
+body.light-mode .audit-entity-info h4 { color: #1c1e21; }
+body.light-mode .audit-entity-icon.gold { background: rgba(37,99,235,0.08); color: #2563eb; }
+body.light-mode .audit-entity-card-footer a { color: #2563eb; }
+body.light-mode .audit-timeline-item:not(:last-child)::before { background: #dddfe2; }
+body.light-mode .audit-entry-card { background: #fff; border-color: #dddfe2; }
+body.light-mode .audit-entry-card:hover { border-color: rgba(37,99,235,0.3); }
+body.light-mode .audit-entry-summary { color: #1c1e21; }
+body.light-mode .audit-entry-txn { border-color: #dddfe2; }
+body.light-mode .audit-entity-link { color: #2563eb; }
+body.light-mode .audit-id-badge { background: rgba(37,99,235,0.08); color: #2563eb; }
+body.light-mode .audit-entity-ref { color: #2563eb; }
+body.light-mode .audit-entity-id { background: rgba(37,99,235,0.08); }
+body.light-mode .audit-null { background: rgba(0,0,0,0.05); color: #9ca3af; }
+body.light-mode .audit-diff-container { border-color: #dddfe2; }
+body.light-mode .audit-diff-table th { background: #f3f4f6; color: #2563eb; border-color: #dddfe2; }
+body.light-mode .audit-diff-table td { color: #1c1e21; border-color: #eee; }
+body.light-mode .audit-diff-key { color: #2563eb; }
+body.light-mode .audit-user { color: #1c1e21; }
+body.light-mode .audit-pager a, body.light-mode .audit-pager span.disabled { background: #fff; border-color: #dddfe2; color: #65676b; }
+body.light-mode .audit-pager a:hover { border-color: #2563eb; color: #2563eb; }
+body.light-mode .audit-pager a.active { background: #2563eb; color: #fff; border-color: #2563eb; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="tf-card" style="padding: 0; overflow: hidden; margin-bottom: 2rem;">
+    <div class="tf-card-header" style="padding: 1.1rem 1.5rem; margin-bottom: 0; border-radius: 12px 12px 0 0;">
+        <h3 style="font-size:1.05rem;">
+            <i class="fas fa-shield-alt"></i>
+            Journal d'Audit
+        </h3>
+        <a href="{{ path('app_dashboard') }}" class="btn-outline-gold btn-sm-tf">
+            <i class="fas fa-arrow-left"></i> Dashboard
+        </a>
+    </div>
+    <div style="padding: 1.3rem 1.5rem 1.5rem;">
+        {% block dh_auditor_header %}{% endblock %}
+        {% block dh_auditor_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}{{ parent() }}{% endblock %}
+

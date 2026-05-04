@@ -1122,21 +1122,21 @@
 <div class="ln-feed-left">
     <div class="ln-rules-card sidebar-widget">
         <div class="ln-rules-header" id="rulesToggle">
-            <h3 class="sidebar-widget-title" style="margin: 0;"><i class="fas fa-shield-alt"></i> Règles du Forum</h3>
+            <h3 class="sidebar-widget-title" style="margin: 0;"><i class="fas fa-shield-alt"></i> {{ 'forum.rules.title'|trans }}</h3>
             <i class="fas fa-chevron-down ln-rules-toggle" id="rulesChevron"></i>
         </div>
         <ul class="ln-rules-list" id="rulesList">
-            <li><i class="fas fa-check-circle"></i> <span><strong>Respect</strong> — Restez courtois.</span></li>
-            <li><i class="fas fa-check-circle"></i> <span><strong>Pas d'insultes</strong> — Langage poli exigé.</span></li>
-            <li><i class="fas fa-check-circle"></i> <span><strong>Pas de spam</strong> — Pas de doublons.</span></li>
-            <li><i class="fas fa-check-circle"></i> <span><strong>Pro uniquement</strong> — Contenu RH/emploi.</span></li>
-            <li><i class="fas fa-check-circle"></i> <span><strong>0 discrimination</strong> — Tolérance zéro.</span></li>
-            <li><i class="fas fa-check-circle"></i> <span><strong>Données privées</strong> — Rien de sensible.</span></li>
-            <li><i class="fas fa-check-circle"></i> <span><strong>Qualité</strong> — Titres clairs, contenu utile.</span></li>
-            <li><i class="fas fa-check-circle"></i> <span><strong>Signaler</strong> — Alertez un admin.</span></li>
+            <li><i class="fas fa-check-circle"></i> <span><strong>{{ 'forum.rules.rule1'|trans }}</strong> — {{ 'forum.rules.rule1_desc'|trans }}</span></li>
+            <li><i class="fas fa-check-circle"></i> <span><strong>{{ 'forum.rules.rule2'|trans }}</strong> — {{ 'forum.rules.rule2_desc'|trans }}</span></li>
+            <li><i class="fas fa-check-circle"></i> <span><strong>{{ 'forum.rules.rule3'|trans }}</strong> — {{ 'forum.rules.rule3_desc'|trans }}</span></li>
+            <li><i class="fas fa-check-circle"></i> <span><strong>{{ 'forum.rules.rule4'|trans }}</strong> — {{ 'forum.rules.rule4_desc'|trans }}</span></li>
+            <li><i class="fas fa-check-circle"></i> <span><strong>{{ 'forum.rules.rule5'|trans }}</strong> — {{ 'forum.rules.rule5_desc'|trans }}</span></li>
+            <li><i class="fas fa-check-circle"></i> <span><strong>{{ 'forum.rules.rule6'|trans }}</strong> — {{ 'forum.rules.rule6_desc'|trans }}</span></li>
+            <li><i class="fas fa-check-circle"></i> <span><strong>{{ 'forum.rules.rule7'|trans }}</strong> — {{ 'forum.rules.rule7_desc'|trans }}</span></li>
+            <li><i class="fas fa-check-circle"></i> <span><strong>{{ 'forum.rules.rule8'|trans }}</strong> — {{ 'forum.rules.rule8_desc'|trans }}</span></li>
         </ul>
         <div class="ln-rules-footer">
-            <i class="fas fa-info-circle"></i> Tout abus sera sanctionné.
+            <i class="fas fa-info-circle"></i> {{ 'forum.rules.footer'|trans }}
         </div>
     </div>
 
@@ -1144,8 +1144,8 @@
     <div class="sidebar-widget sidebar-ad" style="margin-top:0.8rem;">
         <div class="sidebar-ad-inner">
             <i class="fas fa-bullhorn"></i>
-            <span class="sidebar-ad-label">Espace publicitaire</span>
-            <span class="sidebar-ad-sub">Votre annonce ici</span>
+            <span class="sidebar-ad-label">{{ 'forum.ad.title'|trans }}</span>
+            <span class="sidebar-ad-sub">{{ 'forum.ad.subtitle'|trans }}</span>
         </div>
     </div>
 </div>
@@ -1157,14 +1157,14 @@
         <div class="ln-feed-search-inner">
             <i class="fas fa-search" style="color:var(--tf-gray); font-size:0.85rem; flex-shrink:0;"></i>
             <input type="text" class="ln-feed-search-input" id="feedSearch"
-                   placeholder="Rechercher un post, un auteur..." autocomplete="off">
+                   placeholder="{{ 'forum.search.placeholder'|trans }}" autocomplete="off">
             <span class="ln-result-count" id="resultCount"></span>
         </div>
         <div class="ln-feed-filter-chips">
-            <button class="ln-filter-chip active" data-sort="recent"><i class="fas fa-clock"></i> Récents</button>
-            <button class="ln-filter-chip" data-sort="top"><i class="fas fa-fire"></i> Top</button>
-            <button class="ln-filter-chip" data-sort="oldest"><i class="fas fa-history"></i> Anciens</button>
-            <button class="ln-filter-chip" data-sort="comments"><i class="fas fa-comments"></i> Commentés</button>
+            <button class="ln-filter-chip active" data-sort="recent"><i class="fas fa-clock"></i> {{ 'forum.filter.recent'|trans }}</button>
+            <button class="ln-filter-chip" data-sort="top"><i class="fas fa-fire"></i> {{ 'forum.filter.top'|trans }}</button>
+            <button class="ln-filter-chip" data-sort="oldest"><i class="fas fa-history"></i> {{ 'forum.filter.oldest'|trans }}</button>
+            <button class="ln-filter-chip" data-sort="comments"><i class="fas fa-comments"></i> {{ 'forum.filter.commented'|trans }}</button>
         </div>
     </div>
 
@@ -1179,7 +1179,7 @@
                 {% endif %}
             </span>
             <button type="button" class="ln-start-post-btn" id="openNewPostModal">
-                Commencer un post...
+                {{ 'forum.start_post'|trans }}
             </button>
         </div>
     </div>
@@ -1199,8 +1199,8 @@
         {% if posts|length > 0 %}
             {% for post in posts %}
             {% set postHiddenForViewer = post.hidden and not is_granted('ROLE_ADMIN') %}
-            {% set renderedTitle = postHiddenForViewer ? 'Post retiré' : post.title %}
-            {% set renderedContent = postHiddenForViewer ? 'This post was removed for violating community guidelines.' : post.content|default('') %}
+            {% set renderedTitle = postHiddenForViewer ? 'forum.content.hidden_title'|trans : post.title %}
+            {% set renderedContent = postHiddenForViewer ? 'forum.content.hidden_content'|trans : post.content|default('') %}
             <div class="ln-post-card{{ postHiddenForViewer ? ' is-hidden' : '' }}" data-post-id="{{ post.id }}" data-original-lang="{{ postHiddenForViewer ? 'fr' : postLangs[post.id]|default('fr') }}" data-display-lang="{{ postHiddenForViewer ? 'fr' : postLangs[post.id]|default('fr') }}" data-original-title="{{ renderedTitle }}" data-original-content="{{ renderedContent }}">
                 <div class="ln-post-header">
                     <span class="ln-avatar">{{ post.authorName|first|upper }}</span>
@@ -1210,10 +1210,10 @@
                         <div class="ln-post-time">
                             {% if post.createdAt %}
                                 {% set diff = date().timestamp - post.createdAt.timestamp %}
-                                {% if diff < 60 %}à l'instant
-                                {% elseif diff < 3600 %}il y a {{ (diff / 60)|round(0, 'floor') }} min
-                                {% elseif diff < 86400 %}il y a {{ (diff / 3600)|round(0, 'floor') }} h
-                                {% elseif diff < 604800 %}il y a {{ (diff / 86400)|round(0, 'floor') }} j
+                            {% if diff < 60 %}{{ 'forum.time.now'|trans }}
+                                {% elseif diff < 3600 %}{{ 'forum.time.minutes_ago'|trans({'%count%': (diff / 60)|round(0, 'floor')}) }}
+                                {% elseif diff < 86400 %}{{ 'forum.time.hours_ago'|trans({'%count%': (diff / 3600)|round(0, 'floor')}) }}
+                                {% elseif diff < 604800 %}{{ 'forum.time.days_ago'|trans({'%count%': (diff / 86400)|round(0, 'floor')}) }}
                                 {% else %}{{ post.createdAt|date('d/m/Y') }}
                                 {% endif %}
                             {% endif %}
@@ -1223,24 +1223,24 @@
                     </div>
                     <div class="ln-post-menu">
                         {% if app.user and not is_granted('ROLE_ADMIN') and not post.hidden %}
-                        <button class="ln-report-btn open-report-modal" data-id="{{ post.id }}" title="Signaler ce post">
+                        <button class="ln-report-btn open-report-modal" data-id="{{ post.id }}" title="{{ 'forum.action.report_btn'|trans }}">
                             <i class="fas fa-flag"></i>
                         </button>
                         {% endif %}
                         {% if is_granted('ROLE_ADMIN') or (app.user and post.author is same as(app.user)) %}
                         <div class="ln-dropdown">
-                            <button class="ln-post-menu-btn" title="Plus d'options">
+                            <button class="ln-post-menu-btn" title="{{ 'forum.action.more_options'|trans }}">
                                 <i class="fas fa-ellipsis-h"></i>
                             </button>
                             <div class="ln-dropdown-menu">
                                 <button class="ln-dropdown-item open-edit-modal" data-id="{{ post.id }}">
-                                    <i class="fas fa-pen"></i> Modifier
+                                    <i class="fas fa-pen"></i> {{ 'action.edit'|trans }}
                                 </button>
                                 <div class="ln-dropdown-sep"></div>
-                                <form method="post" action="{{ path('post_delete', {id: post.id}) }}" onsubmit="return confirm('Supprimer ce post ?')">
+                                <form method="post" action="{{ path('post_delete', {id: post.id}) }}" onsubmit="return confirm('{{ 'forum.action.confirm_delete'|trans }}')">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ post.id) }}">
                                     <button type="submit" class="ln-dropdown-item danger">
-                                        <i class="fas fa-trash-alt"></i> Supprimer
+                                        <i class="fas fa-trash-alt"></i> {{ 'action.delete'|trans }}
                                     </button>
                                 </form>
                             </div>
@@ -1254,11 +1254,11 @@
                 </div>
                 <div class="ln-post-content">
                     {% if postHiddenForViewer %}
-                    <div class="ln-removed-card">This post was removed for violating community guidelines.</div>
+                    <div class="ln-removed-card">{{ 'forum.content.hidden_content'|trans }}</div>
                     {% elseif post.content %}
                     <div class="ln-post-content-text">{{ post.content }}</div>
                     {% if post.content|length > 200 %}
-                        <a href="#" class="ln-see-more open-detail-modal" data-id="{{ post.id }}">...voir plus</a>
+                        <a href="#" class="ln-see-more open-detail-modal" data-id="{{ post.id }}">{{ 'forum.content.see_more'|trans }}</a>
                     {% endif %}
                     {% endif %}
                 </div>
@@ -1271,7 +1271,7 @@
                 <div class="ln-post-audio">
                     <i class="fas fa-microphone"></i>
                     <audio controls preload="metadata" src="{{ post.audioPath }}"></audio>
-                    <span class="audio-label">Mémo vocal</span>
+                    <span class="audio-label">{{ 'forum.content.audio_memo'|trans }}</span>
                 </div>
                 {% endif %}
 
@@ -1305,20 +1305,20 @@
                             <i class="fas fa-arrow-down"></i>
                         </button>
                     </div>
-                    <button class="ln-action-btn open-detail-modal" data-id="{{ post.id }}" title="Commenter">
-                        <i class="far fa-comment-dots"></i> <span>Commenter</span>
+                    <button class="ln-action-btn open-detail-modal" data-id="{{ post.id }}" title="{{ 'forum.action.comment'|trans }}">
+                        <i class="far fa-comment-dots"></i> <span>{{ 'forum.action.comment'|trans }}</span>
                     </button>
-                    <button class="ln-action-btn ln-tts-btn" data-id="{{ post.id }}" title="Lire ce post à voix haute">
-                        <i class="fas fa-volume-up"></i> <span>Écouter</span>
+                    <button class="ln-action-btn ln-tts-btn" data-id="{{ post.id }}" title="{{ 'forum.action.listen'|trans }}">
+                        <i class="fas fa-volume-up"></i> <span>{{ 'forum.action.listen'|trans }}</span>
                     </button>
                     {% if (post.content|default('')|split(' ')|length) > 100 %}
-                    <button class="ln-action-btn ln-summarize-btn" data-id="{{ post.id }}" title="Résumer avec IA">
-                        <i class="fas fa-wand-magic-sparkles"></i> <span>Résumer</span>
+                    <button class="ln-action-btn ln-summarize-btn" data-id="{{ post.id }}" title="{{ 'forum.action.summarize'|trans }}">
+                        <i class="fas fa-wand-magic-sparkles"></i> <span>{{ 'forum.action.summarize'|trans }}</span>
                     </button>
                     {% endif %}
                     {% if app.user and post.author and post.author.id != app.user.id %}
-                    <a href="{{ path('message_start', {id: post.author.id}) }}" class="ln-action-btn" title="Envoyer un message">
-                        <i class="far fa-paper-plane"></i> <span>Message</span>
+                    <a href="{{ path('message_start', {id: post.author.id}) }}" class="ln-action-btn" title="{{ 'forum.action.message'|trans }}">
+                        <i class="far fa-paper-plane"></i> <span>{{ 'forum.action.message'|trans }}</span>
                     </a>
                     {% endif %}
                 </div>
@@ -1329,9 +1329,9 @@
             <div class="ln-post-card">
                 <div class="ln-empty">
                     <i class="fas fa-newspaper"></i>
-                    <p>Aucun post pour le moment</p>
+                    <p>{{ 'forum.empty'|trans }}</p>
                     <button type="button" class="btn-gold" id="openNewPostModalEmpty">
-                        <i class="fas fa-plus"></i> Créer le premier post
+                        <i class="fas fa-plus"></i> {{ 'forum.create_first'|trans }}
                     </button>
                 </div>
             </div>
@@ -1341,7 +1341,7 @@
     {# ── No results ── #}
     <div class="ln-post-card ln-no-results" id="noResults">
         <i class="fas fa-search"></i>
-        <p>Aucun post ne correspond à votre recherche</p>
+        <p>{{ 'forum.no_search_results'|trans }}</p>
     </div>
 </div><!-- /ln-feed-main -->
 
@@ -1349,34 +1349,34 @@
 <div class="ln-feed-sidebar">
     {# Mini Stat Cards #}
     <div class="sidebar-widget">
-        <h4 class="sidebar-widget-title"><i class="fas fa-chart-pie"></i> Statistiques</h4>
+        <h4 class="sidebar-widget-title"><i class="fas fa-chart-pie"></i> {{ 'forum.stats.title'|trans }}</h4>
         <div class="sidebar-stats-grid">
             <div class="sidebar-stat-card">
                 <i class="fas fa-file-alt"></i>
                 <span class="sidebar-stat-value">{{ totalPosts }}</span>
-                <span class="sidebar-stat-label">Posts</span>
+                <span class="sidebar-stat-label">{{ 'nav.posts'|trans }}</span>
             </div>
             <div class="sidebar-stat-card">
                 <i class="fas fa-comments"></i>
                 <span class="sidebar-stat-value">{{ totalComments }}</span>
-                <span class="sidebar-stat-label">Commentaires</span>
+                <span class="sidebar-stat-label">{{ 'nav.comments'|trans }}</span>
             </div>
             <div class="sidebar-stat-card">
                 <i class="fas fa-users"></i>
                 <span class="sidebar-stat-value">{{ totalUsers }}</span>
-                <span class="sidebar-stat-label">Membres</span>
+                <span class="sidebar-stat-label">{{ 'forum.stats.members'|trans }}</span>
             </div>
             <div class="sidebar-stat-card">
                 <i class="fas fa-thumbs-up"></i>
                 <span class="sidebar-stat-value">{{ totalVotes }}</span>
-                <span class="sidebar-stat-label">Votes</span>
+                <span class="sidebar-stat-label">{{ 'forum.stats.votes'|trans }}</span>
             </div>
         </div>
     </div>
 
     {# Activity Chart #}
     <div class="sidebar-widget">
-        <h4 class="sidebar-widget-title"><i class="fas fa-chart-bar"></i> Activité (7 jours)</h4>
+        <h4 class="sidebar-widget-title"><i class="fas fa-chart-bar"></i> {{ 'forum.stats.activity'|trans }}</h4>
         <div class="sidebar-chart-container">
             <canvas id="activityChart"></canvas>
         </div>
@@ -1384,7 +1384,7 @@
 
     {# Top Authors Chart #}
     <div class="sidebar-widget">
-        <h4 class="sidebar-widget-title"><i class="fas fa-trophy"></i> Top contributeurs</h4>
+        <h4 class="sidebar-widget-title"><i class="fas fa-trophy"></i> {{ 'forum.stats.top_authors'|trans }}</h4>
         <div class="sidebar-chart-container">
             <canvas id="authorsChart"></canvas>
         </div>
@@ -1407,15 +1407,15 @@
                     <i class="fas fa-user" style="font-size: 0.85rem;"></i>
                 {% endif %}
             </span>
-            <h3>Créer un post</h3>
+            <h3>{{ 'forum.modal.new_post.title'|trans }}</h3>
         </div>
         <div class="modal-new-post-body">
             <ul class="modal-errors" id="newPostErrors"></ul>
             {% if is_granted('ROLE_ADMIN') %}
             <div class="modal-field">
-                <label for="newPostAuthor"><i class="fas fa-user-tag"></i> Auteur</label>
+                <label for="newPostAuthor"><i class="fas fa-user-tag"></i> {{ 'common.author'|trans }}</label>
                 <select id="newPostAuthor">
-                    <option value="">-- Sélectionner un auteur --</option>
+                    <option value="">{{ 'forum.modal.new_post.select_author'|trans }}</option>
                     {% for user in users %}
                         <option value="{{ user.id }}"
                             {% if app.user and app.user.id == user.id %} selected{% endif %}>
@@ -1426,21 +1426,21 @@
             </div>
             {% endif %}
             <div class="modal-field">
-                <label for="newPostTitle"><i class="fas fa-heading"></i> Titre</label>
-                <input type="text" id="newPostTitle" placeholder="De quoi voulez-vous parler ?" maxlength="255">
+                <label for="newPostTitle"><i class="fas fa-heading"></i> {{ 'common.title'|trans }}</label>
+                <input type="text" id="newPostTitle" placeholder="{{ 'forum.modal.new_post.title_placeholder'|trans }}" maxlength="255">
             </div>
             <div class="modal-field">
-                <label for="newPostContent"><i class="fas fa-align-left"></i> Contenu</label>
-                <textarea id="newPostContent" placeholder="Partagez vos idées, expériences ou questions..."></textarea>
+                <label for="newPostContent"><i class="fas fa-align-left"></i> {{ 'common.content'|trans }}</label>
+                <textarea id="newPostContent" placeholder="{{ 'forum.modal.new_post.content_placeholder'|trans }}"></textarea>
             </div>
             <div class="modal-media-preview" id="newPostImagePreview"></div>
             <div class="modal-media-toolbar">
-                <button type="button" class="media-tool-btn" id="newPostImageBtn" title="Ajouter une image">
-                    <i class="fas fa-image"></i> Photo
+                <button type="button" class="media-tool-btn" id="newPostImageBtn" title="{{ 'forum.modal.media.add_photo'|trans }}">
+                    <i class="fas fa-image"></i> {{ 'forum.modal.media.photo'|trans }}
                 </button>
                 <input type="file" id="newPostImageFile" accept="image/*" style="display:none;">
-                <button type="button" class="media-tool-btn" id="newPostVoiceBtn" title="Mémo vocal">
-                    <i class="fas fa-microphone"></i> Vocal
+                <button type="button" class="media-tool-btn" id="newPostVoiceBtn" title="{{ 'forum.modal.media.voice_memo'|trans }}">
+                    <i class="fas fa-microphone"></i> {{ 'forum.modal.media.voice'|trans }}
                 </button>
             </div>
             <div class="voice-recorder-wrap hidden" id="newPostVoiceWrap">
@@ -1450,9 +1450,9 @@
             </div>
         </div>
         <div class="modal-new-post-footer">
-            <button class="modal-btn modal-btn-cancel" id="cancelNewPost">Annuler</button>
+            <button class="modal-btn modal-btn-cancel" id="cancelNewPost">{{ 'action.cancel'|trans }}</button>
             <button class="modal-btn modal-btn-submit" id="submitNewPost">
-                <i class="fas fa-paper-plane"></i> Publier
+                <i class="fas fa-paper-plane"></i> {{ 'forum.modal.new_post.submit'|trans }}
             </button>
         </div>
     </div>
@@ -1466,26 +1466,26 @@
         <button class="modal-close" id="closeEditPost">&times;</button>
         <div class="modal-new-post-header">
             <span class="ln-avatar"><i class="fas fa-pen" style="font-size: 0.85rem;"></i></span>
-            <h3>Modifier le post</h3>
+            <h3>{{ 'forum.modal.edit_post.title'|trans }}</h3>
         </div>
         <div class="modal-new-post-body">
             <ul class="modal-errors" id="editPostErrors"></ul>
             <div class="modal-field">
-                <label for="editPostTitle"><i class="fas fa-heading"></i> Titre</label>
-                <input type="text" id="editPostTitle" placeholder="Titre du post" maxlength="255">
+                <label for="editPostTitle"><i class="fas fa-heading"></i> {{ 'common.title'|trans }}</label>
+                <input type="text" id="editPostTitle" placeholder="{{ 'common.title'|trans }}" maxlength="255">
             </div>
             <div class="modal-field">
-                <label for="editPostContent"><i class="fas fa-align-left"></i> Contenu</label>
-                <textarea id="editPostContent" placeholder="Contenu du post..."></textarea>
+                <label for="editPostContent"><i class="fas fa-align-left"></i> {{ 'common.content'|trans }}</label>
+                <textarea id="editPostContent" placeholder="{{ 'common.content'|trans }}..."></textarea>
             </div>
             <div class="modal-media-preview" id="editPostImagePreview"></div>
             <div class="modal-media-toolbar">
-                <button type="button" class="media-tool-btn" id="editPostImageBtn" title="Ajouter une image">
-                    <i class="fas fa-image"></i> Photo
+                <button type="button" class="media-tool-btn" id="editPostImageBtn" title="{{ 'forum.modal.media.add_photo'|trans }}">
+                    <i class="fas fa-image"></i> {{ 'forum.modal.media.photo'|trans }}
                 </button>
                 <input type="file" id="editPostImageFile" accept="image/*" style="display:none;">
-                <button type="button" class="media-tool-btn" id="editPostVoiceBtn" title="Mémo vocal">
-                    <i class="fas fa-microphone"></i> Vocal
+                <button type="button" class="media-tool-btn" id="editPostVoiceBtn" title="{{ 'forum.modal.media.voice_memo'|trans }}">
+                    <i class="fas fa-microphone"></i> {{ 'forum.modal.media.voice'|trans }}
                 </button>
             </div>
             <div class="voice-recorder-wrap hidden" id="editPostVoiceWrap">
@@ -1495,9 +1495,9 @@
             </div>
         </div>
         <div class="modal-new-post-footer">
-            <button class="modal-btn modal-btn-cancel" id="cancelEditPost">Annuler</button>
+            <button class="modal-btn modal-btn-cancel" id="cancelEditPost">{{ 'action.cancel'|trans }}</button>
             <button class="modal-btn modal-btn-submit" id="submitEditPost">
-                <i class="fas fa-check"></i> Enregistrer
+                <i class="fas fa-check"></i> {{ 'action.save'|trans }}
             </button>
         </div>
     </div>
@@ -1519,7 +1519,7 @@
             {# Right: comments #}
             <div class="modal-detail-right">
                 <div class="mdl-comments-header">
-                    <i class="far fa-comment-dots"></i> Commentaires (<span id="detailCommentCount">0</span>)
+                    <i class="far fa-comment-dots"></i> {{ 'forum.modal.comment.header'|trans }} (<span id="detailCommentCount">0</span>)
                 </div>
                 <div class="mdl-comments-list" id="detailCommentsList"></div>
                 <div class="mdl-comment-form" id="detailCommentForm">
@@ -1527,7 +1527,7 @@
                     {% if is_granted('ROLE_ADMIN') %}
                     <div class="modal-field" style="margin-bottom:0.5rem;">
                         <select id="commentAuthor">
-                            <option value="">-- Auteur --</option>
+                            <option value="">{{ 'forum.modal.comment.select_author'|trans }}</option>
                             {% for user in users %}
                                 <option value="{{ user.id }}"
                                     {% if app.user and app.user.id == user.id %} selected{% endif %}>
@@ -1538,7 +1538,7 @@
                     </div>
                     {% endif %}
                     <div class="mdl-comment-form-row">
-                        <textarea id="commentContent" placeholder="Écrire un commentaire..." rows="1"></textarea>
+                        <textarea id="commentContent" placeholder="{{ 'forum.modal.comment.placeholder'|trans }}" rows="1"></textarea>
                         <button class="mdl-comment-send" id="submitComment" title="Envoyer">
                             <i class="fas fa-paper-plane"></i>
                         </button>
@@ -1557,29 +1557,29 @@
         <button class="modal-close" id="closeReport">&times;</button>
         <div class="modal-new-post-header">
             <span class="ln-avatar"><i class="fas fa-flag" style="font-size: 0.85rem;"></i></span>
-            <h3>Signaler ce post</h3>
+            <h3>{{ 'forum.modal.report.title'|trans }}</h3>
         </div>
         <div class="modal-new-post-body">
             <ul class="modal-errors" id="reportErrors"></ul>
             <div class="modal-field">
-                <label for="reportReason"><i class="fas fa-triangle-exclamation"></i> Motif</label>
+                <label for="reportReason"><i class="fas fa-triangle-exclamation"></i> {{ 'forum.modal.report.reason_label'|trans }}</label>
                 <select id="reportReason">
-                    <option value="">-- Choisir un motif --</option>
-                    <option value="Spam">Spam</option>
-                    <option value="Inappropriate">Inappropriate</option>
-                    <option value="Misinformation">Misinformation</option>
-                    <option value="Other">Other</option>
+                    <option value="">{{ 'forum.modal.report.select_reason'|trans }}</option>
+                    <option value="Spam">{{ 'forum.modal.report.reason_spam'|trans }}</option>
+                    <option value="Inappropriate">{{ 'forum.modal.report.reason_inappropriate'|trans }}</option>
+                    <option value="Misinformation">{{ 'forum.modal.report.reason_misinformation'|trans }}</option>
+                    <option value="Other">{{ 'forum.modal.report.reason_other'|trans }}</option>
                 </select>
             </div>
             <div class="modal-field">
-                <label for="reportDescription"><i class="fas fa-pen"></i> Description optionnelle</label>
-                <textarea id="reportDescription" placeholder="Ajoutez un peu de contexte si nécessaire..."></textarea>
+                <label for="reportDescription"><i class="fas fa-pen"></i> {{ 'forum.modal.report.description_label'|trans }}</label>
+                <textarea id="reportDescription" placeholder="{{ 'forum.modal.report.description_placeholder'|trans }}"></textarea>
             </div>
         </div>
         <div class="modal-new-post-footer">
-            <button class="modal-btn modal-btn-cancel" id="cancelReport">Annuler</button>
+            <button class="modal-btn modal-btn-cancel" id="cancelReport">{{ 'action.cancel'|trans }}</button>
             <button class="modal-btn modal-btn-submit" id="submitReport">
-                <i class="fas fa-flag"></i> Envoyer le signalement
+                <i class="fas fa-flag"></i> {{ 'forum.modal.report.submit'|trans }}
             </button>
         </div>
     </div>
@@ -1592,25 +1592,25 @@
         <span class="lang-picker-current" id="langPickerCurrent">FR</span>
     </button>
     <div class="lang-picker-menu" id="langPickerMenu">
-        <div class="lang-picker-menu-title"><i class="fas fa-language"></i> Traduire en</div>
+        <div class="lang-picker-menu-title"><i class="fas fa-language"></i> {{ 'forum.translate.title'|trans }}</div>
         <button class="lang-picker-option" data-lang="fr">
             <span class="lang-flag">🇫🇷</span>
-            <span class="lang-name">Français</span>
+            <span class="lang-name">{{ 'language.fr'|trans }}</span>
             <span class="lang-check"><i class="fas fa-check"></i></span>
         </button>
         <button class="lang-picker-option" data-lang="en">
             <span class="lang-flag">🇬🇧</span>
-            <span class="lang-name">English</span>
+            <span class="lang-name">{{ 'language.en'|trans }}</span>
             <span class="lang-check"><i class="fas fa-check"></i></span>
         </button>
         <button class="lang-picker-option" data-lang="ar">
             <span class="lang-flag">🇸🇦</span>
-            <span class="lang-name">العربية</span>
+            <span class="lang-name">{{ 'forum.translate.arabic'|trans }}</span>
             <span class="lang-check"><i class="fas fa-check"></i></span>
         </button>
         <div class="lang-picker-sep"></div>
         <button class="lang-picker-option original-btn" id="langShowOriginal">
-            <i class="fas fa-undo"></i> Afficher l'original
+            <i class="fas fa-undo"></i> {{ 'forum.translate.show_original'|trans }}
         </button>
     </div>
 </div>
@@ -1646,7 +1646,7 @@
     const createUrl = '{{ path("post_create_ajax") }}';
     const isAdmin = {{ is_granted('ROLE_ADMIN') ? 'true' : 'false' }};
     const currentUserId = {{ app.user ? app.user.id : 'null' }};
-    const hiddenPostMessage = 'This post was removed for violating community guidelines.';
+    const hiddenPostMessage = '{{ 'forum.content.hidden_content'|trans|e('js') }}';
 
     let debounceTimer = null;
     let currentSort = 'recent';

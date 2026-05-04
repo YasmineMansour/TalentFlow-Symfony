@@ -306,3 +306,96 @@ chatbot:
         error: "The chatbot encountered an error. Please try again."
         unavailable: "Response unavailable at the moment."
         connection_error: "⚠️ Connection error. Please try again."
+
+# ==================== FORUM ====================
+forum:
+    rules:
+        title: "Forum Rules"
+        rule1: "Respect"
+        rule1_desc: "Stay respectful."
+        rule2: "No insults"
+        rule2_desc: "Polite language required."
+        rule3: "No spam"
+        rule3_desc: "No duplicates."
+        rule4: "Professional only"
+        rule4_desc: "HR/employment content only."
+        rule5: "Zero discrimination"
+        rule5_desc: "Zero tolerance."
+        rule6: "Private data"
+        rule6_desc: "Nothing sensitive."
+        rule7: "Quality"
+        rule7_desc: "Clear titles, useful content."
+        rule8: "Report"
+        rule8_desc: "Alert an admin."
+        footer: "All violations will be sanctioned."
+    ad:
+        title: "Advertising space"
+        subtitle: "Your ad here"
+    search:
+        placeholder: "Search a post, an author..."
+    filter:
+        recent: "Recent"
+        top: "Top"
+        oldest: "Oldest"
+        commented: "Most commented"
+    start_post: "Start a post..."
+    time:
+        now: "just now"
+        minutes_ago: "%count% min ago"
+        hours_ago: "%count% h ago"
+        days_ago: "%count% days ago"
+    action:
+        comment: "Comment"
+        listen: "Listen"
+        summarize: "Summarize"
+        message: "Message"
+        report_btn: "Report this post"
+        more_options: "More options"
+        confirm_delete: "Delete this post?"
+    content:
+        see_more: "...see more"
+        audio_memo: "Voice memo"
+        hidden_title: "Post removed"
+        hidden_content: "This post was removed for violating community guidelines."
+    modal:
+        new_post:
+            title: "Create a post"
+            select_author: "-- Select an author --"
+            title_placeholder: "What do you want to talk about?"
+            content_placeholder: "Share your ideas, experiences or questions..."
+            submit: "Publish"
+        edit_post:
+            title: "Edit post"
+        media:
+            photo: "Photo"
+            voice: "Voice"
+            add_photo: "Add an image"
+            voice_memo: "Voice memo"
+        comment:
+            header: "Comments"
+            placeholder: "Write a comment..."
+            select_author: "-- Author --"
+        report:
+            title: "Report this post"
+            reason_label: "Reason"
+            select_reason: "-- Choose a reason --"
+            description_label: "Optional description"
+            description_placeholder: "Add some context if needed..."
+            submit: "Send report"
+            reason_spam: "Spam"
+            reason_inappropriate: "Inappropriate content"
+            reason_misinformation: "Misinformation"
+            reason_other: "Other"
+    stats:
+        title: "Statistics"
+        members: "Members"
+        votes: "Votes"
+        activity: "Activity (7 days)"
+        top_authors: "Top contributors"
+    translate:
+        title: "Translate to"
+        arabic: "العربية"
+        show_original: "Show original"
+    no_search_results: "No posts match your search"
+    empty: "No posts yet"
+    create_first: "Create the first post"

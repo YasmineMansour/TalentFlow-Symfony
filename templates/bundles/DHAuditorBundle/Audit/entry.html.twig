@@ -1,0 +1,60 @@
+﻿{% import '@DHAuditor/Audit/helpers/helper.html.twig' as helper %}
+
+{% macro displayDiffs(field, changeset) %}
+    {% if changeset.old is defined or changeset.new is defined %}
+        {{ include('@DHAuditor/Audit/entry_diff.html.twig', {'key': field, 'values': changeset}) }}
+    {% else %}
+        {% for json_field, json_changeset in changeset %}
+            {{ _self.displayDiffs(field~'.'~json_field, json_changeset) }}
+        {% endfor %}
+    {% endif %}
+{% endmacro %}
+
+<div class="audit-timeline-item">
+    <div class="audit-timeline-dot {{ helper.label_type(entry.getType()) }}">
+        {{ helper.icon_type(entry.getType())|raw }}
+    </div>
+    <div class="audit-entry-card">
+        <div class="audit-entry-header">
+            <div class="audit-entry-summary">
+                {{ helper.summarize(entity, entry)|raw }}
+            </div>
+            <div class="audit-entry-meta">
+                <i class="fas fa-clock"></i>
+                {{ entry.getCreatedAt()|date('d/m/Y H:i:s') }}
+            </div>
+        </div>
+
+        {% if entry.getType() in ['insert', 'update'] %}
+        {% set diffs = entry.getDiffs() %}
+        {% if diffs|length > 0 %}
+        <div class="audit-entry-diff">
+            <div class="audit-diff-container">
+                <table class="audit-diff-table">
+                    <thead>
+                        <tr>
+                            <th class="col-key">Attribut</th>
+                            <th class="col-val">Ancienne valeur</th>
+                            <th class="col-val">Nouvelle valeur</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for field, changeset in diffs %}
+                        {{ _self.displayDiffs(field, changeset) }}
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        {% endif %}
+
+        {% if entry.getTransactionHash() is not empty %}
+        <div class="audit-entry-txn">
+            <a href="{{ path('dh_auditor_show_transaction', {hash: entry.getTransactionHash()}) }}">
+                <i class="fas fa-tag"></i> {{ entry.getTransactionHash() }}
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
