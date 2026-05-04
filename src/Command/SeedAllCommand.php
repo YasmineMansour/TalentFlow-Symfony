@@ -264,7 +264,7 @@ class SeedAllCommand extends Command
                 $cand->setOffre($offre);
                 $cand->setCandidat($candidat);
                 $cand->setLieu($offre->getLocalisation());
-                $cand->setSalaireSouhaite(rand((int) $offre->getSalaireMin(), (int) $offre->getSalaireMax()));
+                $cand->setSalaireSouhaite((string) rand((int) $offre->getSalaireMin(), (int) $offre->getSalaireMax()));
                 $cand->setCompetences($competencesList[array_rand($competencesList)]);
                 $cand->setNiveauEtudes($niveaux[array_rand($niveaux)]);
                 $cand->setAnneesExperience(rand(0, 8));

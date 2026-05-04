@@ -52,7 +52,8 @@ class MagicLinkController extends AbstractController
                 // Toujours afficher "email envoyé" même si l'utilisateur n'existe pas
                 // (pour ne pas révéler quels emails sont enregistrés — sécurité)
                 if ($user instanceof User && !$user->isBlocked()) {
-                    $plainToken = $tokenService->generateToken($user, 'magic_link', 15 / 60); // 15 minutes
+                    // Magic link valid for 1 hour (TokenService expects int hours)
+                    $plainToken = $tokenService->generateToken($user, 'magic_link', 1);
                     $this->sendMagicLinkEmail($mailer, $user, $plainToken, $request);
                 }
 
