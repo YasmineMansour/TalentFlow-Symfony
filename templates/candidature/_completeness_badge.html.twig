@@ -1,0 +1,29 @@
+{#
+  Badge compact de complétude — à inclure sur la page index dans les cartes.
+  Variables attendues :
+    - completenessScore  (int)
+    - completenessLevel  (string : COMPLET | A_COMPLETER | BLOQUANT)
+    - completenessLabel  (string)
+#}
+{% set levelClass = {
+    'COMPLET':     'success',
+    'A_COMPLETER': 'warning',
+    'BLOQUANT':    'danger'
+}[completenessLevel] ?? 'secondary' %}
+
+<div class="mt-1 mb-1">
+    <div class="d-flex justify-content-between align-items-center" style="font-size: 0.72rem; color: var(--tf-gray);">
+        <span><i class="fas fa-tasks"></i> Complétude</span>
+        <span class="badge bg-{{ levelClass }}" style="font-size: 0.65rem;">{{ completenessLabel }}</span>
+    </div>
+    <div class="progress mt-1" style="height: 5px; background: var(--tf-border);">
+        <div class="progress-bar bg-{{ levelClass }}"
+             role="progressbar"
+             style="width: {{ completenessScore }}%;"
+             aria-valuenow="{{ completenessScore }}"
+             aria-valuemin="0"
+             aria-valuemax="100"
+             title="Complétude : {{ completenessScore }}%">
+        </div>
+    </div>
+</div>

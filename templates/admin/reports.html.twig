@@ -1,7 +1,7 @@
 {% extends 'base_dashboard.html.twig' %}
 
-{% block title %}Signalements - TalentFlow{% endblock %}
-{% block page_title %}Modération des posts{% endblock %}
+{% block title %}{{ 'admin.reports.page_title'|trans }} - TalentFlow{% endblock %}
+{% block page_title %}{{ 'admin.reports.page_title'|trans }}{% endblock %}
 
 {% block stylesheets %}
 <style>
@@ -134,18 +134,18 @@
             </div>
             <div class="tf-widget-info">
                 <h3>{{ reports|length }}</h3>
-                <p>Signalements en attente</p>
+                <p>{{ 'admin.reports.pending_count'|trans }}</p>
             </div>
         </div>
     </div>
     <div class="col-lg-8">
         <div class="tf-card" style="height: 100%; display:flex; align-items:center; justify-content:space-between; gap:1rem;">
             <div>
-                <h3 style="margin:0 0 0.35rem; color: var(--tf-white);"><i class="fas fa-shield-alt"></i> File de modération</h3>
-                <p style="margin:0; color: var(--tf-gray);">Examinez les signalements, rejetez les abus et masquez les posts qui enfreignent les règles communautaires.</p>
+                <h3 style="margin:0 0 0.35rem; color: var(--tf-white);"><i class="fas fa-shield-alt"></i> {{ 'admin.reports.queue_title'|trans }}</h3>
+                <p style="margin:0; color: var(--tf-gray);">{{ 'admin.reports.queue_description'|trans }}</p>
             </div>
             <a href="{{ path('post_index') }}" class="btn-outline-gold btn-sm-tf">
-                <i class="fas fa-comments"></i> Voir le forum
+                <i class="fas fa-comments"></i> {{ 'admin.reports.view_forum'|trans }}
             </a>
         </div>
     </div>
@@ -153,11 +153,11 @@
 
 <div class="tf-card">
     <div class="tf-card-header">
-        <h3><i class="fas fa-inbox"></i> Signalements en attente</h3>
+        <h3><i class="fas fa-inbox"></i> {{ 'admin.reports.pending_title'|trans }}</h3>
     </div>
 
     {% if reports is empty %}
-        <p style="color: var(--tf-gray); text-align:center; padding:2.5rem 1rem; margin:0;">Aucun signalement en attente.</p>
+        <p style="color: var(--tf-gray); text-align:center; padding:2.5rem 1rem; margin:0;">{{ 'admin.reports.no_pending'|trans }}</p>
     {% else %}
         <div style="display:grid; gap:1rem;">
             {% for report in reports %}
@@ -167,47 +167,47 @@
                         <div>
                             <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.35rem; flex-wrap:wrap;">
                                 <span class="badge-role badge-admin" style="background: rgba(212, 168, 67, 0.16); color: var(--tf-gold); border: 1px solid rgba(212, 168, 67, 0.22);">{{ report.reason }}</span>
-                                <span style="color: var(--tf-gray); font-size:0.82rem;">Signalé le {{ report.createdAt ? report.createdAt|date('d/m/Y à H:i') : '—' }}</span>
+                                <span style="color: var(--tf-gray); font-size:0.82rem;">{{ 'admin.reports.reported_on'|trans }} {{ report.createdAt ? report.createdAt|date('d/m/Y à H:i') : '—' }}</span>
                             </div>
-                            <h4 style="margin:0; color: var(--tf-white); font-size:1rem;">{{ post ? post.title : 'Post supprimé' }}</h4>
+                            <h4 style="margin:0; color: var(--tf-white); font-size:1rem;">{{ post ? post.title : ('admin.reports.post_deleted'|trans) }}</h4>
                         </div>
                         <button
                             type="button"
                             class="report-preview-btn open-report-preview"
                             {% if not post %}disabled{% endif %}
                             data-post-title="{{ post ? post.title|e('html_attr') : '' }}"
-                            data-post-content="{{ post ? (post.content ?: 'Aucun contenu texte.')|e('html_attr') : '' }}"
-                            data-author-name="{{ report.reportedBy ? report.reportedBy.fullName|e('html_attr') : 'Utilisateur supprimé' }}"
+                            data-post-content="{{ post ? (post.content ?: ('admin.reports.no_text_content'|trans))|e('html_attr') : '' }}"
+                            data-author-name="{{ report.reportedBy ? report.reportedBy.fullName|e('html_attr') : ('admin.reports.deleted_user'|trans) }}"
                             data-author-email="{{ report.reportedBy ? report.reportedBy.email|e('html_attr') : '—' }}"
                             data-reason="{{ report.reason|e('html_attr') }}"
-                            data-description="{{ (report.description ?: 'Aucune précision fournie.')|e('html_attr') }}"
+                            data-description="{{ (report.description ?: ('admin.reports.no_description'|trans))|e('html_attr') }}"
                             data-created-at="{{ report.createdAt ? report.createdAt|date('d/m/Y à H:i') : '—' }}"
                         >
-                            <i class="fas fa-eye"></i> Ouvrir
+                            <i class="fas fa-eye"></i> {{ 'action.view'|trans }}
                         </button>
                     </div>
 
                     <div class="row g-3">
                         <div class="col-lg-7">
                             <div style="border:1px solid var(--tf-border); border-radius:14px; padding:0.95rem 1rem; background: rgba(255,255,255,0.02); height:100%;">
-                                <div style="color: var(--tf-gray); font-size:0.76rem; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.55rem;">Aperçu du post</div>
+                                <div style="color: var(--tf-gray); font-size:0.76rem; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.55rem;">{{ 'admin.reports.post_preview'|trans }}</div>
                                 {% if post %}
-                                    <div style="color: var(--tf-light); line-height:1.6; white-space:pre-wrap;">{{ post.content ?: 'Aucun contenu texte.' }}</div>
+                                    <div style="color: var(--tf-light); line-height:1.6; white-space:pre-wrap;">{{ post.content ?: ('admin.reports.no_text_content'|trans) }}</div>
                                 {% else %}
-                                    <div style="color: var(--tf-gray);">Le post lié n'est plus disponible.</div>
+                                    <div style="color: var(--tf-gray);">{{ 'admin.reports.linked_post_unavailable'|trans }}</div>
                                 {% endif %}
                             </div>
                         </div>
                         <div class="col-lg-5">
                             <div style="border:1px solid var(--tf-border); border-radius:14px; padding:0.95rem 1rem; background: rgba(255,255,255,0.02); height:100%; display:flex; flex-direction:column; gap:0.85rem;">
                                 <div>
-                                    <div style="color: var(--tf-gray); font-size:0.76rem; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.3rem;">Signalé par</div>
-                                    <div style="color: var(--tf-white); font-weight:600;">{{ report.reportedBy ? report.reportedBy.fullName : 'Utilisateur supprimé' }}</div>
+                                    <div style="color: var(--tf-gray); font-size:0.76rem; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.3rem;">{{ 'admin.reports.reported_by'|trans }}</div>
+                                    <div style="color: var(--tf-white); font-weight:600;">{{ report.reportedBy ? report.reportedBy.fullName : ('admin.reports.deleted_user'|trans) }}</div>
                                     <div style="color: var(--tf-gray); font-size:0.82rem;">{{ report.reportedBy ? report.reportedBy.email : '—' }}</div>
                                 </div>
                                 <div>
-                                    <div style="color: var(--tf-gray); font-size:0.76rem; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.3rem;">Description</div>
-                                    <div style="color: var(--tf-light); font-size:0.9rem; line-height:1.55;">{{ report.description ?: 'Aucune précision fournie.' }}</div>
+                                    <div style="color: var(--tf-gray); font-size:0.76rem; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.3rem;">{{ 'common.description'|trans }}</div>
+                                    <div style="color: var(--tf-light); font-size:0.9rem; line-height:1.55;">{{ report.description ?: ('admin.reports.no_description'|trans) }}</div>
                                 </div>
                             </div>
                         </div>
@@ -217,13 +217,13 @@
                         <form method="post" action="{{ path('admin_reports_dismiss', {id: report.id}) }}">
                             <input type="hidden" name="_token" value="{{ csrf_token('dismiss_report_' ~ report.id) }}">
                             <button type="submit" class="btn-outline-gold btn-sm-tf">
-                                <i class="fas fa-check"></i> Dismiss
+                                <i class="fas fa-check"></i> {{ 'admin.reports.dismiss'|trans }}
                             </button>
                         </form>
                         <form method="post" action="{{ path('admin_reports_hide_post', {id: report.id}) }}">
                             <input type="hidden" name="_token" value="{{ csrf_token('hide_report_' ~ report.id) }}">
                             <button type="submit" class="btn-danger-tf btn-sm-tf">
-                                <i class="fas fa-ban"></i> Hide Post
+                                <i class="fas fa-ban"></i> {{ 'admin.reports.hide_post'|trans }}
                             </button>
                         </form>
                     </div>
@@ -235,11 +235,11 @@
 
 <div class="tf-card mt-3">
     <div class="tf-card-header">
-        <h3><i class="fas fa-eye-slash"></i> Posts masqués</h3>
+        <h3><i class="fas fa-eye-slash"></i> {{ 'admin.reports.hidden_posts_title'|trans }}</h3>
     </div>
 
     {% if hiddenPosts is empty %}
-        <p style="color: var(--tf-gray); text-align:center; padding:2rem 1rem; margin:0;">Aucun post masqué actuellement.</p>
+        <p style="color: var(--tf-gray); text-align:center; padding:2rem 1rem; margin:0;">{{ 'admin.reports.no_hidden_posts'|trans }}</p>
     {% else %}
         <div style="display:grid; gap:0.8rem;">
             {% for post in hiddenPosts %}
@@ -247,13 +247,13 @@
                     <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
                         <div style="min-width:0; flex:1;">
                             <div style="display:flex; align-items:center; gap:0.55rem; flex-wrap:wrap; margin-bottom:0.25rem;">
-                                <span class="badge-role badge-admin" style="background: rgba(148, 163, 184, 0.2); color: #d4d7dd; border:1px solid rgba(148, 163, 184, 0.26);">Masqué</span>
-                                <span style="color: var(--tf-gray); font-size:0.8rem;">Publié le {{ post.createdAt ? post.createdAt|date('d/m/Y à H:i') : '—' }}</span>
+                                <span class="badge-role badge-admin" style="background: rgba(148, 163, 184, 0.2); color: #d4d7dd; border:1px solid rgba(148, 163, 184, 0.26);">{{ 'admin.reports.hidden_badge'|trans }}</span>
+                                <span style="color: var(--tf-gray); font-size:0.8rem;">{{ 'admin.reports.published_on'|trans }} {{ post.createdAt ? post.createdAt|date('d/m/Y à H:i') : '—' }}</span>
                             </div>
                             <h4 style="margin:0 0 0.35rem; color: var(--tf-white); font-size:1rem;">{{ post.title }}</h4>
-                            <div style="color: var(--tf-gray); font-size:0.86rem; margin-bottom:0.35rem;">Par {{ post.authorName }}</div>
+                            <div style="color: var(--tf-gray); font-size:0.86rem; margin-bottom:0.35rem;">{{ 'admin.reports.by_author'|trans }} {{ post.authorName }}</div>
                             <div style="color: var(--tf-light); line-height:1.6; white-space:pre-wrap;">
-                                {{ post.content ?: 'Aucun contenu texte.' }}
+                                {{ post.content ?: ('admin.reports.no_text_content'|trans) }}
                             </div>
                         </div>
                         <div style="display:flex; gap:0.55rem; align-items:center;">
@@ -261,19 +261,19 @@
                                 type="button"
                                 class="report-preview-btn open-report-preview"
                                 data-post-title="{{ post.title|e('html_attr') }}"
-                                data-post-content="{{ (post.content ?: 'Aucun contenu texte.')|e('html_attr') }}"
+                                data-post-content="{{ (post.content ?: ('admin.reports.no_text_content'|trans))|e('html_attr') }}"
                                 data-author-name="{{ post.authorName|e('html_attr') }}"
                                 data-author-email="—"
-                                data-reason="Post masqué"
-                                data-description="Visible uniquement par les administrateurs."
+                                data-reason="{{ 'admin.reports.hidden_post_reason'|trans|e('html_attr') }}"
+                                data-description="{{ 'admin.reports.hidden_post_description'|trans|e('html_attr') }}"
                                 data-created-at="{{ post.createdAt ? post.createdAt|date('d/m/Y à H:i') : '—' }}"
                             >
-                                <i class="fas fa-eye"></i> Ouvrir
+                                <i class="fas fa-eye"></i> {{ 'action.view'|trans }}
                             </button>
                             <form method="post" action="{{ path('admin_reports_unhide_post', {id: post.id}) }}">
                                 <input type="hidden" name="_token" value="{{ csrf_token('unhide_post_' ~ post.id) }}">
                                 <button type="submit" class="btn-outline-gold btn-sm-tf">
-                                    <i class="fas fa-eye"></i> Unhide Post
+                                    <i class="fas fa-eye"></i> {{ 'admin.reports.unhide_post'|trans }}
                                 </button>
                             </form>
                         </div>
@@ -294,27 +294,27 @@
                     <span id="reportPreviewReason"></span>
                 </div>
             </div>
-            <button type="button" class="report-modal-close" id="reportPreviewClose" aria-label="Fermer">
+            <button type="button" class="report-modal-close" id="reportPreviewClose" aria-label="{{ 'action.close'|trans }}">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         <div class="report-modal-body">
             <div class="report-modal-panel">
-                <div class="report-modal-label">Contenu complet du post</div>
+                <div class="report-modal-label">{{ 'admin.reports.full_post_content'|trans }}</div>
                 <div class="report-modal-content" id="reportPreviewContent"></div>
             </div>
             <div class="report-modal-panel">
-                <div class="report-modal-label">Signalé par</div>
+                <div class="report-modal-label">{{ 'admin.reports.reported_by'|trans }}</div>
                 <div class="report-modal-content" id="reportPreviewReporter"></div>
             </div>
             <div class="report-modal-panel">
-                <div class="report-modal-label">Description du signalement</div>
+                <div class="report-modal-label">{{ 'admin.reports.report_description'|trans }}</div>
                 <div class="report-modal-content" id="reportPreviewDescription"></div>
             </div>
         </div>
         <div class="report-modal-footer">
             <button type="button" class="btn-outline-gold btn-sm-tf" id="reportPreviewCloseFooter">
-                <i class="fas fa-xmark"></i> Fermer
+                <i class="fas fa-xmark"></i> {{ 'action.close'|trans }}
             </button>
         </div>
     </div>
@@ -346,17 +346,17 @@
     }
 
     function openModal(btn) {
-        const title = btn.dataset.postTitle || 'Post';
-        const content = btn.dataset.postContent || 'Aucun contenu texte.';
+        const title = btn.dataset.postTitle || '{{ 'nav.posts'|trans|e('js') }}';
+        const content = btn.dataset.postContent || '{{ 'admin.reports.no_text_content'|trans|e('js') }}';
         const reason = btn.dataset.reason || '—';
         const createdAt = btn.dataset.createdAt || '—';
         const authorName = btn.dataset.authorName || '—';
         const authorEmail = btn.dataset.authorEmail || '—';
-        const description = btn.dataset.description || 'Aucune précision fournie.';
+        const description = btn.dataset.description || '{{ 'admin.reports.no_description'|trans|e('js') }}';
 
         titleEl.textContent = title;
-        dateEl.textContent = 'Signalé le ' + createdAt;
-        reasonEl.textContent = 'Motif: ' + reason;
+        dateEl.textContent = '{{ 'admin.reports.reported_on'|trans|e('js') }} ' + createdAt;
+        reasonEl.textContent = '{{ 'admin.reports.reason'|trans|e('js') }}: ' + reason;
         contentEl.innerHTML = esc(content);
         reporterEl.innerHTML = '<strong>' + esc(authorName) + '</strong><br><span style="color:var(--tf-gray)">' + esc(authorEmail) + '</span>';
         descriptionEl.innerHTML = esc(description);

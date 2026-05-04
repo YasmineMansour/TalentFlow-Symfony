@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Offre — {{ offre.titre }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'DejaVu Sans', sans-serif; color: #e0e0e0; background: #1a1a2e; padding: 0; }
+        .page { max-width: 700px; margin: 0 auto; background: #16213e; border-radius: 12px; overflow: hidden; }
+        .header { background: linear-gradient(135deg, #0f3460, #1a1a2e); padding: 30px 40px; text-align: center; border-bottom: 3px solid #d4a843; }
+        .header h1 { color: #d4a843; font-size: 22px; letter-spacing: 1px; margin: 0; }
+        .header p { color: #8a8aa0; font-size: 12px; margin-top: 6px; }
+        .content { padding: 30px 40px; }
+        .titre { color: #d4a843; font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+        .badge { display: inline-block; background: #0f3460; color: #d4a843; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; margin-right: 6px; }
+        .section { margin-top: 24px; }
+        .section-title { color: #d4a843; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #1e2a3a; padding-bottom: 6px; margin-bottom: 12px; }
+        .info-grid { width: 100%; border-collapse: collapse; }
+        .info-grid td { padding: 8px 12px; font-size: 13px; vertical-align: top; }
+        .info-grid .label { color: #8a8aa0; width: 40%; font-weight: 600; }
+        .info-grid .value { color: #e0e0e0; }
+        .description { color: #aab0bc; font-size: 13px; line-height: 1.7; margin-top: 8px; }
+        .avantages-list { list-style: none; padding: 0; }
+        .avantages-list li { color: #aab0bc; font-size: 13px; padding: 4px 0; }
+        .avantages-list li::before { content: "★ "; color: #d4a843; }
+        .footer { background: #0f3460; padding: 20px 40px; text-align: center; border-top: 1px solid #1e2a3a; }
+        .footer p { color: #8a8aa0; font-size: 11px; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <h1>&#128188; TalentFlow</h1>
+            <p>Fiche d'offre d'emploi</p>
+        </div>
+
+        <div class="content">
+            <div class="titre">{{ offre.titre }}</div>
+            <div style="margin-top: 8px;">
+                <span class="badge">{{ offre.typeContrat }}</span>
+                <span class="badge">{{ offre.modeTravail == 'ON_SITE' ? 'Sur site' : (offre.modeTravail == 'REMOTE' ? 'À distance' : 'Hybride') }}</span>
+                <span class="badge">{{ offre.statut }}</span>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Informations générales</div>
+                <table class="info-grid">
+                    {% if offre.entreprise %}
+                    <tr>
+                        <td class="label">Entreprise</td>
+                        <td class="value">{{ offre.entreprise.nom }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if offre.categorie %}
+                    <tr>
+                        <td class="label">Catégorie</td>
+                        <td class="value">{{ offre.categorie.nom }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td class="label">Localisation</td>
+                        <td class="value">{{ offre.localisation|default('Non renseignée') }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Type de contrat</td>
+                        <td class="value">{{ offre.typeContrat }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Mode de travail</td>
+                        <td class="value">{{ offre.modeTravail == 'ON_SITE' ? 'Sur site' : (offre.modeTravail == 'REMOTE' ? 'À distance' : 'Hybride') }}</td>
+                    </tr>
+                    {% if offre.salaireMin or offre.salaireMax %}
+                    <tr>
+                        <td class="label">Salaire</td>
+                        <td class="value">
+                            {% if offre.salaireMin and offre.salaireMax %}
+                                {{ offre.salaireMin|number_format(0, ',', ' ') }} — {{ offre.salaireMax|number_format(0, ',', ' ') }} TND
+                            {% elseif offre.salaireMin %}
+                                À partir de {{ offre.salaireMin|number_format(0, ',', ' ') }} TND
+                            {% else %}
+                                Jusqu'à {{ offre.salaireMax|number_format(0, ',', ' ') }} TND
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td class="label">Statut</td>
+                        <td class="value">{{ offre.statut }}</td>
+                    </tr>
+                </table>
+            </div>
+
+            {% if offre.description %}
+            <div class="section">
+                <div class="section-title">Description du poste</div>
+                <div class="description">{{ offre.description|nl2br }}</div>
+            </div>
+            {% endif %}
+
+            {% if offre.avantages|length > 0 %}
+            <div class="section">
+                <div class="section-title">Avantages</div>
+                <ul class="avantages-list">
+                    {% for avantage in offre.avantages %}
+                    <li>{{ avantage.nom }}{% if avantage.description %} — {{ avantage.description }}{% endif %}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if offre.entreprise %}
+            <div class="section">
+                <div class="section-title">À propos de l'entreprise</div>
+                <table class="info-grid">
+                    <tr>
+                        <td class="label">Nom</td>
+                        <td class="value">{{ offre.entreprise.nom }}</td>
+                    </tr>
+                    {% if offre.entreprise.secteur %}
+                    <tr>
+                        <td class="label">Secteur</td>
+                        <td class="value">{{ offre.entreprise.secteur }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if offre.entreprise.adresse %}
+                    <tr>
+                        <td class="label">Adresse</td>
+                        <td class="value">{{ offre.entreprise.adresse }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if offre.entreprise.email %}
+                    <tr>
+                        <td class="label">Email</td>
+                        <td class="value">{{ offre.entreprise.email }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if offre.entreprise.telephone %}
+                    <tr>
+                        <td class="label">Téléphone</td>
+                        <td class="value">{{ offre.entreprise.telephone }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="footer">
+            <p>Document généré automatiquement par TalentFlow — {{ "now"|date("d/m/Y à H:i") }}</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -20,6 +20,7 @@ nav:
     forum: "Forum"
     posts: "Posts"
     messages: "Messages"
+    moderation: "Moderation"
     comments: "Comments"
     my_profile: "My Profile"
     settings: "Settings"
@@ -33,6 +34,8 @@ section:
     applications: "Applications"
     interviews: "Interviews"
     forum: "Forum"
+    forum_management: "Forum Management"
+    communication: "Communication"
     my_space: "My Space"
     system: "System"
 
@@ -54,6 +57,7 @@ action:
     yes_create: "Yes, create"
     yes_save: "Yes, save"
     new: "New"
+    export_pdf: "Export PDF"
 
 # ==================== THEME ====================
 theme:
@@ -110,6 +114,8 @@ common:
     author: "Author"
     content: "Content"
     title: "Title"
+    error: "Error"
+    network_error: "Network error"
 
 # ==================== ROLES ====================
 role:
@@ -124,6 +130,7 @@ page:
         title: "User Management"
         search_placeholder: "Search by name or email..."
         all_roles: "All roles"
+        for_search: "for"
         found: "user(s) found"
         no_users: "No users found."
         create_first: "Create the first user"
@@ -258,6 +265,149 @@ public:
         apply_now: "Apply now"
         login_to_apply: "Log in to apply"
         create_account: "Create an account"
+
+user:
+    status_active: "Active"
+    status_disabled: "Disabled"
+    disable_account: "Disable account"
+    reactivate_account: "Reactivate account"
+    toggle_confirm_fallback: "Confirm status change for"
+    confirm_disable_prefix: "Do you really want to disable the account of"
+    confirm_disable_help: "The user will no longer be able to sign in."
+    confirm_disable_action: "Yes, disable"
+    confirm_reactivate_prefix: "Do you want to reactivate the account of"
+    confirm_reactivate_action: "Yes, reactivate"
+
+admin:
+    reports:
+        page_title: "Post Moderation"
+        pending_count: "Pending reports"
+        queue_title: "Moderation queue"
+        queue_description: "Review reports, dismiss abuse, and hide posts that violate community rules."
+        view_forum: "View forum"
+        pending_title: "Pending reports"
+        no_pending: "No pending reports."
+        reported_on: "Reported on"
+        reported_by: "Reported by"
+        reason: "Reason"
+        report_description: "Report description"
+        post_deleted: "Deleted post"
+        deleted_user: "Deleted user"
+        post_preview: "Post preview"
+        no_text_content: "No text content."
+        no_description: "No details provided."
+        linked_post_unavailable: "The related post is no longer available."
+        dismiss: "Dismiss"
+        hide_post: "Hide post"
+        hidden_posts_title: "Hidden posts"
+        no_hidden_posts: "No hidden posts currently."
+        hidden_badge: "Hidden"
+        published_on: "Published on"
+        by_author: "By"
+        hidden_post_reason: "Hidden post"
+        hidden_post_description: "Visible only to administrators."
+        unhide_post: "Unhide post"
+        full_post_content: "Full post content"
+
+api:
+    auth:
+        required: "Not authenticated"
+        access_denied: "Access denied"
+    message:
+        invalid_length: "Invalid message (1-2000 characters)"
+        conversation_not_found: "Conversation not found"
+        cannot_message_self: "You cannot send a message to yourself."
+        edit_own_only: "You can only edit your own messages"
+        edit_window_expired: "Edit window (15 min) has expired"
+        delete_own_only: "You can only delete your own messages"
+        delete_window_expired: "Delete window (15 min) has expired"
+    post_report:
+        auth_required: "You must be logged in to report a post."
+        admin_use_panel: "Administrators must use the moderation panel."
+        already_hidden: "This post has already been removed."
+        duplicate_pending: "You already have a pending report for this post."
+        invalid_reason: "Please select a valid reason."
+        description_too_long: "Description cannot exceed 1000 characters."
+        flash_dismissed: "Report dismissed."
+        flash_hidden: "Post has been hidden."
+        flash_unhidden: "Post is visible again."
+
+entretien:
+    page:
+        title: "My interview"
+        title_with_id: "My interview #%id%"
+    sidebar:
+        candidate: "Candidate"
+        details: "Details"
+    fields:
+        date_time: "Date & time"
+        location: "Location"
+    type:
+        online: "Online"
+        online_jitsi: "Online (Jitsi Meet)"
+        onsite: "On-site"
+        phone: "Phone"
+    actions:
+        open_jitsi_direct: "Open Jitsi"
+        leave_code_mode: "Leave code mode"
+        join_meeting_cta: "JOIN THE MEETING"
+        join_jitsi: "JOIN JITSI MEET"
+        open_live_coding: "Open Live Coding"
+        code_mode: "Code mode"
+        edit: "Edit this interview"
+        live_code_short: "Live Code"
+    meeting:
+        jitsi: "Jitsi Meet"
+        live_badge: "LIVE"
+        iframe_title: "TalentFlow online interview"
+        online_title: "Online interview - Jitsi Meet"
+    live_coding:
+        title: "Live Coding"
+        language: "Language"
+        run: "Run"
+        share: "Share"
+        output: "Code output"
+        running: "Running..."
+        no_output: "no output"
+        shared_prefix: "Shared code:"
+        share_dialog_title: "Code sharing:"
+    phone:
+        title: "Phone interview"
+        be_available: "Please stay available on your phone number."
+        call_on: "We will call you on"
+        ensure_available: "Please make sure you are available on your number."
+    onsite:
+        title: "On-site interview"
+        meet_on: "Meet on"
+        address_intro: "at the following address:"
+        address_tbd: "Address to be confirmed"
+
+email:
+    entretien_confirmation:
+        header_subtitle: "Interview confirmation"
+        greeting: "Hello,"
+        confirm_intro: "We confirm your interview scheduled on"
+        position: "Position"
+        company: "Company"
+        join_online_intro: "Join your online interview by clicking the button below:"
+        join_button: "Join interview"
+        link_label: "Link"
+        live_coding_title: "Live coding test"
+        live_coding_intro: "During your interview, you will complete a real-time coding test. Access the platform directly:"
+        live_coding_button: "Open Live Coding"
+        portal_intro: "You can also view your interview on TalentFlow"
+        portal_link: "View my interview"
+        questions: "If you have any questions, please contact HR."
+        signature_intro: "Best regards,"
+        signature_team: "TalentFlow HR Team"
+        footer: "Application management platform"
+    entretien_reminder:
+        header_subtitle: "Interview reminder"
+        greeting: "Hello,"
+        reminder_intro: "Quick reminder: your interview is scheduled in"
+        online_intro: "For the online interview, use this link:"
+        live_coding_intro: "Do not forget the real-time coding test during the interview. Access the editor here:"
+        signature_intro: "See you soon,"
     register:
         page_title: "Register - TalentFlow"
         meta_description: "Create your TalentFlow account for free and access job offers, apply, and track your applications."

@@ -1,0 +1,25 @@
+<div class="modal fade" id="candidatureOpenAiModal" tabindex="-1" aria-labelledby="candidatureOpenAiModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content tf-analysis-modal-content">
+            <div class="modal-header border-0 pb-2">
+                <h5 class="modal-title" id="candidatureOpenAiModalTitle">Recommandation OpenAI</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+
+            <div class="modal-body pt-1">
+                <div id="openAiLoadingState" class="text-center py-4">
+                    <div class="spinner-border text-warning" role="status" aria-hidden="true"></div>
+                    <p class="mt-3 mb-0" style="color: var(--tf-gray);">Chargement de la recommandation OpenAI...</p>
+                </div>
+
+                <div id="openAiErrorState" class="alert alert-danger d-none" role="alert"></div>
+
+                <div id="openAiRenderedState" class="d-none"></div>
+            </div>
+
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-light btn-sm" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>

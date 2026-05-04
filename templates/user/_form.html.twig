@@ -1,4 +1,4 @@
-{{ form_start(form, {'attr': {'class': 'tf-form', 'novalidate': 'novalidate', 'data-confirm': form_action|default('create'), 'onsubmit': "if(!this.getAttribute('data-confirmed')){event.preventDefault(); confirmFormSubmit(this, this.dataset.confirm);}"}}) }}
+{{ form_start(form, {'attr': {'class': 'tf-form', 'novalidate': 'novalidate'}}) }}
     <div class="row">
         <div class="col-md-6 mb-3">
             {{ form_label(form.nom) }}
@@ -29,6 +29,15 @@
         </div>
     </div>
 
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            {{ form_label(form.entreprise) }}
+            {{ form_widget(form.entreprise) }}
+            {{ form_errors(form.entreprise) }}
+            <small class="form-hint"><i class="fas fa-info-circle"></i> Sélectionnez une entreprise (optionnel)</small>
+        </div>
+    </div>
+
     {% if form.roles is defined %}
     <div class="mb-3">
         {{ form_label(form.roles) }}
@@ -43,7 +52,16 @@
             {{ form_label(form.plainPassword.first) }}
             {{ form_widget(form.plainPassword.first) }}
             {{ form_errors(form.plainPassword.first) }}
-            <small class="form-hint"><i class="fas fa-shield-alt"></i> Min. 12 car., 1 majuscule, 1 minuscule, 1 chiffre, 1 spécial</small>
+            <div class="form-hint" style="background-color: #f8f9fa; border-left: 3px solid #ffc107; padding: 10px; margin-top: 5px; border-radius: 3px;">
+                <strong><i class="fas fa-shield-alt"></i> Exigences du mot de passe :</strong>
+                <ul style="margin: 5px 0 0 20px; padding: 0;">
+                    <li>Minimum 12 caractères</li>
+                    <li>Au moins 1 lettre majuscule (A-Z)</li>
+                    <li>Au moins 1 lettre minuscule (a-z)</li>
+                    <li>Au moins 1 chiffre (0-9)</li>
+                    <li>Au moins 1 caractère spécial (!@#$%^&*)</li>
+                </ul>
+            </div>
         </div>
         <div class="col-md-6 mb-3">
             {{ form_label(form.plainPassword.second) }}

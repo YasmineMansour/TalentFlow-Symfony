@@ -154,6 +154,97 @@
         </div>
     </div>
 </div>
+
+{# ==================== TOP CANDIDATURES PRIORITAIRES ==================== #}
+{% if topPrioritaires|length > 0 %}
+<div class="row g-3 mt-2">
+    <div class="col-12">
+        <div class="tf-card">
+            <div class="tf-card-header">
+                <h3><i class="fas fa-star" style="color: var(--tf-gold);"></i> Top candidatures prioritaires</h3>
+                <a href="{{ path('app_candidature_index') }}" style="font-size: 0.8rem; color: var(--tf-gold);">Voir toutes</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0" style="font-size: 0.85rem;">
+                    <thead>
+                        <tr style="color: var(--tf-gray);">
+                            <th>Poste</th>
+                            <th>Entreprise</th>
+                            <th>Statut</th>
+                            <th>Priorité</th>
+                            <th>Score</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in topPrioritaires %}
+                        {% set c = item.candidature %}
+                        {% set s = item.summary %}
+                        {% set badgeClass = s.category == 'PRIORITAIRE' ? 'success' : 'warning' %}
+                        <tr>
+                            <td><strong>{{ c.titrePoste }}</strong></td>
+                            <td>{{ c.entreprise }}</td>
+                            <td><span class="badge bg-{{ c.statutBadgeClass }}">{{ c.statut }}</span></td>
+                            <td><span class="badge bg-{{ badgeClass }}">{{ s.label }}</span></td>
+                            <td>
+                                <div class="d-flex align-items-center gap-1">
+                                    <div class="progress flex-grow-1" style="height: 6px; min-width: 60px; background: var(--tf-border);">
+                                        <div class="progress-bar bg-{{ badgeClass }}" style="width: {{ s.priorityScore }}%;"></div>
+                                    </div>
+                                    <span style="color: var(--tf-gray); white-space: nowrap;">{{ s.priorityScore }}/100</span>
+                                </div>
+                            </td>
+                            <td><a href="{{ path('app_candidature_show', {id: c.id}) }}" class="btn btn-sm btn-outline-light"><i class="fas fa-eye"></i></a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# ==================== CANDIDATURES EN RETARD ==================== #}
+{% if candidaturesEnRetard|length > 0 %}
+<div class="row g-3 mt-2">
+    <div class="col-12">
+        <div class="tf-card" style="border-left: 3px solid var(--bs-warning);">
+            <div class="tf-card-header">
+                <h3><i class="fas fa-clock" style="color: var(--bs-warning);"></i> Candidatures en retard</h3>
+                <span class="badge bg-warning text-dark">{{ candidaturesEnRetard|length }}</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0" style="font-size: 0.85rem;">
+                    <thead>
+                        <tr style="color: var(--tf-gray);">
+                            <th>Poste</th>
+                            <th>Statut</th>
+                            <th>Alerte</th>
+                            <th>Délai</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in candidaturesEnRetard %}
+                        {% set c = item.candidature %}
+                        {% for alert in item.alerts %}
+                        <tr>
+                            <td><strong>{{ c.titrePoste }}</strong><br><small style="color: var(--tf-gray);">{{ c.entreprise }}</small></td>
+                            <td><span class="badge bg-{{ c.statutBadgeClass }}">{{ c.statut }}</span></td>
+                            <td><span class="badge bg-{{ alert.severity }}">{{ alert.code == 'PENDING_TOO_OLD' ? 'Attente trop longue' : 'Sans entretien' }}</span></td>
+                            <td style="color: var(--bs-{{ alert.severity }});">{{ alert.days }} jour{{ alert.days > 1 ? 's' : '' }}</td>
+                            <td><a href="{{ path('app_candidature_show', {id: c.id}) }}" class="btn btn-sm btn-outline-warning"><i class="fas fa-eye"></i></a></td>
+                        </tr>
+                        {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block javascripts %}

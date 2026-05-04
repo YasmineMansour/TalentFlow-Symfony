@@ -3,7 +3,14 @@
 {% block title %}{{ entreprise.nom }} - TalentFlow{% endblock %}
 
 {% block body %}
-<h2 class="tf-title"><i class="fas fa-building"></i> {{ entreprise.nom }}</h2>
+<h2 class="tf-title" style="display: flex; align-items: center; gap: 0.8rem;">
+    {% if entreprise.logo %}
+        <img src="{{ asset('uploads/logos/' ~ entreprise.logo) }}" alt="{{ entreprise.nom }}" style="width: 48px; height: 48px; border-radius: 10px; object-fit: cover;">
+    {% else %}
+        <i class="fas fa-building"></i>
+    {% endif %}
+    {{ entreprise.nom }}
+</h2>
 
 <div class="tf-card">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -18,7 +25,19 @@
     <div class="row g-4">
         <div class="col-md-6">
             <p><strong style="color: var(--tf-gold);">Secteur :</strong> <span style="color: var(--tf-gray);">{{ entreprise.secteur ?? 'Non renseigné' }}</span></p>
-            <p><strong style="color: var(--tf-gold);">Adresse :</strong> <span style="color: var(--tf-gray);">{{ entreprise.adresse ?? 'Non renseignée' }}</span></p>
+            <p><strong style="color: var(--tf-gold);">Adresse :</strong> <span style="color: var(--tf-gray);">{{ entreprise.adresse ?? 'Non renseignée' }}</span> <span id="country-flag-entreprise"></span></p>
+            <div id="country-info-entreprise" style="display:none; margin-top: 0.5rem; padding: 0.75rem; background: rgba(212,168,67,0.06); border: 1px solid var(--tf-border); border-radius: 10px;">
+                <div style="display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
+                    <span id="country-flag-big" style="font-size: 2rem;"></span>
+                    <div>
+                        <div style="color: var(--tf-gold); font-weight: 600;" id="country-name"></div>
+                        <div style="color: var(--tf-gray); font-size: 0.82rem;">
+                            <span><i class="fas fa-coins"></i> <span id="country-currency"></span></span> &nbsp;
+                            <span><i class="fas fa-globe"></i> <span id="country-code"></span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <p><strong style="color: var(--tf-gold);">Email :</strong> <span style="color: var(--tf-gray);">{{ entreprise.email ?? 'Non renseigné' }}</span></p>
         </div>
         <div class="col-md-6">
@@ -54,7 +73,7 @@
 
     {% if entreprise.logo %}
         <p><strong style="color: var(--tf-gold);">Logo :</strong></p>
-        <p><img src="{{ entreprise.logo }}" alt="{{ entreprise.nom }}" style="max-height:80px; border-radius: 8px;"></p>
+        <p><img src="{{ asset('uploads/logos/' ~ entreprise.logo) }}" alt="{{ entreprise.nom }}" style="max-height:80px; border-radius: 8px;"></p>
     {% endif %}
 </div>
 
@@ -104,4 +123,23 @@
         <button class="btn-danger-tf"><i class="fas fa-trash"></i> Supprimer</button>
     </form>
 </div>
+
+{% if entreprise.adresse %}
+<script>
+(function() {
+    fetch('/api/country/detect?localisation=' + encodeURIComponent('{{ entreprise.adresse|e('js') }}'))
+        .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+        .then(data => {
+            document.getElementById('country-flag-entreprise').textContent = data.flag;
+            document.getElementById('country-flag-big').textContent = data.flag;
+            document.getElementById('country-name').textContent = data.name;
+            document.getElementById('country-capital').textContent = data.capital;
+            document.getElementById('country-currency').textContent = data.currency + (data.currencySymbol ? ' (' + data.currencySymbol + ')' : '');
+            document.getElementById('country-code').textContent = data.code;
+            document.getElementById('country-info-entreprise').style.display = 'block';
+        })
+        .catch(() => {});
+})();
+</script>
+{% endif %}
 {% endblock %}

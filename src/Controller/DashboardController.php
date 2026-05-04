@@ -7,6 +7,7 @@ use App\Repository\DecisionFinaleRepository;
 use App\Repository\EntretienRepository;
 use App\Repository\OffreRepository;
 use App\Repository\UserRepository;
+use App\Service\CandidaturePriorityService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -19,7 +20,8 @@ class DashboardController extends AbstractController
         EntretienRepository $entretienRepository,
         DecisionFinaleRepository $decisionFinaleRepository,
         CandidatureRepository $candidatureRepository,
-        OffreRepository $offreRepository
+        OffreRepository $offreRepository,
+        CandidaturePriorityService $priorityService
     ): Response
     {
         if ($this->isGranted('ROLE_ADMIN')) {
@@ -27,7 +29,7 @@ class DashboardController extends AbstractController
         }
 
         if ($this->isGranted('ROLE_RH')) {
-            return $this->renderRhDashboard($userRepository, $entretienRepository, $decisionFinaleRepository, $candidatureRepository, $offreRepository);
+            return $this->renderRhDashboard($userRepository, $entretienRepository, $decisionFinaleRepository, $candidatureRepository, $offreRepository, $priorityService);
         }
 
         return $this->renderCandidatDashboard($candidatureRepository, $offreRepository);
@@ -105,19 +107,51 @@ class DashboardController extends AbstractController
         EntretienRepository $entretienRepository,
         DecisionFinaleRepository $decisionFinaleRepository,
         CandidatureRepository $candidatureRepository,
-        OffreRepository $offreRepository
+        OffreRepository $offreRepository,
+        CandidaturePriorityService $priorityService
     ): Response
     {
         $candidats = $userRepository->findByRole('ROLE_CANDIDAT');
         $totalCandidatures = count($candidatureRepository->findAll());
         $totalOffres = count($offreRepository->findAll());
 
+        // Priority & alert data for RH
+        $entreprise = $this->getUser()?->getEntreprise();
+        $activeCandidatures = $candidatureRepository->findNonTerminal($entreprise);
+
+        $topPrioritaires = [];
+        $candidaturesEnRetard = [];
+
+        foreach ($activeCandidatures as $c) {
+            $summary = $priorityService->summarize($c);
+            if (in_array($summary['category'], ['PRIORITAIRE', 'A_EXAMINER'], true)) {
+                $topPrioritaires[] = ['candidature' => $c, 'summary' => $summary];
+            }
+        }
+
+        // Sort top by priorityScore desc, keep top 5
+        usort($topPrioritaires, fn ($a, $b) => $b['summary']['priorityScore'] <=> $a['summary']['priorityScore']);
+        $topPrioritaires = array_slice($topPrioritaires, 0, 5);
+
+        // Delay alerts — only check candidatures in relevant statuses (avoids unnecessary DB calls)
+        foreach ($activeCandidatures as $c) {
+            if (!in_array($c->getStatut(), ['En attente', 'Validée RH'], true)) {
+                continue;
+            }
+            $alerts = $priorityService->getDelayAlerts($c);
+            if (count($alerts) > 0) {
+                $candidaturesEnRetard[] = ['candidature' => $c, 'alerts' => $alerts];
+            }
+        }
+
         return $this->render('dashboard/rh.html.twig', [
-            'totalCandidats' => count($candidats),
-            'offresActives' => $totalOffres,
-            'candidaturesRecues' => $totalCandidatures,
+            'totalCandidats'       => count($candidats),
+            'offresActives'        => $totalOffres,
+            'candidaturesRecues'   => $totalCandidatures,
             'entretiensAujourdhui' => $entretienRepository->countToday(),
-            'decisionsEnAttente' => $decisionFinaleRepository->countPending(),
+            'decisionsEnAttente'   => $decisionFinaleRepository->countPending(),
+            'topPrioritaires'      => $topPrioritaires,
+            'candidaturesEnRetard' => $candidaturesEnRetard,
         ]);
     }
 

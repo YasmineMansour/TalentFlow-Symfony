@@ -1,3 +1,4 @@
-{% extends 'base_navbar.html.twig' %}
+{# base.html.twig - Wrapper: Admin = sidebar, RH/Candidat = navbar #}
+{% extends is_granted('ROLE_ADMIN') ? 'base_dashboard.html.twig' : 'base_navbar.html.twig' %}
 
 {% block page_title %}{% block page_heading %}TalentFlow{% endblock %}{% endblock %}

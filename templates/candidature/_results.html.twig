@@ -1,0 +1,26 @@
+<div id="candidature-grid" class="tf-grid-cards">
+    {% include 'candidature/_table_body.html.twig' with {
+        candidatures: candidatures,
+        completenessMap: completenessMap|default({}),
+        priorityMap: priorityMap|default({})
+    } %}
+</div>
+
+{% set total = candidatures.getTotalItemCount %}
+{% if total > 0 %}
+    {% set currentPage = candidatures.getCurrentPageNumber %}
+    {% set perPage = candidatures.getItemNumberPerPage %}
+    {% set start = ((currentPage - 1) * perPage) + 1 %}
+    {% set theoreticalFinish = currentPage * perPage %}
+    {% set finish = theoreticalFinish > total ? total : theoreticalFinish %}
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mt-3" style="color: var(--tf-gray); gap: .5rem;">
+        <small>Affichage de {{ start }} à {{ finish }} sur {{ total }} candidature(s)</small>
+        <small>Page {{ currentPage }} sur {{ candidatures.getPageCount }}</small>
+    </div>
+{% endif %}
+
+{% if candidatures.getPageCount > 1 %}
+    <div class="d-flex justify-content-center mt-3">
+        {{ knp_pagination_render(candidatures) }}
+    </div>
+{% endif %}

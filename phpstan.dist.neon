@@ -1,0 +1,36 @@
+parameters:
+    level: 8
+
+    paths:
+        - src
+
+    # ── Règle 1 : vérification des types manquants sur les itérables ────────
+    checkMissingIterableValueType: true
+
+    # ── Règle 2 : génériques dans les types non-génériques ──────────────────
+    checkGenericClassInNonGenericObjectType: true
+
+    # ── Règle 3 : vérification des types dans les PHPDoc @return ────────────
+    checkPhpDocMissingReturn: true
+
+    # ── Règle 4 : vérification des Union Types ───────────────────────────────
+    checkUnionTypes: true
+
+    # ── Règle 5 : propriétés non initialisées dans constructeur ─────────────
+    checkUninitializedProperties: false
+
+    # ── Règle 6 : méthodes inexistantes sur les null ─────────────────────────
+    checkDynamicProperties: true
+
+    reportUnmatchedIgnoredErrors: false
+
+    ignoreErrors:
+        - '#Call to an undefined method Doctrine\\ORM\\EntityManagerInterface::.*#'
+        - '#Function trigger_deprecation not found#'
+        - '#.*&MockObject.*#'
+
+    excludePaths:
+        - vendor
+        - var
+        - migrations
+        - src/Kernel.php

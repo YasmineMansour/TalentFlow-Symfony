@@ -1,0 +1,48 @@
+{% if duplicateAnalysis is defined and duplicateAnalysis and duplicateAnalysis.isDuplicate %}
+    {% set severityClass = duplicateAnalysis.severity == 'BLOCKING' ? 'danger' : 'warning' %}
+    {% set severityLabel = duplicateAnalysis.severity == 'BLOCKING' ? 'Doublon bloquant' : 'Doublon potentiel' %}
+
+    <div class="alert alert-{{ severityClass }} tf-card mb-3" role="alert" style="border-left: 4px solid var(--bs-{{ severityClass }});">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+            <strong><i class="fas fa-copy"></i> {{ severityLabel }}</strong>
+            <span class="badge bg-{{ severityClass }}">{{ duplicateAnalysis.severity }}</span>
+        </div>
+
+        {% if duplicateAnalysis.reason %}
+            <div class="mb-2">{{ duplicateAnalysis.reason }}</div>
+        {% endif %}
+
+        <div class="small mb-2">
+            Strategie: <strong>{{ duplicateAnalysis.matchingStrategy ?? 'n/a' }}</strong>
+            | Actives: <strong>{{ duplicateAnalysis.existingActiveCount }}</strong>
+            | Terminales: <strong>{{ duplicateAnalysis.existingTerminalCount }}</strong>
+        </div>
+
+        {% if duplicateAnalysis.duplicates is not empty %}
+            <div class="table-responsive">
+                <table class="table table-sm mb-0 align-middle">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Statut</th>
+                            <th>Date</th>
+                            <th>Offre</th>
+                            <th>Candidat</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in duplicateAnalysis.duplicates %}
+                            <tr>
+                                <td>#{{ d.id }}</td>
+                                <td>{{ d.statut }}</td>
+                                <td>{{ d.dateCandidature ?? '—' }}</td>
+                                <td>{{ d.offreLabel }}</td>
+                                <td>{{ d.candidateLabel }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+{% endif %}

@@ -74,4 +74,44 @@ class CandidatureStatusHistoryRepository extends ServiceEntityRepository
 
         return round($sum / max(1, count($rows)), 2);
     }
+
+    public function findLatestRefusedAt(Candidature $candidature): ?\DateTimeImmutable
+    {
+        $row = $this->createQueryBuilder('h')
+            ->select('h.changedAt')
+            ->andWhere('h.candidature = :candidature')
+            ->andWhere('h.toStatus = :status')
+            ->setParameter('candidature', $candidature)
+            ->setParameter('status', 'Refusée')
+            ->orderBy('h.changedAt', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if (!is_array($row) || !isset($row['changedAt']) || !$row['changedAt'] instanceof \DateTimeImmutable) {
+            return null;
+        }
+
+        return $row['changedAt'];
+    }
+
+    public function findLatestTransitionToStatus(Candidature $candidature, string $status): ?\DateTimeImmutable
+    {
+        $row = $this->createQueryBuilder('h')
+            ->select('h.changedAt')
+            ->andWhere('h.candidature = :candidature')
+            ->andWhere('h.toStatus = :status')
+            ->setParameter('candidature', $candidature)
+            ->setParameter('status', $status)
+            ->orderBy('h.changedAt', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if (!is_array($row) || !isset($row['changedAt']) || !$row['changedAt'] instanceof \DateTimeImmutable) {
+            return null;
+        }
+
+        return $row['changedAt'];
+    }
 }

@@ -1,0 +1,85 @@
+{#
+  Carte détaillée de priorité RH — à inclure dans show.html.twig.
+  Variables attendues :
+    - priorityAnalysis (array retourné par CandidaturePriorityService::analyze())
+#}
+{% set categoryConfig = {
+    'PRIORITAIRE':     { class: 'success',   icon: 'fas fa-star',           text: 'text-success' },
+    'A_EXAMINER':      { class: 'warning',   icon: 'fas fa-search',         text: 'text-warning' },
+    'INCOMPLETE':      { class: 'danger',    icon: 'fas fa-exclamation-circle', text: 'text-danger' },
+    'FAIBLE_PRIORITE': { class: 'secondary', icon: 'fas fa-minus-circle',   text: 'text-secondary' }
+} %}
+{% set cfg = categoryConfig[priorityAnalysis.category] ?? { class: 'secondary', icon: 'fas fa-circle', text: 'text-secondary' } %}
+
+<div class="tf-card mt-4">
+    <h5 style="color: var(--tf-gold);">
+        <i class="fas fa-tachometer-alt"></i> Priorisation RH
+        <span class="badge bg-{{ cfg.class }} ms-2" style="font-size: 0.85rem;">
+            <i class="{{ cfg.icon }}"></i> {{ priorityAnalysis.label }}
+        </span>
+        {% if priorityAnalysis.isLate %}
+            <span class="badge bg-warning text-dark ms-1" style="font-size: 0.8rem;"><i class="fas fa-clock"></i> En retard</span>
+        {% endif %}
+    </h5>
+    <hr style="border-color: var(--tf-border);">
+
+    {# Score global #}
+    <div class="d-flex justify-content-between align-items-center mb-1">
+        <span style="color: var(--tf-gray); font-size: 0.9rem;">Score de priorité global</span>
+        <strong style="color: var(--tf-gold);">{{ priorityAnalysis.priorityScore }} / 100</strong>
+    </div>
+    <div class="progress mb-3" style="height: 12px; background: var(--tf-border);">
+        <div class="progress-bar bg-{{ cfg.class }}"
+             role="progressbar"
+             style="width: {{ priorityAnalysis.priorityScore }}%;"
+             aria-valuenow="{{ priorityAnalysis.priorityScore }}"
+             aria-valuemin="0"
+             aria-valuemax="100">
+        </div>
+    </div>
+
+    {# Composantes #}
+    <div class="row g-2 mb-3">
+        <div class="col-md-4">
+            <div class="text-center p-2" style="border: 1px solid var(--tf-border); border-radius: 6px;">
+                <div style="font-size: 0.72rem; color: var(--tf-gray);">Matching (50%)</div>
+                <div style="font-size: 1.1rem; font-weight: 600; color: var(--tf-gold);">
+                    {{ priorityAnalysis.components.matching }}<span style="font-size: 0.7rem;">/50</span>
+                </div>
+                <div style="font-size: 0.7rem; color: var(--tf-gray);">Score brut : {{ priorityAnalysis.rawScores.matching }}%</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="text-center p-2" style="border: 1px solid var(--tf-border); border-radius: 6px;">
+                <div style="font-size: 0.72rem; color: var(--tf-gray);">Complétude (30%)</div>
+                <div style="font-size: 1.1rem; font-weight: 600; color: var(--tf-gold);">
+                    {{ priorityAnalysis.components.completeness }}<span style="font-size: 0.7rem;">/30</span>
+                </div>
+                <div style="font-size: 0.7rem; color: var(--tf-gray);">Score brut : {{ priorityAnalysis.rawScores.completeness }}%</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="text-center p-2" style="border: 1px solid var(--tf-border); border-radius: 6px;">
+                <div style="font-size: 0.72rem; color: var(--tf-gray);">Expérience / Diplôme (20%)</div>
+                <div style="font-size: 1.1rem; font-weight: 600; color: var(--tf-gold);">
+                    {{ priorityAnalysis.components.experienceEducation }}<span style="font-size: 0.7rem;">/20</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Alertes de retard #}
+    {% include 'candidature/_delay_alerts.html.twig' with { delayAlerts: priorityAnalysis.delayAlerts } %}
+
+    {# Notes #}
+    {% if priorityAnalysis.notes|length > 0 %}
+    <div class="mt-2" style="font-size: 0.8rem; color: var(--tf-gray);">
+        <strong><i class="fas fa-info-circle"></i> Remarques :</strong>
+        <ul class="mb-0 mt-1 ps-3">
+            {% for note in priorityAnalysis.notes %}
+                <li>{{ note }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>

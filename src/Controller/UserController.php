@@ -79,6 +79,7 @@ class UserController extends AbstractController
 
         $user = new User();
         $form = $this->createForm(UserType::class, $user, [
+            'is_edit' => false,
             'available_roles' => $this->roleHierarchyManager->getAvailableRolesForUser($currentUser),
         ]);
         $form->handleRequest($request);
@@ -120,8 +121,15 @@ class UserController extends AbstractController
             }
 
             // Gestion automatique des rôles : garantir au moins un rôle
-            if (empty($user->getRoles()) || $user->getRoles() === ['ROLE_USER']) {
+            // Vérifier la propriété roles directement, pas getRoles() qui ajoute ROLE_USER automatiquement
+            $userRoles = $user->getRoles();
+            // Enlever ROLE_USER si c'est le seul (ajouté par défaut par getRoles())
+            $userRoles = array_filter($userRoles, fn($role) => $role !== 'ROLE_USER');
+            
+            if (empty($userRoles)) {
                 $user->setRoles(['ROLE_CANDIDAT']);
+            } else {
+                $user->setRoles($userRoles);
             }
 
             try {
@@ -245,9 +253,16 @@ class UserController extends AbstractController
                 $user->setPassword($hashedPassword);
             }
 
-            // Gestion automatique des rôles
-            if (empty($user->getRoles()) || $user->getRoles() === ['ROLE_USER']) {
+            // Gestion automatique des rôles : garantir au moins un rôle
+            // Vérifier la propriété roles directement, pas getRoles() qui ajoute ROLE_USER automatiquement
+            $userRoles = $user->getRoles();
+            // Enlever ROLE_USER si c'est le seul (ajouté par défaut par getRoles())
+            $userRoles = array_filter($userRoles, fn($role) => $role !== 'ROLE_USER');
+            
+            if (empty($userRoles)) {
                 $user->setRoles(['ROLE_CANDIDAT']);
+            } else {
+                $user->setRoles($userRoles);
             }
 
             $user->setUpdatedAt(new \DateTimeImmutable());

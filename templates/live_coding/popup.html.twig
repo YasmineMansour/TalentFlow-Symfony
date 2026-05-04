@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Coding - TalentFlow</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0f172a; color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        
+        .popup-container { width: 100vw; height: 100vh; display: flex; flex-direction: column; }
+        .popup-header { background: #1e293b; border-bottom: 1px solid #334155; padding: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .popup-title { font-size: 14px; font-weight: 600; }
+        .popup-close { background: transparent; border: none; color: #e2e8f0; font-size: 20px; cursor: pointer; padding: 6px; }
+        .popup-close:hover { color: #fbbf24; }
+        
+        .popup-content { flex: 1; overflow: hidden; }
+        iframe { width: 100%; height: 100%; border: none; }
+        
+        .popup-error { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; gap: 16px; color: #cbd5e1; }
+        .popup-error-icon { font-size: 48px; color: #f87171; }
+        .popup-error-text { text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="popup-container">
+        <div class="popup-header">
+            <div class="popup-title">
+                <i class="fas fa-code"></i> Live Coding - Session #{{ id }}
+            </div>
+            <button class="popup-close" onclick="window.close();">✕</button>
+        </div>
+        
+        <div class="popup-content" id="popup-content">
+            <iframe id="live-coding-frame" src="{{ path('app_live_coding_room', {'id': id}) }}" allow="microphone; camera"></iframe>
+        </div>
+    </div>
+
+    <script>
+        // Auto-close après 8 heures
+        setTimeout(() => {
+            if (window.confirm('La session Live Coding a atteint sa limite de 8 heures. Fermer ?')) {
+                window.close();
+            }
+        }, 8 * 60 * 60 * 1000);
+        
+        // Allow keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                window.close();
+            }
+        });
+        
+        // Notify parent window when ready
+        if (window.opener) {
+            window.opener.postMessage({ type: 'LIVE_CODING_READY', entretienId: {{ id }} }, '*');
+        }
+    </script>
+</body>
+</html>

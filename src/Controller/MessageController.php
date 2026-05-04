@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/message')]
 class MessageController extends AbstractController
@@ -68,23 +69,24 @@ class MessageController extends AbstractController
     public function send(
         Request $request,
         EntityManagerInterface $em,
-        ConversationRepository $convRepo
+        ConversationRepository $convRepo,
+        TranslatorInterface $translator
     ): JsonResponse {
         $user = $this->getUser();
         if (!$user) {
-            return new JsonResponse(['error' => 'Non authentifié'], 401);
+            return new JsonResponse(['error' => $translator->trans('api.auth.required')], 401);
         }
 
         $convId = $request->request->getInt('conversation_id');
         $content = trim($request->request->get('content', ''));
 
         if ($content === '' || mb_strlen($content) > 2000) {
-            return new JsonResponse(['error' => 'Message invalide (1-2000 caractères)'], 400);
+            return new JsonResponse(['error' => $translator->trans('api.message.invalid_length')], 400);
         }
 
         $conversation = $convRepo->find($convId);
         if (!$conversation || !$conversation->involvesUser($user)) {
-            return new JsonResponse(['error' => 'Conversation introuvable'], 404);
+            return new JsonResponse(['error' => $translator->trans('api.message.conversation_not_found')], 404);
         }
 
         $message = new Message();
@@ -125,7 +127,7 @@ class MessageController extends AbstractController
         }
 
         if ($user->getId() === $targetUser->getId()) {
-            $this->addFlash('warning', 'Vous ne pouvez pas vous envoyer un message.');
+            $this->addFlash('warning', $this->trans('api.message.cannot_message_self'));
             return $this->redirectToRoute('message_index');
         }
 
@@ -156,11 +158,12 @@ class MessageController extends AbstractController
     #[Route('/fetch/{id}', name: 'message_fetch', methods: ['GET'])]
     public function fetchMessages(
         Conversation $conversation,
-        MessageRepository $msgRepo
+        MessageRepository $msgRepo,
+        TranslatorInterface $translator
     ): JsonResponse {
         $user = $this->getUser();
         if (!$user || !$conversation->involvesUser($user)) {
-            return new JsonResponse(['error' => 'Accès refusé'], 403);
+            return new JsonResponse(['error' => $translator->trans('api.auth.access_denied')], 403);
         }
 
         $msgRepo->markConversationReadForUser($conversation, $user);
@@ -192,21 +195,22 @@ class MessageController extends AbstractController
     public function edit(
         Message $message,
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        TranslatorInterface $translator
     ): JsonResponse {
         $user = $this->getUser();
         if (!$user || $message->getSender() !== $user) {
-            return new JsonResponse(['error' => 'Vous ne pouvez modifier que vos propres messages'], 403);
+            return new JsonResponse(['error' => $translator->trans('api.message.edit_own_only')], 403);
         }
 
         $ageMinutes = (time() - $message->getCreatedAt()->getTimestamp()) / 60;
         if ($ageMinutes > 15) {
-            return new JsonResponse(['error' => 'Le délai de modification (15 min) est dépassé'], 403);
+            return new JsonResponse(['error' => $translator->trans('api.message.edit_window_expired')], 403);
         }
 
         $content = trim($request->request->get('content', ''));
         if ($content === '' || mb_strlen($content) > 2000) {
-            return new JsonResponse(['error' => 'Message invalide (1-2000 caractères)'], 400);
+            return new JsonResponse(['error' => $translator->trans('api.message.invalid_length')], 400);
         }
 
         $message->setContent($content);
@@ -218,16 +222,17 @@ class MessageController extends AbstractController
     #[Route('/delete/{id}', name: 'message_delete', methods: ['POST'])]
     public function delete(
         Message $message,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        TranslatorInterface $translator
     ): JsonResponse {
         $user = $this->getUser();
         if (!$user || $message->getSender() !== $user) {
-            return new JsonResponse(['error' => 'Vous ne pouvez supprimer que vos propres messages'], 403);
+            return new JsonResponse(['error' => $translator->trans('api.message.delete_own_only')], 403);
         }
 
         $ageMinutes = (time() - $message->getCreatedAt()->getTimestamp()) / 60;
         if ($ageMinutes > 15) {
-            return new JsonResponse(['error' => 'Le délai de suppression (15 min) est dépassé'], 403);
+            return new JsonResponse(['error' => $translator->trans('api.message.delete_window_expired')], 403);
         }
 
         $em->remove($message);

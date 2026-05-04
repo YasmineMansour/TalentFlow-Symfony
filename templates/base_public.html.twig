@@ -112,7 +112,7 @@
 
             <ul class="tf-pub-nav" role="menubar">
                 <li role="none"><a href="{{ path('public_home') }}" role="menuitem" class="{{ app.request.get('_route') == 'public_home' ? 'active' }}"><i class="fas fa-home" aria-hidden="true"></i> {{ 'public.nav.home'|trans }}</a></li>
-                <li role="none"><a href="{{ path('public_offres') }}" role="menuitem" class="{{ app.request.get('_route') starts with 'public_offre' ? 'active' }}"><i class="fas fa-briefcase" aria-hidden="true"></i> {{ app.request.locale starts with 'en' ? 'Open Roles' : 'Offres d\'emploi' }}</a></li>
+                <li role="none"><a href="{{ path('public_offres') }}" role="menuitem" class="{{ app.request.get('_route') starts with 'public_offre' ? 'active' }}"><i class="fas fa-briefcase" aria-hidden="true"></i> {{ 'public.nav.offers'|trans }}</a></li>
                 <li role="none"><a href="{{ path('public_forum') }}" role="menuitem" class="{{ app.request.get('_route') starts with 'public_forum' ? 'active' }}"><i class="fas fa-comments" aria-hidden="true"></i> {{ 'public.nav.forum'|trans }}</a></li>
             </ul>
 
@@ -173,7 +173,7 @@
                     <p class="tf-footer-copy">© {{ "now"|date("Y") }} TalentFlow. {{ 'public.footer.rights'|trans }}</p>
                 </div>
                 <ul class="tf-footer-links" aria-label="{{ 'public.footer.links'|trans }}">
-                    <li><a href="{{ path('public_offres') }}">{{ app.request.locale starts with 'en' ? 'Open Roles' : 'Offres d\'emploi' }}</a></li>
+                    <li><a href="{{ path('public_offres') }}">{{ 'public.nav.offers'|trans }}</a></li>
                     <li><a href="{{ path('public_forum') }}">{{ 'public.nav.forum'|trans }}</a></li>
                     <li><a href="{{ path('app_login') }}">{{ 'public.nav.login'|trans }}</a></li>
                 </ul>

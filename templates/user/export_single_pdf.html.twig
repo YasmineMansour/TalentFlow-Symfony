@@ -40,7 +40,7 @@
             <tr><td class="label">Modifié le</td><td>{{ user.updatedAt ? user.updatedAt|date('d/m/Y H:i') : '—' }}</td></tr>
             {% if user.titrePoste %}<tr><td class="label">Titre</td><td>{{ user.titrePoste }}</td></tr>{% endif %}
             {% if user.bio %}<tr><td class="label">Bio</td><td>{{ user.bio }}</td></tr>{% endif %}
-            {% if user.entreprise %}<tr><td class="label">Entreprise</td><td>{{ user.entreprise.nom }}</td></tr>{% endif %}
+            {% if user.entreprise %}<tr><td class="label">Entreprise</td><td>{% if user.entreprise.logo %}<img src="{{ asset('uploads/logos/' ~ user.entreprise.logo) }}" style="width:18px;height:18px;border-radius:3px;vertical-align:middle;margin-right:4px;">{% endif %}{{ user.entreprise.nom }}</td></tr>{% endif %}
         </table>
     </div>
 

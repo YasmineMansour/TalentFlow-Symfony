@@ -1,43 +1,173 @@
 {% extends is_granted('ROLE_RH') ? (is_granted('ROLE_ADMIN') ? 'base_dashboard.html.twig' : 'base_navbar.html.twig') : 'base_navbar.html.twig' %}
 
-{% block title %}Mon Entretien #{{ entretien.id }} – TalentFlow{% endblock %}
-{% block page_title %}Mon Entretien{% endblock %}
+{% block title %}{{ 'entretien.page.title_with_id'|trans({'%id%': entretien.id}) }} - TalentFlow{% endblock %}
+{% block page_title %}{{ 'entretien.page.title'|trans }}{% endblock %}
 
 {% block body %}
+
+{# ── Vue Meeting avec Live Coding côte à côte ── #}
+{% if entretien.type == 'EN_LIGNE' and app.request.query.get('showCode') == '1' %}
+<div style="display: flex; gap: 16px; height: calc(100vh - 120px);">
+    
+    {# Colonne Gauche: Infos + Candidat #}
+    <div style="width: 280px; overflow-y: auto; padding-right: 8px;">
+        <div class="tf-card" style="margin-bottom: 16px;">
+            <h3 style="font-size: 1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-user-circle" style="color: var(--tf-gold);"></i> {{ 'entretien.sidebar.candidate'|trans }}
+            </h3>
+            <div style="font-weight: 600; margin-bottom: 4px;">{{ entretien.candidature.nomCandidat }}</div>
+            <div style="font-size: 0.85rem; color: var(--tf-gray);">{{ entretien.candidature.postulatePour }}</div>
+            {% if entretien.candidature.email %}
+            <div style="font-size: 0.8rem; color: var(--tf-gray); margin-top: 8px;">📧 {{ entretien.candidature.email }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="tf-card" style="margin-bottom: 16px;">
+            <h3 style="font-size: 1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-calendar-check" style="color: var(--tf-gold);"></i> {{ 'entretien.sidebar.details'|trans }}
+            </h3>
+            <div style="font-size: 0.85rem;">
+                <strong>{{ 'common.date'|trans }}:</strong> {{ entretien.dateHeure ? entretien.dateHeure|date('d/m/Y H:i') : '—' }}<br>
+                <strong>{{ 'common.status'|trans }}:</strong> <span class="tf-tag-sm tf-tag-blue">{{ entretien.statut }}</span>
+            </div>
+        </div>
+        
+        <div class="tf-card">
+            <a href="{{ entretien.meetUrl }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-info" style="width: 100%; display: block; margin-bottom: 8px;">
+                <i class="fas fa-video"></i> {{ 'entretien.actions.open_jitsi_direct'|trans }}
+            </a>
+            <a href="?showCode=0" class="btn btn-sm btn-outline-secondary" style="width: 100%; display: block;">
+                <i class="fas fa-times"></i> {{ 'entretien.actions.leave_code_mode'|trans }}
+            </a>
+        </div>
+    </div>
+    
+    {# Colonne Milieu: Jitsi Meet #}
+    <div style="flex: 1; min-width: 0;">
+        <div class="tf-card h-100" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+            <div style="padding: 12px 16px; background: var(--tf-dark-blue); display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-video" style="color: var(--tf-gold);"></i>
+                <span style="font-weight: 600; font-size: 0.95rem;">{{ 'entretien.meeting.jitsi'|trans }}</span>
+                <span class="tf-tag-sm tf-tag-green" style="margin-left: auto;"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> {{ 'entretien.meeting.live_badge'|trans }}</span>
+            </div>
+            <iframe
+                src="{{ entretien.meetUrl }}"
+                allow="camera; microphone; fullscreen; display-capture; autoplay"
+                style="flex: 1; border: none; min-height: 400px;"
+                title="{{ 'entretien.meeting.iframe_title'|trans }}">
+            </iframe>
+        </div>
+    </div>
+    
+    {# Colonne Droite: Live Coding #}
+    <div style="width: 420px; overflow-y: auto; padding-left: 8px;">
+        <div class="tf-card h-100" style="display: flex; flex-direction: column; padding: 16px;">
+            <h3 style="font-size: 1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-code" style="color: #fbbf24;"></i> {{ 'entretien.live_coding.title'|trans }}
+            </h3>
+            
+            <div style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 0.8rem; color: var(--tf-gray); margin-bottom: 6px; font-weight: 600;">{{ 'entretien.live_coding.language'|trans }}</label>
+                    <select id="liveCodingLanguage" style="width: 100%; padding: 8px 12px; background: var(--tf-darker); color: var(--tf-white); border: 1px solid var(--tf-border); border-radius: 6px; font-size: 0.85rem;">
+                        <option value="javascript">JavaScript</option>
+                        <option value="python">Python</option>
+                        <option value="php">PHP</option>
+                    </select>
+                </div>
+                
+                <textarea id="liveCodingEditor" style="flex: 1; padding: 12px; background: var(--tf-darker); color: var(--tf-white); border: 1px solid var(--tf-border); border-radius: 6px; font-family: 'Courier New', monospace; font-size: 0.85rem; resize: none; min-height: 250px;">console.log('Hello World');</textarea>
+                
+                <div style="margin-top: 12px; display: flex; gap: 8px;">
+                    <button id="liveCodingRun" style="flex: 1; padding: 10px 16px; background: #fbbf24; color: #000; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                        <i class="fas fa-play"></i> {{ 'entretien.live_coding.run'|trans }}
+                    </button>
+                    <button id="liveCodingShare" style="flex: 1; padding: 10px 16px; background: #4a90e2; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                        <i class="fas fa-share"></i> {{ 'entretien.live_coding.share'|trans }}
+                    </button>
+                </div>
+                
+                <div id="liveCodingOutput" style="margin-top: 12px; padding: 12px; background: #1a1a1a; border: 1px solid var(--tf-border); border-radius: 6px; max-height: 150px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 0.8rem; color: #4ade80;">
+                    <div style="color: var(--tf-gray); text-align: center; font-style: italic;">{{ 'entretien.live_coding.output'|trans }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('liveCodingRun').addEventListener('click', function() {
+    const code = document.getElementById('liveCodingEditor').value;
+    const language = document.getElementById('liveCodingLanguage').value;
+    const output = document.getElementById('liveCodingOutput');
+    
+    output.innerHTML = '<div style="color: #fbbf24;">▶ {{ 'entretien.live_coding.running'|trans|e('js') }}</div>';
+    
+    fetch('{{ path("app_live_coding_run", {"id": entretien.id}) }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({language, code, stdin: ''})
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) {
+            output.innerHTML = '<div style="color: #ef4444;">❌ ' + (data.error || '{{ 'common.error'|trans|e('js') }}') + '</div>';
+        } else {
+            output.innerHTML = '<div>' + (data.stdout || '({{ 'entretien.live_coding.no_output'|trans|e('js') }})') + '</div>';
+            if (data.stderr) output.innerHTML += '<div style="color: #fbbf24; margin-top: 8px;">⚠ ' + data.stderr + '</div>';
+        }
+    })
+    .catch(e => output.innerHTML = '<div style="color: #ef4444;">❌ {{ 'common.network_error'|trans|e('js') }}</div>');
+});
+
+document.getElementById('liveCodingShare').addEventListener('click', function() {
+    const code = document.getElementById('liveCodingEditor').value;
+    fetch('{{ path("app_live_coding_token", {"id": entretien.id}) }}')
+        .then(r => r.json())
+        .then(d => {
+            const url = '{{ entretien.meetUrl }}?code=' + encodeURIComponent(code);
+            const text = '{{ 'entretien.live_coding.shared_prefix'|trans|e('js') }} ' + code.substring(0, 30) + '...';
+            alert('{{ 'entretien.live_coding.share_dialog_title'|trans|e('js') }}\n' + url);
+        });
+});
+</script>
+
+{% else %}
+
 <div class="row justify-content-center g-4">
 
     {# ── Colonne infos ── #}
     <div class="col-lg-4">
         <div class="tf-card h-100">
-            <h2 class="tf-title"><i class="fas fa-calendar-check"></i> Détails</h2>
+            <h2 class="tf-title"><i class="fas fa-calendar-check"></i> {{ 'entretien.sidebar.details'|trans }}</h2>
 
             <div class="mb-3">
-                <div style="color: var(--tf-gray); font-size:0.78rem; margin-bottom:4px;">Date & heure</div>
+                <div style="color: var(--tf-gray); font-size:0.78rem; margin-bottom:4px;">{{ 'entretien.fields.date_time'|trans }}</div>
                 <div style="font-size:1.1rem; font-weight:600;">
                     {{ entretien.dateHeure ? entretien.dateHeure|date('d/m/Y à H:i') : '—' }}
                 </div>
             </div>
 
             <div class="mb-3">
-                <div style="color: var(--tf-gray); font-size:0.78rem; margin-bottom:4px;">Type</div>
+                <div style="color: var(--tf-gray); font-size:0.78rem; margin-bottom:4px;">{{ 'common.type'|trans }}</div>
                 {% if entretien.type == 'EN_LIGNE' %}
-                    <span class="tf-tag-sm tf-tag-blue"><i class="fas fa-video"></i> En ligne (Jitsi Meet)</span>
+                    <span class="tf-tag-sm tf-tag-blue"><i class="fas fa-video"></i> {{ 'entretien.type.online_jitsi'|trans }}</span>
                 {% elseif entretien.type == 'PRESENTIEL' %}
-                    <span class="tf-tag-sm tf-tag-green"><i class="fas fa-building"></i> Présentiel</span>
+                    <span class="tf-tag-sm tf-tag-green"><i class="fas fa-building"></i> {{ 'entretien.type.onsite'|trans }}</span>
                 {% else %}
-                    <span class="tf-tag-sm tf-tag-yellow"><i class="fas fa-phone"></i> Téléphonique</span>
+                    <span class="tf-tag-sm tf-tag-yellow"><i class="fas fa-phone"></i> {{ 'entretien.type.phone'|trans }}</span>
                 {% endif %}
             </div>
 
             <div class="mb-3">
-                <div style="color: var(--tf-gray); font-size:0.78rem; margin-bottom:4px;">Statut</div>
+                <div style="color: var(--tf-gray); font-size:0.78rem; margin-bottom:4px;">{{ 'common.status'|trans }}</div>
                 {% set statColor = entretien.statut == 'REALISE' ? 'green' : (entretien.statut == 'ANNULE' ? 'red' : 'blue') %}
                 <span class="tf-tag-sm tf-tag-{{ statColor }}">{{ entretien.statut }}</span>
             </div>
 
             {% if entretien.type == 'PRESENTIEL' and entretien.lieu %}
             <div class="mb-3">
-                <div style="color: var(--tf-gray); font-size:0.78rem; margin-bottom:4px;">Lieu</div>
+                <div style="color: var(--tf-gray); font-size:0.78rem; margin-bottom:4px;">{{ 'entretien.fields.location'|trans }}</div>
                 <div><i class="fas fa-map-marker-alt" style="color:var(--tf-gold);"></i> {{ entretien.lieu }}</div>
             </div>
             {% endif %}
@@ -45,22 +175,33 @@
             {% if entretien.type == 'TELEPHONIQUE' %}
             <div class="mb-3" style="padding:12px 16px; background:rgba(212,168,67,.1); border:1px solid rgba(212,168,67,.3); border-radius:8px;">
                 <i class="fas fa-phone" style="color:var(--tf-gold);"></i>
-                Restez disponible sur votre numéro de téléphone.
+                {{ 'entretien.phone.be_available'|trans }}
             </div>
             {% endif %}
 
             {% if entretien.type == 'EN_LIGNE' %}
             <hr style="border-color: var(--tf-border);">
-            <a href="{{ entretien.meetUrl }}" target="_blank" rel="noopener noreferrer"
-               class="btn-gold d-block text-center" style="margin-top:12px;">
-                <i class="fas fa-external-link-alt"></i> Ouvrir dans un onglet
+            <div style="padding: 16px; background: linear-gradient(135deg, rgba(251,191,36,.15), rgba(74,144,226,.15)); border: 2px solid var(--tf-gold); border-radius: 10px; margin-bottom: 12px;">
+                <div style="font-size: 0.8rem; color: var(--tf-gray); margin-bottom: 8px; font-weight: 600;">
+                    <i class="fas fa-video" style="color: var(--tf-gold);"></i> {{ 'entretien.actions.join_meeting_cta'|trans }}
+                </div>
+                <a href="{{ entretien.meetUrl }}" target="_blank" rel="noopener noreferrer"
+                   class="btn-gold d-block text-center" style="margin: 0; padding: 14px; font-weight: 700;">
+                    <i class="fas fa-video-camera"></i> {{ 'entretien.actions.join_jitsi'|trans }}
+                </a>
+            </div>
+            <a href="{{ path('app_live_coding_room', {'id': entretien.id}) }}" class="btn-outline-gold d-block text-center" style="display: block; text-align: center; padding: 12px 16px; background: transparent; color: var(--tf-gold); border: 2px solid var(--tf-gold); border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.2s; margin-top: 8px;">
+                <i class="fas fa-code"></i> 💻 {{ 'entretien.actions.open_live_coding'|trans }}
+            </a>
+            <a href="?showCode=1" class="btn-outline-primary d-block text-center" style="display: block; text-align: center; padding: 12px 16px; background: transparent; color: #4a90e2; border: 2px solid #4a90e2; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.2s; margin-top: 8px;">
+                <i class="fas fa-columns"></i> {{ 'entretien.actions.code_mode'|trans }}
             </a>
             {% endif %}
 
             {% if is_granted('ROLE_RH') %}
             <hr style="border-color: var(--tf-border); margin-top:20px;">
             <a href="{{ path('app_entretien_edit', {'id': entretien.id}) }}" class="btn-outline-gold d-block text-center">
-                <i class="fas fa-edit"></i> Modifier cet entretien
+                <i class="fas fa-edit"></i> {{ 'entretien.actions.edit'|trans }}
             </a>
             {% endif %}
         </div>
@@ -70,46 +211,54 @@
     <div class="col-lg-8">
         {% if entretien.type == 'EN_LIGNE' %}
         <div class="tf-card h-100" style="padding:0; overflow:hidden; position:relative; min-height:500px;">
-            <div style="padding:16px 20px; background: var(--tf-dark-blue); display:flex; align-items:center; gap:12px;">
-                <i class="fas fa-video" style="color:var(--tf-gold); font-size:1.2rem;"></i>
-                <span style="font-weight:600;">Entretien en ligne – Jitsi Meet</span>
-                <span class="tf-tag-sm tf-tag-green" style="margin-left:auto;">
-                    <i class="fas fa-circle" style="font-size:0.5rem;"></i> EN DIRECT
-                </span>
+            <div style="padding:16px 20px; background: var(--tf-dark-blue); display:flex; align-items:center; gap:12px; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <i class="fas fa-video" style="color:var(--tf-gold); font-size:1.2rem;"></i>
+                    <span style="font-weight:600;">{{ 'entretien.meeting.online_title'|trans }}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <a href="{{ path('app_live_coding_room', {'id': entretien.id}) }}" style="background: #4a90e2; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; white-space: nowrap;" title="{{ 'entretien.actions.open_live_coding'|trans }}">
+                        <i class="fas fa-code"></i> {{ 'entretien.actions.live_code_short'|trans }}
+                    </a>
+                    <span class="tf-tag-sm tf-tag-green" style="margin-left: auto;">
+                        <i class="fas fa-circle" style="font-size:0.5rem;"></i> {{ 'entretien.meeting.live_badge'|trans }}
+                    </span>
+                </div>
             </div>
             <iframe
                 src="{{ entretien.meetUrl }}"
                 allow="camera; microphone; fullscreen; display-capture; autoplay"
                 style="width:100%; height:520px; border:none; display:block;"
-                title="Entretien en ligne TalentFlow">
+                title="{{ 'entretien.meeting.iframe_title'|trans }}">
             </iframe>
         </div>
 
         {% elseif entretien.type == 'PRESENTIEL' %}
         <div class="tf-card h-100 d-flex flex-column justify-content-center align-items-center text-center" style="min-height:300px;">
             <i class="fas fa-building" style="font-size:3.5rem; color:var(--tf-gold); margin-bottom:20px;"></i>
-            <h3 style="color:var(--tf-white);">Entretien en présentiel</h3>
+            <h3 style="color:var(--tf-white);">{{ 'entretien.onsite.title'|trans }}</h3>
             <p style="color:var(--tf-gray); max-width:400px;">
-                Rendez-vous le <strong>{{ entretien.dateHeure ? entretien.dateHeure|date('d/m/Y à H:i') : '—' }}</strong>
-                à l'adresse suivante&nbsp;:
+                {{ 'entretien.onsite.meet_on'|trans }} <strong>{{ entretien.dateHeure ? entretien.dateHeure|date('d/m/Y à H:i') : '—' }}</strong>
+                {{ 'entretien.onsite.address_intro'|trans }}
             </p>
             <div style="padding:16px 28px; background:rgba(212,168,67,.1); border:1px solid rgba(212,168,67,.4); border-radius:10px; margin-top:12px;">
                 <i class="fas fa-map-marker-alt" style="color:var(--tf-gold); margin-right:8px;"></i>
-                <strong>{{ entretien.lieu ?: 'Adresse à confirmer' }}</strong>
+                <strong>{{ entretien.lieu ?: ('entretien.onsite.address_tbd'|trans) }}</strong>
             </div>
         </div>
 
         {% else %}
         <div class="tf-card h-100 d-flex flex-column justify-content-center align-items-center text-center" style="min-height:300px;">
             <i class="fas fa-phone" style="font-size:3.5rem; color:var(--tf-gold); margin-bottom:20px;"></i>
-            <h3 style="color:var(--tf-white);">Entretien téléphonique</h3>
+            <h3 style="color:var(--tf-white);">{{ 'entretien.phone.title'|trans }}</h3>
             <p style="color:var(--tf-gray); max-width:400px;">
-                Nous vous appellerons le <strong>{{ entretien.dateHeure ? entretien.dateHeure|date('d/m/Y à H:i') : '—' }}</strong>.<br>
-                Assurez-vous d'être disponible sur votre numéro.
+                {{ 'entretien.phone.call_on'|trans }} <strong>{{ entretien.dateHeure ? entretien.dateHeure|date('d/m/Y à H:i') : '—' }}</strong>.<br>
+                {{ 'entretien.phone.ensure_available'|trans }}
             </p>
         </div>
         {% endif %}
     </div>
 
 </div>
+{% endif %}
 {% endblock %}

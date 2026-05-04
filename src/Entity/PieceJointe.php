@@ -5,7 +5,11 @@ namespace App\Entity;
 use App\Repository\PieceJointeRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
+#[Vich\Uploadable]
 #[ORM\Entity(repositoryClass: PieceJointeRepository::class)]
 #[ORM\Table(name: 'piece_jointe')]
 class PieceJointe
@@ -29,16 +33,29 @@ class PieceJointe
     private ?string $typeDocument = null;
 
     #[ORM\Column(length: 500)]
-    #[Assert\NotBlank(message: 'Le chemin du fichier ne peut pas être vide.')]
     #[Assert\Length(max: 500)]
     private ?string $cheminFichier = null;
 
     #[ORM\Column]
-    #[Assert\Positive]
+    #[Assert\PositiveOrZero]
     private ?int $tailleFichier = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $uploadedAt = null;
+
+    #[Vich\UploadableField(mapping: 'candidature_piece_jointe', fileNameProperty: 'cheminFichier', size: 'tailleFichier')]
+    #[Assert\File(
+        maxSize: '5M',
+        mimeTypes: [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'image/jpeg',
+            'image/png',
+        ],
+        mimeTypesMessage: 'Formats acceptés : PDF, DOC, DOCX, JPG, PNG (max 5 Mo).'
+    )]
+    private ?File $fichierFile = null;
 
     #[ORM\ManyToOne(targetEntity: Candidature::class, inversedBy: 'piecesJointes')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
@@ -66,6 +83,23 @@ class PieceJointe
 
     public function getUploadedAt(): ?\DateTimeImmutable { return $this->uploadedAt; }
     public function setUploadedAt(\DateTimeImmutable $uploadedAt): static { $this->uploadedAt = $uploadedAt; return $this; }
+
+    public function getFichierFile(): ?File
+    {
+        return $this->fichierFile;
+    }
+
+    public function setFichierFile(?File $fichierFile): static
+    {
+        $this->fichierFile = $fichierFile;
+
+        if ($fichierFile instanceof UploadedFile) {
+            $this->uploadedAt = new \DateTimeImmutable();
+            $this->nomFichier = $fichierFile->getClientOriginalName();
+        }
+
+        return $this;
+    }
 
     public function getCandidature(): ?Candidature { return $this->candidature; }
     public function setCandidature(?Candidature $candidature): static { $this->candidature = $candidature; return $this; }

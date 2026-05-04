@@ -5,6 +5,8 @@
 {% block body %}
 <h2 class="tf-title"><i class="fas fa-edit"></i> Modifier : {{ candidature.titrePoste }}</h2>
 
+{% include 'candidature/_duplicate_alert.html.twig' with { duplicateAnalysis: duplicateAnalysis|default(null) } %}
+
 <div class="tf-card">
     {{ include('candidature/_form.html.twig', {button_label: 'Enregistrer les modifications', form_action: 'edit'}) }}
 </div>

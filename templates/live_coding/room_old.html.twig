@@ -1,0 +1,245 @@
+{% extends is_granted('ROLE_ADMIN') ? 'base_dashboard.html.twig' : 'base_navbar.html.twig' %}
+
+{% block title %}Live Coding - Entretien #{{ entretien.id }}{% endblock %}
+{% block page_title %}Live Coding{% endblock %}
+
+{% block body %}
+<div class="tf-card" style="padding: 18px;">
+    <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
+        <div>
+            <h2 class="tf-title" style="margin:0;"><i class="fas fa-code"></i> Session Live Coding</h2>
+            <div style="color:var(--tf-gray); font-size:0.85rem; margin-top:4px;">
+                Entretien #{{ entretien.id }} | Type: {{ entretien.type }} | Date: {{ entretien.dateHeure ? entretien.dateHeure|date('d/m/Y H:i') : '—' }}
+            </div>
+        </div>
+        <div style="text-align:right; min-width:180px;">
+            <div id="ws-status" class="tf-tag-sm tf-tag-yellow">Connexion...</div>
+            <div style="margin-top:8px; font-size:0.85rem; color:var(--tf-gray);">
+                Participants en ligne: <strong id="presence-count">0</strong>
+            </div>
+        </div>
+    </div>
+
+    <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:end; margin-bottom:12px;">
+        <div>
+            <label for="runner-language" style="display:block; margin-bottom:6px; font-size:0.82rem; color:var(--tf-gray);">Langage</label>
+            <select id="runner-language" style="min-width:160px; padding:10px 12px; border-radius:8px; border:1px solid #334155; background:#0f172a; color:#e2e8f0;">
+                <option value="php">PHP</option>
+                <option value="python">Python</option>
+                <option value="javascript">JavaScript</option>
+            </select>
+        </div>
+        <div style="flex:1; min-width:260px;">
+            <label for="runner-stdin" style="display:block; margin-bottom:6px; font-size:0.82rem; color:var(--tf-gray);">STDIN</label>
+            <input id="runner-stdin" type="text" placeholder="Entrée optionnelle..." style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid #334155; background:#0f172a; color:#e2e8f0;">
+        </div>
+        <div>
+            <button id="run-code-btn" type="button" class="btn-gold" style="min-width:140px;"><i class="fas fa-play"></i> Run Code</button>
+        </div>
+    </div>
+
+    <textarea id="live-code-editor" spellcheck="false" style="width:100%; min-height:520px; resize:vertical; background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:10px; padding:14px; font-family:Consolas, 'Courier New', monospace; font-size:14px; line-height:1.45;">// Ecrivez votre code ici...</textarea>
+
+    <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:0.82rem; color:var(--tf-gray);">
+        <span id="last-sync">Derniere synchro: —</span>
+        <span>Transport: WebSocket (temps reel)</span>
+    </div>
+
+    <div style="margin-top:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <strong>Output</strong>
+            <span id="runner-meta" style="font-size:0.82rem; color:var(--tf-gray);">Aucune execution</span>
+        </div>
+        <pre id="runner-output" style="min-height:180px; margin:0; white-space:pre-wrap; background:#020617; color:#cbd5e1; border:1px solid #334155; border-radius:10px; padding:14px; font-family:Consolas, 'Courier New', monospace;">Pas encore de resultat.</pre>
+    </div>
+</div>
+
+<script>
+(function () {
+    const editor = document.getElementById('live-code-editor');
+    const statusEl = document.getElementById('ws-status');
+    const presenceEl = document.getElementById('presence-count');
+    const syncEl = document.getElementById('last-sync');
+    const runBtn = document.getElementById('run-code-btn');
+    const languageEl = document.getElementById('runner-language');
+    const stdinEl = document.getElementById('runner-stdin');
+    const outputEl = document.getElementById('runner-output');
+    const runnerMetaEl = document.getElementById('runner-meta');
+
+    let ws = null;
+    let ready = false;
+    let applyingRemote = false;
+    let debounceTimer = null;
+
+    function setStatus(text, tagClass) {
+        statusEl.className = 'tf-tag-sm ' + tagClass;
+        statusEl.textContent = text;
+    }
+
+    function markSynced() {
+        syncEl.textContent = 'Derniere synchro: ' + new Date().toLocaleTimeString('fr-FR');
+    }
+
+    function setRunnerMeta(text) {
+        runnerMetaEl.textContent = text;
+    }
+
+    async function runCode() {
+        runBtn.disabled = true;
+        outputEl.textContent = 'Execution en cours...';
+        setRunnerMeta('Execution...');
+
+        try {
+            const response = await fetch('{{ path('app_live_coding_run', {'id': entretien.id}) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    language: languageEl.value,
+                    code: editor.value,
+                    stdin: stdinEl.value
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.ok) {
+                outputEl.textContent = (data && data.error) ? data.error : 'Erreur d\'execution';
+                setRunnerMeta('Erreur');
+                return;
+            }
+
+            let output = '';
+            if (data.stdout) {
+                output += 'STDOUT\n' + data.stdout + '\n';
+            }
+            if (data.stderr) {
+                output += (output ? '\n' : '') + 'STDERR\n' + data.stderr + '\n';
+            }
+            if (!output) {
+                output = 'Execution terminee sans sortie.';
+            }
+
+            outputEl.textContent = output.trim();
+            setRunnerMeta('exit=' + data.exitCode + ' | ' + data.durationMs + ' ms' + (data.timedOut ? ' | timeout' : ''));
+        } catch (error) {
+            outputEl.textContent = 'Erreur reseau vers le runner.';
+            setRunnerMeta('Runner indisponible');
+        } finally {
+            runBtn.disabled = false;
+        }
+    }
+
+    async function boot() {
+        try {
+            const tokenResp = await fetch('{{ path('app_live_coding_token', {'id': entretien.id}) }}', {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
+            if (!tokenResp.ok) {
+                setStatus('Token refuse', 'tf-tag-red');
+                return;
+            }
+
+            const auth = await tokenResp.json();
+            const wsUrl = auth.wsUrl || '{{ wsUrl }}';
+
+            if (auth.initialCode && auth.initialCode.length > 0) {
+                editor.value = auth.initialCode;
+            }
+
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function () {
+                setStatus('Connecte', 'tf-tag-green');
+                ws.send(JSON.stringify({ type: 'auth', token: auth.token }));
+            };
+
+            ws.onclose = function () {
+                ready = false;
+                setStatus('Deconnecte', 'tf-tag-red');
+            };
+
+            ws.onerror = function () {
+                setStatus('Erreur WS', 'tf-tag-red');
+            };
+
+            ws.onmessage = function (event) {
+                let msg;
+                try {
+                    msg = JSON.parse(event.data);
+                } catch (e) {
+                    return;
+                }
+
+                if (msg.type === 'auth_ok') {
+                    ready = true;
+                    if (typeof msg.code === 'string' && msg.code.length > 0) {
+                        applyingRemote = true;
+                        editor.value = msg.code;
+                        applyingRemote = false;
+                    }
+                    markSynced();
+                    return;
+                }
+
+                if (msg.type === 'presence') {
+                    presenceEl.textContent = String(msg.count || 0);
+                    return;
+                }
+
+                if (msg.type === 'code_update' && typeof msg.code === 'string') {
+                    if (editor.value !== msg.code) {
+                        applyingRemote = true;
+                        const cursorStart = editor.selectionStart;
+                        const cursorEnd = editor.selectionEnd;
+                        editor.value = msg.code;
+                        editor.selectionStart = Math.min(cursorStart, editor.value.length);
+                        editor.selectionEnd = Math.min(cursorEnd, editor.value.length);
+                        applyingRemote = false;
+                        markSynced();
+                    }
+                }
+            };
+        } catch (e) {
+            setStatus('Erreur initialisation', 'tf-tag-red');
+        }
+    }
+
+    editor.addEventListener('input', function () {
+        if (!ready || applyingRemote || !ws || ws.readyState !== WebSocket.OPEN) {
+            return;
+        }
+
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(function () {
+            ws.send(JSON.stringify({
+                type: 'code_update',
+                code: editor.value
+            }));
+            markSynced();
+        }, 120);
+    });
+
+    editor.addEventListener('click', sendCursor);
+    editor.addEventListener('keyup', sendCursor);
+    runBtn.addEventListener('click', runCode);
+
+    function sendCursor() {
+        if (!ready || !ws || ws.readyState !== WebSocket.OPEN) {
+            return;
+        }
+
+        const before = editor.value.substring(0, editor.selectionStart);
+        const line = before.split('\n').length;
+        const col = before.length - before.lastIndexOf('\n');
+
+        ws.send(JSON.stringify({ type: 'cursor_update', line: line, column: col }));
+    }
+
+    setStatus('Connexion...', 'tf-tag-yellow');
+    boot();
+})();
+</script>
+{% endblock %}

@@ -54,7 +54,7 @@
 {% block body %}
 <section class="tf-section" aria-labelledby="offres-page-title">
     <div class="tf-section-header">
-        <h1 id="offres-page-title" style="font-size:2rem; font-weight:800;">{{ app.request.locale starts with 'en' ? 'Open Roles' : 'Offres d\'emploi' }}</h1>
+        <h1 id="offres-page-title" style="font-size:2rem; font-weight:800;">{{ 'public.offers.heading'|trans }}</h1>
         <p>{{ 'public.offers.count'|trans({'%count%': offres|length}) }}</p>
     </div>
 
@@ -89,7 +89,7 @@
                 <input type="text" name="localisation" id="filter-loc" value="{{ localisation }}" class="tf-input" placeholder="{{ 'public.offers.city_placeholder'|trans }}">
             </div>
             <button type="submit" class="tf-btn tf-btn-gold">
-                <i class="fas fa-filter" aria-hidden="true"></i> {{ app.request.locale starts with 'en' ? 'Apply filters' : 'Filtrer' }}
+                <i class="fas fa-filter" aria-hidden="true"></i> {{ 'public.offers.filter'|trans }}
             </button>
         </div>
         {% if search or categorieId or typeContrat or localisation %}
@@ -107,7 +107,11 @@
         <a href="{{ path('public_offre_show', {id: offre.id}) }}" class="tf-offre-card tf-animate-in" style="text-decoration:none; animation-delay: {{ loop.index0 * 0.04 }}s;">
             <div class="offre-title">{{ offre.titre }}</div>
             <div class="offre-company">
-                <i class="fas fa-building" aria-hidden="true"></i>
+                {% if offre.entreprise and offre.entreprise.logo %}
+                    <img src="{{ asset('uploads/logos/' ~ offre.entreprise.logo) }}" alt="" style="width:20px;height:20px;border-radius:4px;object-fit:cover;vertical-align:middle;margin-right:4px;">
+                {% else %}
+                    <i class="fas fa-building" aria-hidden="true"></i>
+                {% endif %}
                 {{ offre.entreprise ? offre.entreprise.nom : '—' }}
             </div>
             <div class="tf-offre-meta">

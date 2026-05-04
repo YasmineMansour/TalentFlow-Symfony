@@ -1,47 +1,47 @@
 {% extends 'base_dashboard.html.twig' %}
 
-{% block title %}Liste des Utilisateurs - TalentFlow{% endblock %}
-{% block page_title %}Gestion des Utilisateurs{% endblock %}
+{% block title %}{{ 'page.user.title'|trans }} - TalentFlow{% endblock %}
+{% block page_title %}{{ 'page.user.title'|trans }}{% endblock %}
 
 {% block body %}
 <div class="tf-card">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="tf-title mb-0">
-            <i class="fas fa-users"></i> Gestion des Utilisateurs
+            <i class="fas fa-users"></i> {{ 'page.user.title'|trans }}
         </h2>
         <div class="d-flex gap-2">
             <a href="{{ path('app_user_export_pdf', {'search': search, 'role': role}) }}" class="btn-outline-gold">
-                <i class="fas fa-file-pdf"></i> Export PDF
+                <i class="fas fa-file-pdf"></i> {{ 'action.export_pdf'|trans }}
             </a>
             <a href="{{ path('app_user_new') }}" class="btn-gold">
-                <i class="fas fa-user-plus"></i> Nouvel Utilisateur
+                <i class="fas fa-user-plus"></i> {{ 'nav.new_user'|trans }}
             </a>
         </div>
     </div>
 
     {# Search and filter bar #}
     <form method="get" action="{{ path('app_user_index') }}" class="tf-search">
-        <input type="text" name="search" value="{{ search }}" placeholder="🔍 Rechercher par nom, prénom ou email..." autocomplete="off">
+        <input type="text" name="search" value="{{ search }}" placeholder="🔍 {{ 'page.user.search_placeholder'|trans }}" autocomplete="off">
         <select name="role" onchange="this.form.submit()">
-            <option value="">-- Tous les rôles --</option>
-            <option value="ROLE_ADMIN" {{ role == 'ROLE_ADMIN' ? 'selected' }}>Administrateur</option>
-            <option value="ROLE_RH" {{ role == 'ROLE_RH' ? 'selected' }}>Recruteur RH</option>
-            <option value="ROLE_CANDIDAT" {{ role == 'ROLE_CANDIDAT' ? 'selected' }}>Candidat</option>
+            <option value="">-- {{ 'page.user.all_roles'|trans }} --</option>
+            <option value="ROLE_ADMIN" {{ role == 'ROLE_ADMIN' ? 'selected' }}>{{ 'role.admin'|trans }}</option>
+            <option value="ROLE_RH" {{ role == 'ROLE_RH' ? 'selected' }}>{{ 'role.rh'|trans }}</option>
+            <option value="ROLE_CANDIDAT" {{ role == 'ROLE_CANDIDAT' ? 'selected' }}>{{ 'role.candidat'|trans }}</option>
         </select>
         <button type="submit" class="btn-gold">
-            <i class="fas fa-search"></i> Rechercher
+            <i class="fas fa-search"></i> {{ 'action.search'|trans }}
         </button>
         {% if search or role %}
             <a href="{{ path('app_user_index') }}" class="btn-outline-gold">
-                <i class="fas fa-times"></i> Effacer
+                <i class="fas fa-times"></i> {{ 'action.reset'|trans }}
             </a>
         {% endif %}
     </form>
 
     {# Results count #}
     <p style="color: var(--tf-gray); margin-bottom: 1rem;">
-        <i class="fas fa-info-circle"></i> {{ users|length }} utilisateur{{ users|length > 1 ? 's' : '' }} trouvé{{ users|length > 1 ? 's' : '' }}
-        {% if search %} pour "<strong style="color: var(--tf-gold);">{{ search }}</strong>"{% endif %}
+        <i class="fas fa-info-circle"></i> {{ 'common.user_count'|trans({'%count%': users|length}) }}
+        {% if search %} {{ 'page.user.for_search'|trans }} "<strong style="color: var(--tf-gold);">{{ search }}</strong>"{% endif %}
     </p>
 
     {% if users|length > 0 %}
@@ -61,19 +61,19 @@
                 </div>
                 <div class="tf-item-card-tags">
                     {% if 'ROLE_ADMIN' in user.roles %}
-                        <span class="tf-tag-sm tf-tag-red"><i class="fas fa-crown"></i> Admin</span>
+                        <span class="tf-tag-sm tf-tag-red"><i class="fas fa-crown"></i> {{ 'role.admin'|trans }}</span>
                     {% elseif 'ROLE_RH' in user.roles %}
-                        <span class="tf-tag-sm tf-tag-gold"><i class="fas fa-user-tie"></i> RH</span>
+                        <span class="tf-tag-sm tf-tag-gold"><i class="fas fa-user-tie"></i> {{ 'role.rh'|trans }}</span>
                     {% elseif 'ROLE_CANDIDAT' in user.roles %}
-                        <span class="tf-tag-sm tf-tag-blue"><i class="fas fa-user"></i> Candidat</span>
+                        <span class="tf-tag-sm tf-tag-blue"><i class="fas fa-user"></i> {{ 'role.candidat'|trans }}</span>
                     {% else %}
-                        <span class="tf-tag-sm tf-tag-gray">Utilisateur</span>
+                        <span class="tf-tag-sm tf-tag-gray">{{ 'role.user'|trans }}</span>
                     {% endif %}
 
                     {% if user.isActive %}
-                        <span class="tf-tag-sm" style="background:rgba(39,174,96,.15);color:#27ae60;"><i class="fas fa-check-circle"></i> Actif</span>
+                        <span class="tf-tag-sm" style="background:rgba(39,174,96,.15);color:#27ae60;"><i class="fas fa-check-circle"></i> {{ 'user.status_active'|trans }}</span>
                     {% else %}
-                        <span class="tf-tag-sm" style="background:rgba(231,76,60,.15);color:#e74c3c;"><i class="fas fa-ban"></i> Désactivé</span>
+                        <span class="tf-tag-sm" style="background:rgba(231,76,60,.15);color:#e74c3c;"><i class="fas fa-ban"></i> {{ 'user.status_disabled'|trans }}</span>
                     {% endif %}
                 </div>
                 <div class="tf-item-card-meta">
@@ -87,15 +87,15 @@
                     <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i></a>
                     {% if user.id != app.user.id %}
                     <form method="post" action="{{ path('app_user_toggle_active', {'id': user.id}) }}"
-                          onsubmit="event.preventDefault(); confirmToggleActive(this, '{{ user.fullName|e('js') }}', {{ user.isActive ? 'true' : 'false' }});"
+                          onsubmit="if (typeof confirmToggleActive === 'function') { event.preventDefault(); confirmToggleActive(this, '{{ user.fullName|e('js') }}', {{ user.isActive ? 'true' : 'false' }}); return false; } return confirm('{{ 'user.toggle_confirm_fallback'|trans|e('js') }} {{ user.fullName|e('js') }} ?');"
                           style="display: inline;">
                         <input type="hidden" name="_token" value="{{ csrf_token('toggle_active' ~ user.id) }}">
                         {% if user.isActive %}
-                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Désactiver le compte">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="{{ 'user.disable_account'|trans }}">
                                 <i class="fas fa-user-slash"></i>
                             </button>
                         {% else %}
-                            <button type="submit" class="btn btn-sm btn-outline-success" title="Réactiver le compte">
+                            <button type="submit" class="btn btn-sm btn-outline-success" title="{{ 'user.reactivate_account'|trans }}">
                                 <i class="fas fa-user-check"></i>
                             </button>
                         {% endif %}
@@ -114,9 +114,9 @@
     {% else %}
         <div class="tf-card-empty">
             <i class="fas fa-users-slash"></i>
-            <p>Aucun utilisateur trouvé.</p>
+            <p>{{ 'page.user.no_users'|trans }}</p>
             <a href="{{ path('app_user_new') }}" class="btn-gold mt-2">
-                <i class="fas fa-user-plus"></i> Créer le premier utilisateur
+                <i class="fas fa-user-plus"></i> {{ 'page.user.create_first'|trans }}
             </a>
         </div>
     {% endif %}
@@ -128,18 +128,18 @@
 function confirmToggleActive(formEl, name, isCurrentlyActive) {
     if (isCurrentlyActive) {
         showConfirmModal({
-            title: 'Désactiver le compte',
-            message: 'Voulez-vous vraiment désactiver le compte de <strong style="color:#e74c3c">' + name + '</strong> ?<br><small style="color:#a0a0b0">L\'utilisateur ne pourra plus se connecter.</small>',
+            title: '{{ 'user.disable_account'|trans|e('js') }}',
+            message: '{{ 'user.confirm_disable_prefix'|trans|e('js') }} <strong style="color:#e74c3c">' + name + '</strong> ?<br><small style="color:#a0a0b0">{{ 'user.confirm_disable_help'|trans|e('js') }}</small>',
             icon: 'fa-user-slash', iconClass: 'danger', btnClass: 'btn-confirm-danger',
-            confirmIcon: 'fa-user-slash', confirmText: 'Oui, désactiver',
+            confirmIcon: 'fa-user-slash', confirmText: '{{ 'user.confirm_disable_action'|trans|e('js') }}',
             onConfirm: function() { formEl.submit(); }
         });
     } else {
         showConfirmModal({
-            title: 'Réactiver le compte',
-            message: 'Voulez-vous réactiver le compte de <strong style="color:#27ae60">' + name + '</strong> ?',
+            title: '{{ 'user.reactivate_account'|trans|e('js') }}',
+            message: '{{ 'user.confirm_reactivate_prefix'|trans|e('js') }} <strong style="color:#27ae60">' + name + '</strong> ?',
             icon: 'fa-user-check', iconClass: 'success', btnClass: 'btn-confirm-gold',
-            confirmIcon: 'fa-user-check', confirmText: 'Oui, réactiver',
+            confirmIcon: 'fa-user-check', confirmText: '{{ 'user.confirm_reactivate_action'|trans|e('js') }}',
             onConfirm: function() { formEl.submit(); }
         });
     }

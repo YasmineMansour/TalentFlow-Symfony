@@ -1,0 +1,92 @@
+{#
+  Carte détaillée de complétude — à inclure sur la page show.
+  Variables attendues : completeness (array retourné par CandidatureCompletenessService::analyze())
+#}
+{% set levelClass = {
+    'COMPLET':     'success',
+    'A_COMPLETER': 'warning',
+    'BLOQUANT':    'danger'
+}[completeness.level] ?? 'secondary' %}
+
+<div class="tf-card mt-4">
+    <h5 style="color: var(--tf-gold);">
+        <i class="fas fa-tasks"></i> Complétude du dossier
+        <span class="badge bg-{{ levelClass }} ms-2" style="font-size: 0.85rem;">{{ completeness.label }}</span>
+    </h5>
+    <hr style="border-color: var(--tf-border);">
+
+    {# Score + barre de progression #}
+    <div class="d-flex justify-content-between align-items-center mb-1">
+        <span style="color: var(--tf-gray); font-size: 0.9rem;">Score de complétude</span>
+        <strong style="color: var(--tf-gold);">{{ completeness.score }} / 100</strong>
+    </div>
+    <div class="progress mb-3" style="height: 12px; background: var(--tf-border);">
+        <div class="progress-bar bg-{{ levelClass }}"
+             role="progressbar"
+             style="width: {{ completeness.score }}%;"
+             aria-valuenow="{{ completeness.score }}"
+             aria-valuemin="0"
+             aria-valuemax="100">
+        </div>
+    </div>
+
+    {# Capacités de progression #}
+    <div class="d-flex gap-3 mb-3 flex-wrap">
+        <span class="badge bg-{{ completeness.canMoveToRhValidation ? 'success' : 'secondary' }}">
+            <i class="fas fa-{{ completeness.canMoveToRhValidation ? 'check' : 'times' }}"></i>
+            Validation RH
+        </span>
+        <span class="badge bg-{{ completeness.canMoveToInterview ? 'success' : 'secondary' }}">
+            <i class="fas fa-{{ completeness.canMoveToInterview ? 'check' : 'times' }}"></i>
+            Passage en entretien
+        </span>
+        <span class="badge bg-{{ completeness.hasCv ? 'success' : 'danger' }}">
+            <i class="fas fa-file-pdf"></i> CV
+        </span>
+        <span class="badge bg-{{ completeness.hasLettreMotivation ? 'success' : 'secondary' }}">
+            <i class="fas fa-envelope-open-text"></i> Lettre de motivation
+        </span>
+    </div>
+
+    {# Raisons bloquantes #}
+    {% if completeness.blockingReasons is not empty %}
+    <div class="alert alert-danger py-2 px-3 mb-2" style="font-size: 0.85rem;">
+        <strong><i class="fas fa-ban"></i> Points bloquants :</strong>
+        <ul class="mb-0 mt-1 ps-3">
+            {% for reason in completeness.blockingReasons %}
+                <li>{{ reason }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {# Champs manquants #}
+    {% if completeness.missingFields is not empty %}
+    <div class="alert alert-warning py-2 px-3 mb-2" style="font-size: 0.85rem;">
+        <strong><i class="fas fa-exclamation-triangle"></i> Champs manquants :</strong>
+        <ul class="mb-0 mt-1 ps-3">
+            {% for field in completeness.missingFields %}
+                <li>{{ field }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {# Documents manquants #}
+    {% if completeness.missingDocuments is not empty %}
+    <div class="alert alert-warning py-2 px-3 mb-2" style="font-size: 0.85rem;">
+        <strong><i class="fas fa-paperclip"></i> Documents manquants :</strong>
+        <ul class="mb-0 mt-1 ps-3">
+            {% for doc in completeness.missingDocuments %}
+                <li>{{ doc }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% if completeness.level == 'COMPLET' %}
+    <div class="alert alert-success py-2 px-3 mb-0" style="font-size: 0.85rem;">
+        <i class="fas fa-check-circle"></i> Dossier complet — ce candidat peut passer en entretien.
+    </div>
+    {% endif %}
+</div>

@@ -32,6 +32,18 @@
         </div>
     </div>
 
+    <div id="candidate-info-box" style="display:none; margin-bottom:14px; padding:12px 14px; background:rgba(56,189,248,.08); border:1px solid rgba(56,189,248,.35); border-radius:8px;">
+        <div style="font-weight:700; margin-bottom:8px;"><i class="fas fa-user"></i> Informations candidat</div>
+        <div class="row g-2" style="font-size:0.9rem;">
+            <div class="col-md-6"><strong>ID candidat:</strong> <span id="candidate-id-value">-</span></div>
+            <div class="col-md-6"><strong>Email:</strong> <span id="candidate-email-value">-</span></div>
+            <div class="col-md-6"><strong>Nom:</strong> <span id="candidate-name-value">-</span></div>
+            <div class="col-md-6"><strong>Telephone:</strong> <span id="candidate-phone-value">-</span></div>
+            <div class="col-md-6"><strong>Poste:</strong> <span id="candidate-poste-value">-</span></div>
+            <div class="col-md-6"><strong>Entreprise:</strong> <span id="candidate-entreprise-value">-</span></div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-md-6 mb-3" id="field-lieu">
             {{ form_label(form.lieu) }}
@@ -77,9 +89,64 @@
 
     // Afficher la date souhaitée par le candidat
     const candidatureDates = {{ candidatures_dates|default('{}')|raw }};
+    const candidatureMeta = {{ candidatures_meta|default('{}')|raw }};
     const candidatureSelect = document.querySelector('#{{ form.candidatureId.vars.id }}');
     const hintBox   = document.getElementById('preferred-date-hint');
     const hintValue = document.getElementById('preferred-date-value');
+    const candidateInfoBox = document.getElementById('candidate-info-box');
+
+    function setText(id, value) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.textContent = value && String(value).trim() !== '' ? value : '-';
+        }
+    }
+
+    function renderCandidateInfo(data) {
+        if (!data) {
+            if (candidateInfoBox) {
+                candidateInfoBox.style.display = 'none';
+            }
+            return;
+        }
+
+        setText('candidate-id-value', data.candidatId);
+        setText('candidate-email-value', data.email);
+        setText('candidate-name-value', [data.prenom, data.nom].filter(Boolean).join(' ').trim());
+        setText('candidate-phone-value', data.telephone);
+        setText('candidate-poste-value', data.poste);
+        setText('candidate-entreprise-value', data.entreprise);
+
+        if (candidateInfoBox) {
+            candidateInfoBox.style.display = '';
+        }
+    }
+
+    async function loadCandidateInfo(candidatureId) {
+        if (!candidatureId) {
+            renderCandidateInfo(null);
+            return;
+        }
+
+        // Fast path from preloaded metadata.
+        if (candidatureMeta[candidatureId]) {
+            renderCandidateInfo(candidatureMeta[candidatureId]);
+            return;
+        }
+
+        // Fallback API if metadata is not found locally.
+        try {
+            const response = await fetch(`{{ path('app_entretien_api_candidature', {'id': 0}) }}`.replace('/0', '/' + candidatureId));
+            if (!response.ok) {
+                renderCandidateInfo(null);
+                return;
+            }
+            const data = await response.json();
+            renderCandidateInfo(data);
+        } catch (e) {
+            renderCandidateInfo(null);
+        }
+    }
 
     function updateDateHint() {
         const id = candidatureSelect ? candidatureSelect.value : '';
@@ -94,8 +161,12 @@
     }
 
     if (candidatureSelect) {
-        candidatureSelect.addEventListener('change', updateDateHint);
+        candidatureSelect.addEventListener('change', function () {
+            updateDateHint();
+            loadCandidateInfo(this.value);
+        });
         updateDateHint();
+        loadCandidateInfo(candidatureSelect.value);
     }
 })();
 </script>

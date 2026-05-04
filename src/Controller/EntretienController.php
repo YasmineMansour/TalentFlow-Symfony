@@ -10,6 +10,7 @@ use App\Repository\EntretienRepository;
 use App\Service\EntretienStatusService;
 use App\Service\RecruitmentService;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -48,10 +49,53 @@ class EntretienController extends AbstractController
         $choices = [];
         foreach ($candidatures as $c) {
             $email = $c->getEmail() ?? ($c->getCandidat()?->getEmail() ?? 'sans email');
-            $label = sprintf('#%d — %s (%s) — %s', $c->getId(), $c->getTitrePoste(), $c->getEntreprise(), $email);
+            $candidatId = $c->getCandidat()?->getId();
+            $candidatLabel = $candidatId !== null ? sprintf('Candidat #%d', $candidatId) : 'Candidat N/A';
+            $label = sprintf('#%d — %s (%s) — %s — %s', $c->getId(), $c->getTitrePoste(), $c->getEntreprise(), $candidatLabel, $email);
             $choices[$label] = $c->getId();
         }
         return $choices;
+    }
+
+    private function getCandidaturesMeta(CandidatureRepository $candidatureRepository): string
+    {
+        $candidatures = $candidatureRepository->findBy([], ['createdAt' => 'DESC']);
+        $map = [];
+
+        foreach ($candidatures as $c) {
+            $map[(string) $c->getId()] = $this->buildCandidaturePayload($c);
+        }
+
+        return json_encode($map, JSON_THROW_ON_ERROR);
+    }
+
+    private function buildCandidaturePayload(\App\Entity\Candidature $candidature): array
+    {
+        $user = $candidature->getCandidat();
+
+        return [
+            'candidatureId' => $candidature->getId(),
+            'candidatId' => $user?->getId(),
+            'prenom' => $user?->getPrenom(),
+            'nom' => $user?->getNom(),
+            'email' => $candidature->getEmail() ?? $user?->getEmail(),
+            'telephone' => $candidature->getTelephone() ?? $user?->getTelephone(),
+            'poste' => $candidature->getTitrePoste(),
+            'entreprise' => $candidature->getEntreprise(),
+            'typeContrat' => $candidature->getTypeContrat(),
+            'dateEntretienSouhaitee' => $candidature->getDateEntretienSouhaitee()?->format('Y-m-d'),
+        ];
+    }
+
+    #[Route('/api/candidature/{id}', name: 'app_entretien_api_candidature', methods: ['GET'])]
+    public function apiCandidature(int $id, CandidatureRepository $candidatureRepository): JsonResponse
+    {
+        $candidature = $candidatureRepository->find($id);
+        if ($candidature === null) {
+            return $this->json(['error' => 'Candidature non trouvee'], 404);
+        }
+
+        return $this->json($this->buildCandidaturePayload($candidature));
     }
 
     private function getCandidaturesDates(CandidatureRepository $candidatureRepository): string
@@ -138,6 +182,7 @@ class EntretienController extends AbstractController
             'form' => $form,
             'entretien' => $entretien,
             'candidatures_dates' => $this->getCandidaturesDates($candidatureRepository),
+            'candidatures_meta' => $this->getCandidaturesMeta($candidatureRepository),
         ]);
     }
 
@@ -166,6 +211,7 @@ class EntretienController extends AbstractController
             'form' => $form,
             'entretien' => $entretien,
             'candidatures_dates' => $this->getCandidaturesDates($candidatureRepository),
+            'candidatures_meta' => $this->getCandidaturesMeta($candidatureRepository),
         ]);
     }
 

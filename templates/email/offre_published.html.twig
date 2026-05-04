@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Nouvelle offre publiée — TalentFlow</title>
+</head>
+<body style="margin:0;padding:0;background:#1a1a2e;font-family:'Segoe UI',Tahoma,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+    <tr><td align="center" style="padding:40px 20px;">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background:#16213e;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.3);">
+            <tr>
+                <td style="background:linear-gradient(135deg,#0f3460,#1a1a2e);padding:30px 40px;text-align:center;border-bottom:3px solid #d4a843;">
+                    <h1 style="color:#d4a843;margin:0;font-size:28px;letter-spacing:1px;">&#128188; TalentFlow</h1>
+                    <p style="color:#8a8aa0;margin:8px 0 0;font-size:14px;">Plateforme de Gestion du Recrutement</p>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:40px;">
+                    <h2 style="color:#D4A843;margin:0 0 .5rem;">📄 Nouvelle offre publiée</h2>
+                    <p style="color:#aab0bc;line-height:1.7;">
+                        Bonjour <strong style="color:#fff;">{{ entreprise.nom }}</strong>,
+                    </p>
+                    <p style="color:#aab0bc;line-height:1.7;">
+                        Une nouvelle offre d'emploi vient d'être enregistrée sur TalentFlow pour votre entreprise. Vous trouverez ci-joint la fiche PDF détaillée de cette offre.
+                    </p>
+
+                    <table width="100%" cellpadding="0" cellspacing="0" style="margin:1.5rem 0;background:#0f3460;border-radius:8px;">
+                        <tr>
+                            <td style="padding:1.2rem 1.5rem;">
+                                <p style="color:#8a8aa0;margin:0 0 .3rem;font-size:.8rem;text-transform:uppercase;letter-spacing:1px;">Offre</p>
+                                <p style="color:#D4A843;font-weight:700;font-size:1.1rem;margin:0;">{{ offre.titre }}</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding:0 1.5rem 1.2rem;">
+                                <table width="100%" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                        <td style="color:#8a8aa0;font-size:.85rem;padding:4px 0;">📍 {{ offre.localisation|default('Non renseignée') }}</td>
+                                        <td style="color:#8a8aa0;font-size:.85rem;padding:4px 0;text-align:right;">📋 {{ offre.typeContrat }}</td>
+                                    </tr>
+                                    {% if offre.salaireMin or offre.salaireMax %}
+                                    <tr>
+                                        <td colspan="2" style="color:#8a8aa0;font-size:.85rem;padding:4px 0;">
+                                            💰 {% if offre.salaireMin and offre.salaireMax %}{{ offre.salaireMin }} — {{ offre.salaireMax }} TND{% elseif offre.salaireMin %}À partir de {{ offre.salaireMin }} TND{% else %}Jusqu'à {{ offre.salaireMax }} TND{% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <p style="color:#aab0bc;font-size:.9rem;line-height:1.6;">
+                        📎 <strong style="color:#fff;">La fiche PDF complète est jointe à cet email.</strong>
+                    </p>
+
+                    <div style="border-top:1px solid #1e2a3a;padding-top:1.5rem;margin-top:1.5rem;">
+                        <p style="color:#8a8aa0;font-size:.8rem;line-height:1.5;">
+                            Cet email a été envoyé automatiquement par TalentFlow. Merci de ne pas y répondre directement.
+                        </p>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td style="background:#0f3460;padding:20px 40px;text-align:center;border-top:1px solid #1e2a3a;">
+                    <p style="color:#8a8aa0;font-size:12px;margin:0;">© {{ "now"|date("Y") }} TalentFlow — Tous droits réservés</p>
+                </td>
+            </tr>
+        </table>
+    </td></tr>
+</table>
+</body>
+</html>
