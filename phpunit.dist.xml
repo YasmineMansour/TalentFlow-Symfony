@@ -21,6 +21,10 @@
         <testsuite name="Project Test Suite">
             <directory>tests</directory>
         </testsuite>
+        <testsuite name="Unit Tests">
+            <directory>tests/Service</directory>
+            <directory>tests/Entity</directory>
+        </testsuite>
     </testsuites>
 
     <source ignoreSuppressionOfDeprecations="true"
